@@ -1,46 +1,3 @@
-<<<<<<< HEAD
-# Archivos del sistema
-.DS_Store
-Thumbs.db
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-error.log
-dist/
-build/
-
-# Entornos y configuraciones
-.env
-.env.local
-.vscode/
-.idea/
-*.swp
-
-# Logs
-logs/
-*.log
-
-# Cache y temporales
-.cache/
-*.tmp
-*.bak
-
-# Archivos de compilación
-*.class
-*.o
-*.so
-*.exe
-
-# Otros
-*.zip
-*.tar.gz
-*.rar
-
-# Dependencias frontend (si usas frameworks tipo Angular/React)
-bower_components/
-coverage/
-=======
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -68,4 +25,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
->>>>>>> Primera subida del proyecto Altaira Labs
