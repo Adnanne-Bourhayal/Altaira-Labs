@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: "Transformamos pequeñas empresas con IA y automatización",
     type: "website",
   },
-    generator: 'v0.dev'
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
