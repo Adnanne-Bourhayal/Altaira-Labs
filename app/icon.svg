@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Premium futuristic A mark for favicon -->
+  <rect width="32" height="32" fill="#050810"/>
+  <!-- Main A shape with gradient -->
+  <path d="M16 4L28 26H23L20 20H12L9 26H4L16 4Z" fill="url(#faviconGradient)"/>
+  <!-- Inner cut - creates the A crossbar void -->
+  <path d="M16 10L19 16H13L16 10Z" fill="#050810"/>
+  <defs>
+    <linearGradient id="faviconGradient" x1="4" y1="26" x2="28" y2="4" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+</svg>
