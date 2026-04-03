@@ -2,16 +2,13 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Mail, Phone, MapPin, Send, MessageCircle, Calendar, CheckCircle } from "lucide-react"
+import { Send, MessageCircle, Calendar, CheckCircle, ArrowRight } from "lucide-react"
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
+    business: "",
     email: "",
-    company: "",
-    phone: "",
-    service: "",
-    message: "",
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -19,179 +16,111 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    // Simular envío del formulario
     await new Promise((resolve) => setTimeout(resolve, 1500))
-
     setIsSubmitting(false)
     setIsSubmitted(true)
-
-    // Reset form after 5 seconds
     setTimeout(() => {
       setIsSubmitted(false)
-      setFormData({
-        name: "",
-        email: "",
-        company: "",
-        phone: "",
-        service: "",
-        message: "",
-      })
+      setFormData({ name: "", business: "", email: "" })
     }, 5000)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleWhatsAppClick = () => {
-    const message = encodeURIComponent(
-      "Hola! Me interesa conocer más sobre los servicios de Altaira Labs. ¿Podríamos agendar una consulta?",
-    )
-    window.open(`https://wa.me/34900123456?text=${message}`, "_blank")
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent("Hi, I want to grow my business with a website")
+    window.open(`https://wa.me/34694908262?text=${message}`, "_blank")
   }
 
-  const handleVideollamadaClick = () => {
-    // Simular apertura de calendario (en producción sería Calendly o similar)
+  const handleCalendar = () => {
     window.open("https://calendly.com/altairalabs", "_blank")
   }
 
   return (
-    <section id="contacto" className="py-20 bg-slate-950 relative">
-      {/* Stars background */}
-      <div className="absolute inset-0">
-        {[...Array(40)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-0.5 h-0.5 bg-white rounded-full opacity-20 animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-            }}
-          />
-        ))}
-      </div>
+    <section id="contact" className="py-24 bg-[#0A0A0A] relative">
+      <div className="absolute inset-0 bg-grid opacity-20" />
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-100">
-            Hablemos de{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Tu Proyecto
-            </span>
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            Get your free proposal
           </h2>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto font-light">
-            Agenda una consulta gratuita y descubre cómo transformar tu empresa
+          <p className="text-lg text-white/50">
+            No commitment. Response within 24 hours.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-3xl p-8">
-            <h3 className="text-2xl font-bold text-slate-100 mb-6">Consulta Gratuita</h3>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
+          {/* Form */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8">
             {isSubmitted ? (
               <div className="text-center py-12">
-                <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h4 className="text-xl font-bold text-slate-100 mb-2">¡Mensaje Enviado!</h4>
-                <p className="text-slate-300">Te contactaremos en las próximas 24 horas.</p>
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                </div>
+                <h4 className="text-xl font-bold text-white mb-2">Message Sent</h4>
+                <p className="text-white/60">We will contact you within 24 hours.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Nombre *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
-                      placeholder="tu@empresa.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Empresa</label>
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
-                      placeholder="Nombre de tu empresa"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Servicio</label>
-                    <select
-                      name="service"
-                      value={formData.service}
-                      onChange={handleChange}
-                      disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-slate-100 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
-                    >
-                      <option value="">Selecciona un servicio</option>
-                      <option value="consultoria-ia">Consultoría en IA</option>
-                      <option value="automatizacion">Automatización</option>
-                      <option value="desarrollo-web">Desarrollo Web</option>
-                      <option value="analisis-datos">Análisis de Datos</option>
-                    </select>
-                  </div>
-                </div>
-
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-slate-300 text-sm font-medium mb-2">Cuéntanos sobre tu proyecto *</label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
+                  <label className="block text-white/70 text-sm font-medium mb-2">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     required
                     disabled={isSubmitting}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors resize-none disabled:opacity-50"
-                    placeholder="Describe tu proyecto y objetivos..."
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                    placeholder="Your name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/70 text-sm font-medium mb-2">Business</label>
+                  <input
+                    type="text"
+                    name="business"
+                    value={formData.business}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                    placeholder="Your business name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/70 text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                    placeholder="you@email.com"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 text-white disabled:opacity-50 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Enviando...</span>
+                      <span>Sending...</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      <span>Enviar Consulta</span>
+                      <span>Get Free Proposal</span>
                     </>
                   )}
                 </button>
@@ -199,83 +128,66 @@ export default function Contact() {
             )}
           </div>
 
-          {/* Contact Info & Quick Actions */}
-          <div className="space-y-8">
-            {/* Contact Information */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-3xl p-8">
-              <h3 className="text-2xl font-bold text-slate-100 mb-6">Información de Contacto</h3>
-
-              <div className="space-y-6">
+          {/* Quick Actions */}
+          <div className="space-y-5">
+            <button
+              onClick={handleWhatsApp}
+              className="w-full group bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-green-500/50 transition-all duration-300 text-left"
+            >
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
-                    <div className="text-slate-400 text-sm">Email</div>
-                    <div className="text-slate-100 font-semibold">contacto@altairalabs.com</div>
+                    <div className="text-white font-semibold">WhatsApp</div>
+                    <div className="text-white/50 text-sm">Quick response within 2 hours</div>
                   </div>
                 </div>
+                <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all" />
+              </div>
+            </button>
 
+            <button
+              onClick={handleCalendar}
+              className="w-full group bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 text-left"
+            >
+              <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Phone className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <div className="text-slate-400 text-sm">Teléfono</div>
-                    <div className="text-slate-100 font-semibold">+34 900 123 456</div>
+                    <div className="text-white font-semibold">Schedule a Call</div>
+                    <div className="text-white/50 text-sm">15 min free consultation</div>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-slate-400 text-sm">Ubicación</div>
-                    <div className="text-slate-100 font-semibold">España | Bélgica | Marruecos</div>
-                  </div>
-                </div>
+                <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
               </div>
-            </div>
+            </button>
 
-            {/* Quick Actions */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-3xl p-8">
-              <h3 className="text-2xl font-bold text-slate-100 mb-6">Contacto Rápido</h3>
-
-              <div className="space-y-4">
-                <button
-                  onClick={handleWhatsAppClick}
-                  className="w-full bg-green-600 hover:bg-green-700 px-6 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 text-white transform hover:scale-105"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>WhatsApp Business</span>
-                </button>
-
-                <button
-                  onClick={handleVideollamadaClick}
-                  className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 text-white transform hover:scale-105"
-                >
-                  <Calendar className="w-5 h-5" />
-                  <span>Agendar Videollamada</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Response Time */}
-            <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-slate-600/50 rounded-2xl p-6 backdrop-blur-sm">
-              <h4 className="text-lg font-bold text-slate-100 mb-3">Tiempo de Respuesta</h4>
-              <div className="space-y-2 text-slate-300">
-                <div className="flex justify-between">
-                  <span>Email:</span>
-                  <span className="text-blue-400 font-semibold">&lt; 24 horas</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>WhatsApp:</span>
-                  <span className="text-green-400 font-semibold">&lt; 2 horas</span>
-                </div>
-              </div>
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+              <h4 className="text-white font-semibold mb-4">What you get:</h4>
+              <ul className="space-y-3">
+                {[
+                  "Analysis of your current situation",
+                  "Custom design proposal",
+                  "Detailed quote with no surprises",
+                  "Estimated delivery time",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center space-x-3 text-white/60 text-sm">
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+        </div>
+
+        {/* Contact info */}
+        <div className="text-center mt-12 text-white/40 text-sm">
+          <p>altairalabs@gmail.com | +34 694 908 262</p>
         </div>
       </div>
     </section>

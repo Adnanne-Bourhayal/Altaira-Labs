@@ -1,177 +1,76 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { ArrowRight, Sparkles, Zap, ChevronDown } from "lucide-react"
+import { ArrowRight, Play } from "lucide-react"
 
 export default function Hero() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [scrollY, setScrollY] = useState(0)
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    window.addEventListener("scroll", handleScroll)
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
-
-  const handleConsultaClick = () => {
-    const contactSection = document.getElementById("contacto")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-    }
+  const handleViewExamples = () => {
+    document.getElementById("examples")?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const handleCasosClick = () => {
-    const casosSection = document.getElementById("casos")
-    if (casosSection) {
-      casosSection.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
-  const handleScrollDown = () => {
-    const serviciosSection = document.getElementById("servicios")
-    if (serviciosSection) {
-      serviciosSection.scrollIntoView({ behavior: "smooth" })
-    }
+  const handleGetProposal = () => {
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
   }
 
   return (
-    <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Parallax */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `
-            linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.7) 50%, rgba(51, 65, 85, 0.6) 100%),
-            url('https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-4.0.3&auto=format&fit=crop&w=2064&q=80')
-          `,
-          transform: `translateY(${scrollY * 0.5}px)`,
-          backgroundAttachment: "fixed",
-        }}
-      />
-
-      {/* Animated Overlay Effects */}
-      <div className="absolute inset-0">
-        {/* Moving particles */}
-        <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 4}s`,
-                transform: `translateY(${Math.sin(Date.now() * 0.001 + i) * 10}px)`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Subtle grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: "50px 50px",
-          }}
-        />
-
-        {/* Mouse follower */}
-        <div
-          className="absolute w-96 h-96 bg-gradient-radial from-blue-500/10 to-transparent rounded-full pointer-events-none transition-all duration-700 ease-out"
-          style={{
-            left: mousePosition.x - 192,
-            top: mousePosition.y - 192,
-          }}
-        />
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/v2_watermarked-10cdfd72-3427-4b83-9013-07e2593a3222-qgEWK6iAdfGsKYX0ifXyluq7pyFhUa.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
       </div>
 
+      {/* Main Content */}
       <div className="relative z-10 container mx-auto px-6 text-center">
         <div className="max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center space-x-2 bg-slate-900/80 border border-blue-500/30 rounded-full px-4 py-2 mb-8 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-blue-400" />
-            <span className="text-slate-200 text-sm font-medium">Transformación Digital Inteligente</span>
+          {/* Small label */}
+          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-5 py-2 mb-8">
+            <span className="text-white/80 text-sm font-medium">Websites, booking systems & automation</span>
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-            <span className="text-white drop-shadow-lg">Impulsa tu empresa</span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-[1.05] tracking-tight">
+            <span className="text-white">Get more clients.</span>
             <br />
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
-              con IA
-            </span>
+            <span className="text-gradient">Automatically.</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md">
-            Automatización inteligente y consultoría en IA para{" "}
-            <span className="text-blue-300 font-medium">pequeñas empresas</span> que quieren competir en grande.
+          <p className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+            We build websites and smart systems that help your business grow 24/7.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-              onClick={handleConsultaClick}
-              className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center space-x-2 text-white shadow-lg"
+              onClick={handleGetProposal}
+              className="group relative px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full text-white font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
             >
-              <span>Consulta Gratuita</span>
+              <span>Get Free Proposal</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 
             <button
-              onClick={handleCasosClick}
-              className="group border border-slate-400/50 hover:border-blue-400 px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:bg-slate-800/50 flex items-center space-x-2 text-slate-200 hover:text-white shadow-md backdrop-blur-sm"
+              onClick={handleViewExamples}
+              className="group px-8 py-4 bg-transparent border-2 border-white/30 hover:border-white/60 rounded-full text-white font-semibold transition-all duration-300 flex items-center space-x-2 hover:bg-white/5"
             >
-              <Zap className="w-5 h-5 text-blue-400" />
-              <span>Ver Casos de Éxito</span>
+              <Play className="w-5 h-5" />
+              <span>View Examples</span>
             </button>
-          </div>
-
-          {/* Trust indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-slate-300 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Especialistas en PYMES</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-              <span>Resultados en 30 días</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Soporte continuo</span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <button
-        onClick={handleScrollDown}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hover:scale-110 transition-transform cursor-pointer"
-      >
-        <div className="flex flex-col items-center space-y-2 text-slate-300 hover:text-white">
-          <span className="text-xs font-medium">Descubre más</span>
-          <ChevronDown className="w-5 h-5" />
-        </div>
-      </button>
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0A] to-transparent z-10" />
     </section>
   )
 }

@@ -1,12 +1,22 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ChevronDown, Globe } from "lucide-react"
 import Logo from "./Logo"
+
+const languages = [
+  { code: "en", label: "English" },
+  { code: "nl", label: "Nederlands" },
+  { code: "es", label: "Espanol" },
+  { code: "fr", label: "Francais" },
+  { code: "de", label: "Deutsch" },
+]
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isLangOpen, setIsLangOpen] = useState(false)
+  const [currentLang, setCurrentLang] = useState("en")
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,33 +27,26 @@ export default function Header() {
   }, [])
 
   const navItems = [
-    { href: "#inicio", label: "Inicio" },
-    { href: "#servicios", label: "Servicios" },
-    { href: "#nosotros", label: "Nosotros" },
-    { href: "#casos", label: "Casos" },
-    { href: "#contacto", label: "Contacto" },
+    { href: "#businesses", label: "Businesses" },
+    { href: "#examples", label: "Examples" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#contact", label: "Contact" },
   ]
 
   const handleNavClick = (href: string) => {
-    const element = document.getElementById(href.substring(1))
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
+    document.getElementById(href.substring(1))?.scrollIntoView({ behavior: "smooth" })
     setIsMenuOpen(false)
   }
 
-  const handleEmpezarClick = () => {
-    const contactSection = document.getElementById("contacto")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-    }
+  const handleContactClick = () => {
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
     setIsMenuOpen(false)
   }
 
   return (
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-slate-900/90 backdrop-blur-md border-b border-slate-700/50 shadow-lg" : "bg-transparent"
+        isScrolled ? "bg-black/80 backdrop-blur-xl border-b border-white/5" : "bg-transparent"
       }`}
     >
       <nav className="container mx-auto px-6 py-4">
@@ -56,27 +59,55 @@ export default function Header() {
               <button
                 key={item.href}
                 onClick={() => handleNavClick(item.href)}
-                className={`transition-colors duration-300 relative group font-medium ${
-                  isScrolled ? "text-slate-300 hover:text-white" : "text-slate-200 hover:text-white"
-                }`}
+                className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-medium"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 group-hover:w-full"></span>
               </button>
             ))}
+
+            {/* Language Switcher */}
+            <div className="relative">
+              <button
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center space-x-1.5 text-white/70 hover:text-white transition-colors text-sm"
+              >
+                <Globe className="w-4 h-4" />
+                <span>{languages.find(l => l.code === currentLang)?.code.toUpperCase()}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {isLangOpen && (
+                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden min-w-[140px]">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setCurrentLang(lang.code)
+                        setIsLangOpen(false)
+                      }}
+                      className={`w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors ${
+                        currentLang === lang.code ? "text-blue-400" : "text-white/70"
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Primary CTA */}
             <button
-              onClick={handleEmpezarClick}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 text-white font-medium shadow-md hover:shadow-lg hover:shadow-blue-500/20"
+              onClick={handleContactClick}
+              className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 text-white hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105"
             >
-              Empezar
+              Get Free Proposal
             </button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className={`md:hidden transition-colors ${
-              isScrolled ? "text-slate-300 hover:text-white" : "text-slate-200 hover:text-white"
-            }`}
+            className="md:hidden text-white/70 hover:text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -85,22 +116,39 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-slate-700/50">
+          <div className="md:hidden mt-4 pb-4 border-t border-white/10">
             <div className="flex flex-col space-y-4 pt-4">
               {navItems.map((item) => (
                 <button
                   key={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className="text-slate-300 hover:text-white transition-colors duration-300 font-medium text-left"
+                  className="text-white/70 hover:text-white transition-colors text-left text-sm font-medium"
                 >
                   {item.label}
                 </button>
               ))}
+
+              {/* Mobile Language */}
+              <div className="flex items-center space-x-2 text-white/50 text-sm">
+                <Globe className="w-4 h-4" />
+                <select
+                  value={currentLang}
+                  onChange={(e) => setCurrentLang(e.target.value)}
+                  className="bg-transparent text-white/70 text-sm focus:outline-none"
+                >
+                  {languages.map((lang) => (
+                    <option key={lang.code} value={lang.code} className="bg-black">
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <button
-                onClick={handleEmpezarClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-2 rounded-full transition-all duration-300 w-fit text-white font-medium shadow-md"
+                onClick={handleContactClick}
+                className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold w-fit text-white"
               >
-                Empezar
+                Get Free Proposal
               </button>
             </div>
           </div>
