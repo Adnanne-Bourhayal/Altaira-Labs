@@ -23,6 +23,7 @@ export default function Header() {
     { href: "#businesses", label: t.nav.businesses },
     { href: "#examples", label: t.nav.examples },
     { href: "#pricing", label: t.nav.pricing },
+    { href: "#insights", label: t.nav.insights },
     { href: "#contact", label: t.nav.contact },
   ]
 

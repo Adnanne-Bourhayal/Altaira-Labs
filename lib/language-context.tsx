@@ -10,6 +10,7 @@ interface Translations {
     businesses: string
     examples: string
     pricing: string
+    insights: string
     contact: string
     getProposal: string
   }
@@ -114,6 +115,7 @@ const translations: Record<LanguageCode, Translations> = {
       businesses: "Businesses",
       examples: "Examples",
       pricing: "Pricing",
+      insights: "Insights",
       contact: "Contact",
       getProposal: "Get Free Proposal",
     },
@@ -208,6 +210,7 @@ const translations: Record<LanguageCode, Translations> = {
       businesses: "Negocios",
       examples: "Ejemplos",
       pricing: "Precios",
+      insights: "Insights",
       contact: "Contacto",
       getProposal: "Propuesta Gratis",
     },
@@ -302,6 +305,7 @@ const translations: Record<LanguageCode, Translations> = {
       businesses: "Bedrijven",
       examples: "Voorbeelden",
       pricing: "Prijzen",
+      insights: "Insights",
       contact: "Contact",
       getProposal: "Gratis Voorstel",
     },
@@ -396,6 +400,7 @@ const translations: Record<LanguageCode, Translations> = {
       businesses: "Entreprises",
       examples: "Exemples",
       pricing: "Tarifs",
+      insights: "Insights",
       contact: "Contact",
       getProposal: "Devis Gratuit",
     },
@@ -490,6 +495,7 @@ const translations: Record<LanguageCode, Translations> = {
       businesses: "Unternehmen",
       examples: "Beispiele",
       pricing: "Preise",
+      insights: "Insights",
       contact: "Kontakt",
       getProposal: "Kostenloses Angebot",
     },

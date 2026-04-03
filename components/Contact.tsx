@@ -228,9 +228,9 @@ export default function Contact() {
               <X className="w-5 h-5 text-white" />
             </button>
             
-            {/* Calendly iframe - Using demo link since actual link may not exist */}
+            {/* Calendly iframe */}
             <iframe
-              src="https://calendly.com/d/demo"
+              src="https://calendly.com/altairalabs/30min"
               className="w-full h-full"
               frameBorder="0"
               title="Schedule a call"

@@ -3,74 +3,33 @@
 import { useState } from "react"
 import { ArrowRight, Clock, TrendingUp, Zap, Target } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
+import Link from "next/link"
+import { blogArticles } from "@/lib/blog-data"
 
-const articles = [
-  {
-    id: 1,
-    icon: TrendingUp,
-    category: "Growth",
-    titleKey: "seo" as const,
-    readTime: 5,
+const articleIcons = {
+  "how-to-get-clients-online": TrendingUp,
+  "automation-saves-time": Zap,
+  "website-converts-visitors": Target,
+}
+
+const articleGradients = {
+  "how-to-get-clients-online": {
     gradient: "from-blue-500/20 to-cyan-500/20",
     iconBg: "bg-blue-500/15 group-hover:bg-blue-500/25",
   },
-  {
-    id: 2,
-    icon: Zap,
-    category: "Automation",
-    titleKey: "automation" as const,
-    readTime: 4,
+  "automation-saves-time": {
     gradient: "from-amber-500/20 to-orange-500/20",
     iconBg: "bg-amber-500/15 group-hover:bg-amber-500/25",
   },
-  {
-    id: 3,
-    icon: Target,
-    category: "Leads",
-    titleKey: "leads" as const,
-    readTime: 6,
+  "website-converts-visitors": {
     gradient: "from-emerald-500/20 to-teal-500/20",
     iconBg: "bg-emerald-500/15 group-hover:bg-emerald-500/25",
-  },
-]
-
-// Article titles by language
-const articleTitles: Record<string, Record<string, string>> = {
-  en: {
-    seo: "5 Ways to Rank Higher on Google in 2024",
-    automation: "How Automation Saves 10+ Hours Per Week",
-    leads: "Turn Website Visitors into Paying Customers",
-  },
-  es: {
-    seo: "5 Formas de Posicionarte en Google en 2024",
-    automation: "Como la Automatizacion Ahorra 10+ Horas por Semana",
-    leads: "Convierte Visitantes Web en Clientes",
-  },
-  nl: {
-    seo: "5 Manieren om Hoger te Ranken in Google in 2024",
-    automation: "Hoe Automatisering 10+ Uur per Week Bespaart",
-    leads: "Verander Website Bezoekers in Betalende Klanten",
-  },
-  fr: {
-    seo: "5 Facons de Mieux Ranker sur Google en 2024",
-    automation: "Comment l'Automatisation Economise 10+ Heures par Semaine",
-    leads: "Transformez les Visiteurs en Clients Payants",
-  },
-  de: {
-    seo: "5 Wege um 2024 bei Google höher zu ranken",
-    automation: "Wie Automatisierung 10+ Stunden pro Woche spart",
-    leads: "Verwandeln Sie Website-Besucher in Kunden",
   },
 }
 
 export default function Insights() {
   const { t, language } = useLanguage()
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null)
-
-  const handleReadMore = () => {
-    // Could link to individual blog posts
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-  }
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
   return (
     <section id="insights" className="py-28 bg-[#050810] relative overflow-hidden">
@@ -90,15 +49,17 @@ export default function Insights() {
 
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {articles.map((article) => {
-            const IconComponent = article.icon
-            const isHovered = hoveredCard === article.id
+          {blogArticles.map((article) => {
+            const IconComponent = articleIcons[article.slug as keyof typeof articleIcons] || TrendingUp
+            const styles = articleGradients[article.slug as keyof typeof articleGradients] || articleGradients["how-to-get-clients-online"]
+            const isHovered = hoveredCard === article.slug
+            const translation = article.translations[language] || article.translations.en
 
             return (
-              <button
-                key={article.id}
-                onClick={handleReadMore}
-                onMouseEnter={() => setHoveredCard(article.id)}
+              <Link
+                key={article.slug}
+                href={`/insights/${article.slug}`}
+                onMouseEnter={() => setHoveredCard(article.slug)}
                 onMouseLeave={() => setHoveredCard(null)}
                 className="group text-left"
               >
@@ -109,7 +70,7 @@ export default function Insights() {
                 >
                   {/* Gradient overlay */}
                   <div 
-                    className={`absolute inset-0 bg-gradient-to-br ${article.gradient} transition-opacity duration-500 ${
+                    className={`absolute inset-0 bg-gradient-to-br ${styles.gradient} transition-opacity duration-500 ${
                       isHovered ? "opacity-100" : "opacity-0"
                     }`}
                   />
@@ -117,7 +78,7 @@ export default function Insights() {
                   <div className="relative z-10">
                     {/* Category & Read time */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`${article.iconBg} px-3 py-1.5 rounded-full transition-all duration-300`}>
+                      <div className={`${styles.iconBg} px-3 py-1.5 rounded-full transition-all duration-300`}>
                         <span className="text-xs font-medium text-white/80">{article.category}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-white/40 text-xs">
@@ -128,7 +89,7 @@ export default function Insights() {
 
                     {/* Icon */}
                     <div
-                      className={`w-12 h-12 rounded-xl ${article.iconBg} flex items-center justify-center mb-4 transition-all duration-500 ${
+                      className={`w-12 h-12 rounded-xl ${styles.iconBg} flex items-center justify-center mb-4 transition-all duration-500 ${
                         isHovered ? "scale-110" : ""
                       }`}
                     >
@@ -141,8 +102,13 @@ export default function Insights() {
                     <h3 className={`text-lg font-semibold mb-3 leading-snug transition-colors duration-300 ${
                       isHovered ? "text-white" : "text-white/90"
                     }`}>
-                      {articleTitles[language]?.[article.titleKey] || articleTitles.en[article.titleKey]}
+                      {translation.title}
                     </h3>
+
+                    {/* Excerpt */}
+                    <p className="text-white/40 text-sm mb-4 line-clamp-2">
+                      {translation.excerpt}
+                    </p>
 
                     {/* Read more link */}
                     <div className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-300 ${
@@ -155,7 +121,7 @@ export default function Insights() {
                     </div>
                   </div>
                 </div>
-              </button>
+              </Link>
             )
           })}
         </div>
