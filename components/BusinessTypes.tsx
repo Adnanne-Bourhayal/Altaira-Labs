@@ -7,32 +7,27 @@ const businessTypes = [
   {
     icon: Car,
     title: "Car Dealers",
-    description: "Showcase inventory and capture leads automatically",
-    color: "from-blue-500 to-cyan-500",
+    description: "Showcase inventory and capture leads",
   },
   {
     icon: Scissors,
     title: "Hair Salons",
-    description: "Online booking and automated reminders",
-    color: "from-pink-500 to-rose-500",
+    description: "Online booking and reminders",
   },
   {
     icon: Bike,
     title: "Bike Shops",
-    description: "Product catalog and service scheduling",
-    color: "from-green-500 to-emerald-500",
+    description: "Catalog and service scheduling",
   },
   {
     icon: UtensilsCrossed,
     title: "Restaurants",
-    description: "Digital menu and table reservations",
-    color: "from-orange-500 to-amber-500",
+    description: "Menu and table reservations",
   },
   {
     icon: Stethoscope,
     title: "Clinics",
-    description: "Patient booking and communication",
-    color: "from-purple-500 to-violet-500",
+    description: "Patient booking system",
   },
 ]
 
@@ -44,23 +39,24 @@ export default function BusinessTypes() {
   }
 
   return (
-    <section id="businesses" className="py-24 bg-[#0A0A0A] relative">
-      {/* Background */}
-      <div className="absolute inset-0 bg-grid opacity-20" />
+    <section id="businesses" className="py-28 bg-[#050810] relative">
+      {/* Subtle background */}
+      <div className="absolute inset-0 bg-grid opacity-30" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-500/5 blur-3xl rounded-full" />
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">
             Built for your business
           </h2>
-          <p className="text-lg text-white/50 max-w-xl mx-auto">
+          <p className="text-lg text-white/40 max-w-md mx-auto">
             Tailored solutions for every industry
           </p>
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
           {businessTypes.map((business, index) => {
             const IconComponent = business.icon
             const isHovered = hoveredCard === index
@@ -74,27 +70,27 @@ export default function BusinessTypes() {
                 className="group relative text-left"
               >
                 <div
-                  className={`relative h-full bg-white/[0.03] border border-white/10 rounded-2xl p-6 transition-all duration-300 ${
-                    isHovered ? "border-white/20 bg-white/[0.05] -translate-y-1" : ""
+                  className={`relative h-full bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 transition-all duration-300 ${
+                    isHovered ? "border-blue-500/30 bg-blue-500/5 -translate-y-1" : ""
                   }`}
                 >
                   {/* Icon */}
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${business.color} flex items-center justify-center mb-4 transition-transform duration-300 ${
-                      isHovered ? "scale-110" : ""
+                    className={`w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 transition-all duration-300 ${
+                      isHovered ? "bg-blue-500/20 scale-110" : ""
                     }`}
                   >
-                    <IconComponent className="w-6 h-6 text-white" />
+                    <IconComponent className={`w-5 h-5 transition-colors duration-300 ${isHovered ? "text-blue-400" : "text-blue-400/70"}`} />
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-lg font-semibold text-white mb-2">{business.title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed mb-4">{business.description}</p>
+                  <h3 className="text-base font-semibold text-white mb-1.5">{business.title}</h3>
+                  <p className="text-white/40 text-sm leading-relaxed mb-3">{business.description}</p>
 
                   {/* CTA */}
-                  <div className="flex items-center space-x-1 text-blue-400 text-sm font-medium">
+                  <div className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-300 ${isHovered ? "text-blue-400" : "text-white/30"}`}>
                     <span>See Example</span>
-                    <ArrowRight className={`w-4 h-4 transition-transform ${isHovered ? "translate-x-1" : ""}`} />
+                    <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isHovered ? "translate-x-0.5" : ""}`} />
                   </div>
                 </div>
 

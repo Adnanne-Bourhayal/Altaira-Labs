@@ -45,8 +45,10 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-black/80 backdrop-blur-xl border-b border-white/5" : "bg-transparent"
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+        isScrolled 
+          ? "bg-[#050810]/90 backdrop-blur-xl border-b border-white/5" 
+          : "bg-transparent"
       }`}
     >
       <nav className="container mx-auto px-6 py-4">
@@ -59,7 +61,7 @@ export default function Header() {
               <button
                 key={item.href}
                 onClick={() => handleNavClick(item.href)}
-                className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-medium"
+                className="text-white/60 hover:text-white transition-colors duration-300 text-sm font-medium"
               >
                 {item.label}
               </button>
@@ -69,15 +71,15 @@ export default function Header() {
             <div className="relative">
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center space-x-1.5 text-white/70 hover:text-white transition-colors text-sm"
+                className="flex items-center space-x-1.5 text-white/60 hover:text-white transition-colors text-sm"
               >
                 <Globe className="w-4 h-4" />
                 <span>{languages.find(l => l.code === currentLang)?.code.toUpperCase()}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isLangOpen ? "rotate-180" : ""}`} />
               </button>
 
               {isLangOpen && (
-                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden min-w-[140px]">
+                <div className="absolute top-full right-0 mt-3 bg-[#0a1020]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden min-w-[140px] shadow-xl shadow-black/20">
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
@@ -85,7 +87,7 @@ export default function Header() {
                         setCurrentLang(lang.code)
                         setIsLangOpen(false)
                       }}
-                      className={`w-full px-4 py-2.5 text-left text-sm hover:bg-white/10 transition-colors ${
+                      className={`w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 transition-colors ${
                         currentLang === lang.code ? "text-blue-400" : "text-white/70"
                       }`}
                     >
@@ -99,7 +101,7 @@ export default function Header() {
             {/* Primary CTA */}
             <button
               onClick={handleContactClick}
-              className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 text-white hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105"
+              className="relative bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 animate-pulse-glow"
             >
               Get Free Proposal
             </button>
@@ -107,7 +109,7 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white/70 hover:text-white"
+            className="md:hidden text-white/70 hover:text-white p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -122,14 +124,14 @@ export default function Header() {
                 <button
                   key={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className="text-white/70 hover:text-white transition-colors text-left text-sm font-medium"
+                  className="text-white/70 hover:text-white transition-colors text-left text-sm font-medium py-2"
                 >
                   {item.label}
                 </button>
               ))}
 
               {/* Mobile Language */}
-              <div className="flex items-center space-x-2 text-white/50 text-sm">
+              <div className="flex items-center space-x-2 text-white/50 text-sm py-2">
                 <Globe className="w-4 h-4" />
                 <select
                   value={currentLang}
@@ -137,7 +139,7 @@ export default function Header() {
                   className="bg-transparent text-white/70 text-sm focus:outline-none"
                 >
                   {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code} className="bg-black">
+                    <option key={lang.code} value={lang.code} className="bg-[#0a1020]">
                       {lang.label}
                     </option>
                   ))}
@@ -146,7 +148,7 @@ export default function Header() {
 
               <button
                 onClick={handleContactClick}
-                className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold w-fit text-white"
+                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-full text-sm font-semibold w-full text-white shadow-lg shadow-blue-500/30"
               >
                 Get Free Proposal
               </button>
