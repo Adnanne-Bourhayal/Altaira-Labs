@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { LanguageProvider } from "@/lib/language-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,17 +12,17 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Altaira Labs - Get More Clients. Automatically.",
+  title: "Altaira Labs - More Clients. Less Manual Work.",
   description:
-    "We build websites and smart systems that help your business grow 24/7. Websites, booking systems & automation for local businesses.",
-  keywords: "web design, booking system, automation, business website, digital agency, Belgium, Spain",
+    "Digital growth agency helping businesses grow online with websites, automation, and lead generation systems that work 24/7. Get more clients on autopilot.",
+  keywords: "digital agency, lead generation, business automation, website design, booking systems, growth marketing, Belgium, Spain, Netherlands",
   authors: [{ name: "Altaira Labs" }],
   openGraph: {
-    title: "Altaira Labs - Get More Clients. Automatically.",
-    description: "Websites, booking systems & automation for local businesses",
+    title: "Altaira Labs - More Clients. Less Manual Work.",
+    description: "Digital growth agency - websites, automation & lead generation that works 24/7",
     type: "website",
   },
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export const viewport: Viewport = {
@@ -41,7 +42,9 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className="font-sans antialiased">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )

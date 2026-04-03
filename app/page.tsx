@@ -4,6 +4,7 @@ import BusinessTypes from "@/components/BusinessTypes"
 import Examples from "@/components/Examples"
 import Pricing from "@/components/Pricing"
 import Results from "@/components/Results"
+import Insights from "@/components/Insights"
 import Contact from "@/components/Contact"
 import Footer from "@/components/Footer"
 
@@ -16,6 +17,7 @@ export default function Home() {
       <Examples />
       <Pricing />
       <Results />
+      <Insights />
       <Contact />
       <Footer />
     </main>
