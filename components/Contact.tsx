@@ -15,17 +15,44 @@ export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCalendly, setShowCalendly] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    setTimeout(() => {
-      setIsSubmitted(false)
+    setErrorMessage("")
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: formData.name,
+          businessName: formData.business,
+          email: formData.email,
+          industry: "",
+          goals: "",
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to submit lead")
+      }
+
+      setIsSubmitted(true)
       setFormData({ name: "", business: "", email: "" })
-    }, 5000)
+
+      setTimeout(() => {
+        setIsSubmitted(false)
+      }, 5000)
+    } catch (error) {
+      console.error("Lead submission error:", error)
+      setErrorMessage("Something went wrong. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +85,6 @@ export default function Contact() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Form */}
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-7 hover:border-white/[0.1] transition-all duration-300">
               {isSubmitted ? (
                 <div className="text-center py-12">
@@ -112,20 +138,21 @@ export default function Contact() {
                     />
                   </div>
 
-                  {/* Enhanced Primary Button */}
+                  {errorMessage && (
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full relative group py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 text-white disabled:opacity-50 mt-2 overflow-hidden hover:scale-[1.02]"
                   >
-                    {/* Gradient background */}
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 bg-[length:200%_100%] group-hover:animate-shimmer" />
-                    {/* Glow effect */}
                     <span className="absolute inset-0 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50" />
                     <span className="absolute -inset-1 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                    {/* Top highlight */}
                     <span className="absolute inset-[1px] rounded-xl bg-gradient-to-b from-white/15 to-transparent opacity-60" />
-                    {/* Content */}
                     {isSubmitting ? (
                       <>
                         <div className="relative w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -142,9 +169,7 @@ export default function Contact() {
               )}
             </div>
 
-            {/* Quick Actions */}
             <div className="space-y-4">
-              {/* WhatsApp Button - Enhanced */}
               <button
                 onClick={handleWhatsApp}
                 className="w-full group bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:border-emerald-500/40 hover:bg-emerald-500/[0.08] transition-all duration-300 text-left hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/10"
@@ -163,7 +188,6 @@ export default function Contact() {
                 </div>
               </button>
 
-              {/* Calendar Button - Fixed and Enhanced */}
               <button
                 onClick={handleCalendar}
                 className="w-full group bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:border-blue-500/40 hover:bg-blue-500/[0.08] transition-all duration-300 text-left hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10"
@@ -182,7 +206,6 @@ export default function Contact() {
                 </div>
               </button>
 
-              {/* What You Get Card */}
               <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:border-white/[0.1] transition-all duration-300">
                 <h4 className="text-white font-semibold mb-3 text-sm">{t.contact.whatYouGet}</h4>
                 <ul className="space-y-2">
@@ -202,33 +225,27 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* Contact info */}
           <div className="text-center mt-10 text-white/30 text-sm">
             <p>altairalabs@gmail.com | +34 694 908 262</p>
           </div>
         </div>
       </section>
 
-      {/* Calendly Modal */}
       {showCalendly && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowCalendly(false)}
           />
-          
-          {/* Modal */}
+
           <div className="relative w-full max-w-3xl h-[700px] bg-[#0a0f1a] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-            {/* Close button */}
             <button
               onClick={() => setShowCalendly(false)}
               className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
             >
               <X className="w-5 h-5 text-white" />
             </button>
-            
-            {/* Calendly iframe */}
+
             <iframe
               src="https://calendly.com/altairalabs/30min"
               className="w-full h-full"
