@@ -4,6 +4,9 @@ This repository contains a full-stack application developed to demonstrate real-
 
 The project models a lead management workflow as a controlled environment to apply scalable and maintainable design patterns.
 
+<img width="1440" height="849" alt="Captura de pantalla 2026-04-08 a las 23 40 37" src="https://github.com/user-attachments/assets/f0bb5934-65ae-4598-b5c6-1a100cbe1848" />
+
+
 ---
 
 ## Architecture
@@ -53,6 +56,9 @@ Key aspects:
 - Centralized exception management
 - Environment-driven configuration
 
+<img width="1440" height="814" alt="Captura de pantalla 2026-04-08 a las 23 44 21" src="https://github.com/user-attachments/assets/a1155eba-3596-4a1b-9b41-2a642fab56a5" />
+
+
 ---
 
 ## Security Considerations
@@ -66,6 +72,9 @@ Although simplified for demonstration purposes, the system includes practical se
 - Environment variable isolation (no secrets in codebase)
 
 These decisions reflect common backend protections used in production environments.
+
+<img width="1440" height="849" alt="Captura de pantalla 2026-04-08 a las 23 41 01" src="https://github.com/user-attachments/assets/1eb388d9-fdd8-47fd-b2d3-9c7f999640e2" />
+
 
 ---
 
