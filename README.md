@@ -1,31 +1,36 @@
-# 🚀 Altaira Labs – Lead Management System
+# Altaira Labs – Full Stack System
 
-A full-stack production-ready web application designed to capture, manage, and process business leads efficiently.
+This repository contains a full-stack application built to demonstrate real-world software engineering skills, including backend architecture, API design, database integration, and production deployment.
 
-Built with a modern architecture combining Next.js (frontend), Spring Boot (backend), and PostgreSQL (Neon DB), deployed on Vercel and Render.
-
----
-
-## 🌐 Live Demo
-
-Frontend: https://altairalabs.vercel.app  
-Backend API: https://altaira-labs-1.onrender.com  
+The project simulates a lead management workflow, focusing on clean architecture, scalability, and deployment practices.
 
 ---
 
-## 🧠 Architecture
+## Overview
 
-Client (Browser)  
+This is not a tutorial-based project.  
+It is a practical implementation of a production-like system with:
+
+- Backend API (Java + Spring Boot)
+- Frontend application (Next.js)
+- Database integration (PostgreSQL)
+- Cloud deployment (Vercel + Render)
+
+---
+
+## Architecture
+
+Frontend (Next.js - Vercel)  
 ↓  
-Next.js (Vercel)  
-↓ (API Proxy)  
-Spring Boot (Render)  
+API Proxy (Next.js server routes)  
 ↓  
-PostgreSQL (Neon)  
+Backend (Spring Boot - Render)  
+↓  
+Database (PostgreSQL - Neon)  
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 Frontend:
 - Next.js (App Router)
@@ -36,6 +41,7 @@ Backend:
 - Java 21
 - Spring Boot 3
 - Spring Data JPA
+- Hibernate
 
 Database:
 - PostgreSQL (Neon)
@@ -47,24 +53,45 @@ Infrastructure:
 
 ---
 
-## ✨ Features
+## Backend Highlights
 
-- Lead capture form (production-ready)
-- Backend API with validation
-- PostgreSQL persistence
-- Rate limiting (anti-spam)
-- API proxy (no CORS issues)
-- Error handling
-- Health endpoints
+- RESTful API design
+- Layered architecture (Controller / Service / Repository)
+- Input validation (Jakarta Validation)
+- Global exception handling
+- Rate limiting (Bucket4j)
+- Health monitoring (Spring Actuator)
+- Environment-based configuration
 
 ---
 
-## 📡 API Endpoints
+## Frontend Highlights
 
-POST /api/v1/leads  
-GET /api/v1/leads  
-GET /api/v1/leads/{id}  
-PATCH /api/v1/leads/{id}/status  
+- App Router architecture (Next.js)
+- API proxy to handle backend communication
+- Form handling with async requests
+- Error and loading state management
+- Environment variable configuration
+- Modular component structure
+
+---
+
+## Key Features
+
+- Lead creation and persistence
+- Backend validation and error handling
+- Secure internal API routing
+- Production deployment (frontend + backend)
+- Database integration with real queries
+
+---
+
+## API Endpoints
+
+POST   /api/v1/leads  
+GET    /api/v1/leads  
+GET    /api/v1/leads/{id}  
+PATCH  /api/v1/leads/{id}/status  
 
 Health:
 GET /api/v1/health  
@@ -72,34 +99,21 @@ GET /actuator/health
 
 ---
 
-## 🧪 Example Request
-
-curl -X POST https://altaira-labs-1.onrender.com/api/v1/leads \
--H "Content-Type: application/json" \
--d '{
-  "fullName": "John Doe",
-  "businessName": "My Company",
-  "email": "john@example.com",
-  "industry": "Marketing",
-  "goals": "Grow online presence",
-  "website": ""
-}'
-
----
-
-## 🛠️ Local Setup
+## Local Setup
 
 Clone:
 
 git clone https://github.com/Adnanne-Bourhayal/Altaira-Labs.git  
 cd Altaira-Labs  
 
-Backend:
+---
+
+### Backend
 
 cd backend  
 cp .env.example .env  
 
-Edit:
+Configure:
 
 SPRING_DATASOURCE_URL=your_neon_url  
 SPRING_DATASOURCE_USERNAME=your_user  
@@ -109,12 +123,14 @@ Run:
 
 ./mvnw spring-boot:run  
 
-Frontend:
+---
+
+### Frontend
 
 cd ..  
 cp .env.local.example .env.local  
 
-Edit:
+Configure:
 
 NEXT_PUBLIC_API_URL=http://localhost:8080  
 
@@ -125,46 +141,33 @@ npm run dev
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
-Frontend:
-- Vercel
-- Connected to GitHub
+Frontend deployed on Vercel  
+Backend deployed on Render  
 
-Backend:
-- Render
-- Docker build
+Both environments are connected to GitHub for continuous deployment.
 
 ---
 
-## 🎯 Purpose
+## What This Project Demonstrates
 
-This project demonstrates:
-
-- Full-stack development
-- Real production deployment
-- Backend + database integration
-- Modern frontend architecture
-
----
-
-## 📈 Future Improvements
-
-- Authentication (JWT)
-- Admin dashboard
-- Email notifications
-- Analytics
-- CRM features
+- Full-stack development (frontend + backend)
+- API design and integration
+- Database modeling and persistence
+- Environment configuration
+- Debugging and production troubleshooting
+- Deployment of distributed systems
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Adnanne Bourhayal  
 https://github.com/Adnanne-Bourhayal  
 
 ---
 
-## ⭐ Notes
+## Note
 
-This is a real production-ready system, not a tutorial project.
+This project was built to demonstrate engineering capabilities and practical understanding of modern web architectures.
