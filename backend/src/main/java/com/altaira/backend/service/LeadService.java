@@ -1,8 +1,8 @@
 package com.altaira.backend.service;
 
 import com.altaira.backend.dto.lead.CreateLeadRequest;
+import com.altaira.backend.dto.lead.LeadResponse;
 import com.altaira.backend.entity.LeadEntity;
-import com.altaira.backend.model.Lead;
 import com.altaira.backend.repository.LeadRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class LeadService {
         this.leadRepository = leadRepository;
     }
 
-    public Lead createLead(CreateLeadRequest request) {
+    public LeadResponse createLead(CreateLeadRequest request) {
         LeadEntity entity = new LeadEntity();
         entity.setFullName(request.getFullName());
         entity.setBusinessName(request.getBusinessName());
@@ -32,23 +32,23 @@ public class LeadService {
         return map(saved);
     }
 
-    public List<Lead> getAllLeads() {
+    public List<LeadResponse> getAllLeads() {
         return leadRepository.findAll()
                 .stream()
                 .map(this::map)
                 .toList();
     }
 
-    private Lead map(LeadEntity e) {
-        return new Lead(
-                e.getId(),
-                e.getFullName(),
-                e.getBusinessName(),
-                e.getEmail(),
-                e.getIndustry(),
-                e.getGoals(),
-                e.getStatus(),
-                e.getCreatedAt()
+    private LeadResponse map(LeadEntity entity) {
+        return new LeadResponse(
+                entity.getId(),
+                entity.getFullName(),
+                entity.getBusinessName(),
+                entity.getEmail(),
+                entity.getIndustry(),
+                entity.getGoals(),
+                entity.getStatus(),
+                entity.getCreatedAt()
         );
     }
 }

@@ -1,7 +1,7 @@
 package com.altaira.backend.controller;
 
 import com.altaira.backend.dto.lead.CreateLeadRequest;
-import com.altaira.backend.model.Lead;
+import com.altaira.backend.dto.lead.LeadResponse;
 import com.altaira.backend.service.LeadService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +22,12 @@ public class LeadController {
     }
 
     @PostMapping
-    public Lead createLead(@Valid @RequestBody CreateLeadRequest request) {
+    public LeadResponse createLead(@Valid @RequestBody CreateLeadRequest request) {
         return leadService.createLead(request);
     }
 
     @GetMapping
-    public List<Lead> getAllLeads() {
+    public List<LeadResponse> getAllLeads() {
         return leadService.getAllLeads();
     }
 }
