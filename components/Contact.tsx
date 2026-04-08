@@ -11,16 +11,17 @@ export default function Contact() {
     name: "",
     business: "",
     email: "",
+    website: "",
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCalendly, setShowCalendly] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setErrorMessage("")
+    setError("")
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads`, {
@@ -32,24 +33,26 @@ export default function Contact() {
           fullName: formData.name,
           businessName: formData.business,
           email: formData.email,
-          industry: "",
-          goals: "",
+          industry: "Website Lead",
+          goals: "Interested in growing the business with Altaira Labs",
+          website: formData.website,
         }),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to submit lead")
+        const data = await response.json()
+        throw new Error(data?.message || data?.error || "Failed to submit form")
       }
 
       setIsSubmitted(true)
-      setFormData({ name: "", business: "", email: "" })
+      setFormData({ name: "", business: "", email: "", website: "" })
 
       setTimeout(() => {
         setIsSubmitted(false)
       }, 5000)
-    } catch (error) {
-      console.error("Lead submission error:", error)
-      setErrorMessage("Something went wrong. Please try again.")
+    } catch (err) {
+      console.error(err)
+      setError("Could not submit the form. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -138,9 +141,22 @@ export default function Contact() {
                     />
                   </div>
 
-                  {errorMessage && (
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="website">Website</label>
+                    <input
+                      type="text"
+                      id="website"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {error && (
                     <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                      {errorMessage}
+                      {error}
                     </div>
                   )}
 
@@ -153,6 +169,7 @@ export default function Contact() {
                     <span className="absolute inset-0 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50" />
                     <span className="absolute -inset-1 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
                     <span className="absolute inset-[1px] rounded-xl bg-gradient-to-b from-white/15 to-transparent opacity-60" />
+
                     {isSubmitting ? (
                       <>
                         <div className="relative w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

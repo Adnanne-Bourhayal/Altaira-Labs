@@ -24,6 +24,8 @@ public class CreateLeadRequest {
     @Size(max = 1000, message = "Goals must be at most 1000 characters")
     private String goals;
 
+    private String website;
+
     public String getFullName() {
         return fullName;
     }
@@ -62,5 +64,13 @@ public class CreateLeadRequest {
 
     public void setGoals(String goals) {
         this.goals = goals;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 }
