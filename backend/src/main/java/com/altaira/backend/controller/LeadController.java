@@ -41,19 +41,13 @@ public class LeadController {
     }
 
     @PatchMapping("/{id}/status")
-    public LeadResponse updateStatus(
-            @PathVariable UUID id,
-            @RequestBody Map<String, String> body
-    ) {
+    public LeadResponse updateStatus(@PathVariable UUID id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
         return leadService.updateStatus(id, status);
     }
 
     @PostMapping
-    public ResponseEntity<?> createLead(
-            @Valid @RequestBody CreateLeadRequest request,
-            HttpServletRequest httpRequest
-    ) {
+    public ResponseEntity<?> createLead(@Valid @RequestBody CreateLeadRequest request, HttpServletRequest httpRequest) {
         String ip = httpRequest.getRemoteAddr();
         Bucket bucket = rateLimiterService.resolveBucket(ip);
 
