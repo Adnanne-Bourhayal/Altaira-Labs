@@ -1,20 +1,8 @@
 # Altaira Labs – Full Stack System
 
-This repository contains a full-stack application built to demonstrate real-world software engineering skills, including backend architecture, API design, database integration, and production deployment.
+This repository contains a full-stack application developed to demonstrate real-world software engineering capabilities, with a focus on backend architecture, system design, security, and production deployment.
 
-The project simulates a lead management workflow, focusing on clean architecture, scalability, and deployment practices.
-
----
-
-## Overview
-
-This is not a tutorial-based project.  
-It is a practical implementation of a production-like system with:
-
-- Backend API (Java + Spring Boot)
-- Frontend application (Next.js)
-- Database integration (PostgreSQL)
-- Cloud deployment (Vercel + Render)
+The project models a lead management workflow as a controlled environment to apply scalable and maintainable design patterns.
 
 ---
 
@@ -22,7 +10,7 @@ It is a practical implementation of a production-like system with:
 
 Frontend (Next.js - Vercel)  
 ↓  
-API Proxy (Next.js server routes)  
+API Proxy Layer (Server Routes)  
 ↓  
 Backend (Spring Boot - Render)  
 ↓  
@@ -40,53 +28,68 @@ Frontend:
 Backend:
 - Java 21
 - Spring Boot 3
-- Spring Data JPA
-- Hibernate
+- Spring Data JPA / Hibernate
 
 Database:
 - PostgreSQL (Neon)
 
 Infrastructure:
-- Vercel
-- Render
-- GitHub
+- Vercel (frontend)
+- Render (backend)
 
 ---
 
-## Backend Highlights
+## Backend Design
 
-- RESTful API design
-- Layered architecture (Controller / Service / Repository)
-- Input validation (Jakarta Validation)
-- Global exception handling
-- Rate limiting (Bucket4j)
-- Health monitoring (Spring Actuator)
-- Environment-based configuration
+The backend follows a layered architecture:
+
+- Controller layer (HTTP handling)
+- Service layer (business logic)
+- Repository layer (data access)
+
+Key aspects:
+- RESTful API structure
+- DTO-based request/response handling
+- Centralized exception management
+- Environment-driven configuration
 
 ---
 
-## Frontend Highlights
+## Security Considerations
+
+Although simplified for demonstration purposes, the system includes practical security-oriented decisions inspired by real-world requirements:
+
+- Rate limiting (Bucket4j) to mitigate abuse and automated submissions  
+- Input validation using Jakarta Validation  
+- Separation between public endpoints and internal routes  
+- API proxy layer to avoid direct exposure of backend services  
+- Environment variable isolation (no secrets in codebase)
+
+These decisions reflect common backend protections used in production environments.
+
+---
+
+## Frontend Design
 
 - App Router architecture (Next.js)
-- API proxy to handle backend communication
-- Form handling with async requests
-- Error and loading state management
-- Environment variable configuration
-- Modular component structure
+- Server-side API proxy to isolate backend communication
+- Structured component system
+- Controlled async state handling (loading / error)
+- Clean separation between UI and data logic
 
 ---
 
-## Key Features
+## Core Functionality
 
 - Lead creation and persistence
 - Backend validation and error handling
-- Secure internal API routing
-- Production deployment (frontend + backend)
-- Database integration with real queries
+- Controlled API exposure
+- Integration between distributed services (frontend ↔ backend ↔ database)
+- Production deployment across multiple platforms
 
 ---
 
-## API Endpoints
+## API Overview
 
 POST   /api/v1/leads  
 GET    /api/v1/leads  
@@ -99,65 +102,27 @@ GET /actuator/health
 
 ---
 
-## Local Setup
-
-Clone:
-
-git clone https://github.com/Adnanne-Bourhayal/Altaira-Labs.git  
-cd Altaira-Labs  
-
----
-
-### Backend
-
-cd backend  
-cp .env.example .env  
-
-Configure:
-
-SPRING_DATASOURCE_URL=your_neon_url  
-SPRING_DATASOURCE_USERNAME=your_user  
-SPRING_DATASOURCE_PASSWORD=your_password  
-
-Run:
-
-./mvnw spring-boot:run  
-
----
-
-### Frontend
-
-cd ..  
-cp .env.local.example .env.local  
-
-Configure:
-
-NEXT_PUBLIC_API_URL=http://localhost:8080  
-
-Run:
-
-npm install  
-npm run dev  
-
----
-
 ## Deployment
 
-Frontend deployed on Vercel  
-Backend deployed on Render  
+The system is deployed as a distributed architecture:
 
-Both environments are connected to GitHub for continuous deployment.
+- Frontend: Vercel  
+- Backend: Render  
+- Database: Neon (serverless PostgreSQL)  
+
+This setup reflects a typical modern cloud-based architecture.
 
 ---
 
-## What This Project Demonstrates
+## Engineering Focus
 
-- Full-stack development (frontend + backend)
-- API design and integration
-- Database modeling and persistence
-- Environment configuration
+This project emphasizes:
+
+- Backend system design with Java (Spring Boot)
+- API architecture and integration
+- Handling real-world deployment issues (CORS, proxies, environment configs)
+- Secure data handling practices
 - Debugging and production troubleshooting
-- Deployment of distributed systems
 
 ---
 
@@ -170,4 +135,4 @@ https://github.com/Adnanne-Bourhayal
 
 ## Note
 
-This project was built to demonstrate engineering capabilities and practical understanding of modern web architectures.
+This repository is intended as a technical demonstration of engineering skills and architectural understanding, not as a commercial product.
