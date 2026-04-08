@@ -32,23 +32,46 @@ public class LeadController {
         this.rateLimiterService = rateLimiterService;
     }
 
+    private boolean isAuthorizedInternalRequest(HttpServletRequest request) {
+        String providedToken = request.getHeader("X-Internal-API-Token");
+        String expectedToken = System.getenv("INTERNAL_API_TOKEN");
+
+        return expectedToken != null && expectedToken.equals(providedToken);
+    }
+
     @GetMapping
-    public List<LeadResponse> getAllLeads() {
-        return leadService.getAllLeads();
+    public ResponseEntity<?> getAllLeads(HttpServletRequest request) {
+        if (!isAuthorizedInternalRequest(request)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        List<LeadResponse> leads = leadService.getAllLeads();
+        return ResponseEntity.ok(leads);
     }
 
     @GetMapping("/{id}")
-    public LeadResponse getLeadById(@PathVariable UUID id) {
-        return leadService.getLeadById(id);
+    public ResponseEntity<?> getLeadById(@PathVariable UUID id, HttpServletRequest request) {
+        if (!isAuthorizedInternalRequest(request)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        LeadResponse lead = leadService.getLeadById(id);
+        return ResponseEntity.ok(lead);
     }
 
     @PatchMapping("/{id}/status")
-    public LeadResponse updateStatus(
+    public ResponseEntity<?> updateStatus(
             @PathVariable UUID id,
-            @RequestBody Map<String, String> body
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request
     ) {
+        if (!isAuthorizedInternalRequest(request)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         String status = body.get("status");
-        return leadService.updateStatus(id, status);
+        LeadResponse updated = leadService.updateStatus(id, status);
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping

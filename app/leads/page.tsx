@@ -1,7 +1,9 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { RefreshCw, Search, Users, Mail, Building2, Activity } from "lucide-react"
+import { RefreshCw, Search, Users, Mail, Building2, Activity, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 type Lead = {
   id: string
@@ -15,6 +17,7 @@ type Lead = {
 }
 
 export default function LeadsPage() {
+  const router = useRouter()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -32,7 +35,7 @@ export default function LeadsPage() {
 
       setError("")
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads`, {
+      const response = await fetch("/api/internal/leads", {
         cache: "no-store",
       })
 
@@ -49,6 +52,12 @@ export default function LeadsPage() {
       setLoading(false)
       setRefreshing(false)
     }
+  }
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" })
+    router.push("/login")
+    router.refresh()
   }
 
   useEffect(() => {
@@ -85,14 +94,24 @@ export default function LeadsPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => fetchLeads(true)}
-            disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => fetchLeads(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-300 hover:bg-red-500/20 transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
@@ -149,6 +168,8 @@ export default function LeadsPage() {
             >
               <option value="all">All statuses</option>
               <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="closed">Closed</option>
             </select>
           </div>
         </div>
@@ -191,7 +212,11 @@ export default function LeadsPage() {
                   key={lead.id}
                   className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/5 text-sm hover:bg-white/[0.02] transition-colors"
                 >
-                  <div className="col-span-2 font-medium text-white">{lead.fullName}</div>
+                  <div className="col-span-2 font-medium text-white">
+                    <Link href={`/leads/${lead.id}`} className="hover:text-blue-300 transition-colors">
+                      {lead.fullName}
+                    </Link>
+                  </div>
                   <div className="col-span-2 text-white/80">{lead.businessName}</div>
                   <div className="col-span-3 text-white/70 break-all">{lead.email}</div>
                   <div className="col-span-2 text-white/60">{lead.industry || "-"}</div>
@@ -209,9 +234,10 @@ export default function LeadsPage() {
 
             <div className="grid grid-cols-1 gap-4 lg:hidden">
               {filteredLeads.map((lead) => (
-                <div
+                <Link
                   key={lead.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+                  href={`/leads/${lead.id}`}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 block"
                 >
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div>
@@ -235,7 +261,7 @@ export default function LeadsPage() {
                       {new Date(lead.createdAt).toLocaleString()}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </>

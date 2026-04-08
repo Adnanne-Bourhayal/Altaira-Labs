@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class LeadService {
@@ -38,6 +39,23 @@ public class LeadService {
                 .map(this::map)
                 .toList();
     }
+
+    public LeadResponse getLeadById(UUID id) {
+        LeadEntity entity = leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead not found"));
+
+        return map(entity);
+    }
+    public LeadResponse updateStatus(UUID id, String status) {
+    LeadEntity entity = leadRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Lead not found"));
+
+    entity.setStatus(status);
+
+    LeadEntity updated = leadRepository.save(entity);
+
+    return map(updated);
+}
 
     private LeadResponse map(LeadEntity entity) {
         return new LeadResponse(
