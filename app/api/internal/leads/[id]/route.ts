@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server"
+import { isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 type RouteContext = {
   params: Promise<{ id: string }>
 }
 
 export async function GET(_: Request, context: RouteContext) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const { id } = await context.params
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads/${id}`, {

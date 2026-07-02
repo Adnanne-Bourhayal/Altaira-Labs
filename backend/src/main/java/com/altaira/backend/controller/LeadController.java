@@ -2,6 +2,7 @@ package com.altaira.backend.controller;
 
 import com.altaira.backend.dto.lead.CreateLeadRequest;
 import com.altaira.backend.dto.lead.LeadResponse;
+import com.altaira.backend.security.InternalApiTokenService;
 import com.altaira.backend.security.RateLimiterService;
 import com.altaira.backend.service.LeadService;
 import io.github.bucket4j.Bucket;
@@ -24,24 +25,42 @@ public class LeadController {
 
     private final LeadService leadService;
     private final RateLimiterService rateLimiterService;
+    private final InternalApiTokenService internalApiTokenService;
 
-    public LeadController(LeadService leadService, RateLimiterService rateLimiterService) {
+    public LeadController(
+            LeadService leadService,
+            RateLimiterService rateLimiterService,
+            InternalApiTokenService internalApiTokenService
+    ) {
         this.leadService = leadService;
         this.rateLimiterService = rateLimiterService;
+        this.internalApiTokenService = internalApiTokenService;
     }
 
     @GetMapping
-    public List<LeadResponse> getAllLeads() {
+    public List<LeadResponse> getAllLeads(
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+    ) {
+        internalApiTokenService.requireValidToken(internalApiToken);
         return leadService.getAllLeads();
     }
 
     @GetMapping("/{id}")
-    public LeadResponse getLeadById(@PathVariable UUID id) {
+    public LeadResponse getLeadById(
+            @PathVariable UUID id,
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+    ) {
+        internalApiTokenService.requireValidToken(internalApiToken);
         return leadService.getLeadById(id);
     }
 
     @PatchMapping("/{id}/status")
-    public LeadResponse updateStatus(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+    public LeadResponse updateStatus(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+    ) {
+        internalApiTokenService.requireValidToken(internalApiToken);
         String status = body.get("status");
         return leadService.updateStatus(id, status);
     }

@@ -8,10 +8,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class LeadService {
+
+    private static final Set<String> ALLOWED_STATUSES = Set.of("new", "contacted", "closed");
 
     private final LeadRepository leadRepository;
 
@@ -47,15 +51,31 @@ public class LeadService {
         return map(entity);
     }
     public LeadResponse updateStatus(UUID id, String status) {
-    LeadEntity entity = leadRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Lead not found"));
+        String normalizedStatus = normalizeStatus(status);
 
-    entity.setStatus(status);
+        LeadEntity entity = leadRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lead not found"));
 
-    LeadEntity updated = leadRepository.save(entity);
+        entity.setStatus(normalizedStatus);
 
-    return map(updated);
-}
+        LeadEntity updated = leadRepository.save(entity);
+
+        return map(updated);
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.isBlank()) {
+            throw new IllegalArgumentException("Lead status is required");
+        }
+
+        String normalizedStatus = status.trim().toLowerCase(Locale.ROOT);
+
+        if (!ALLOWED_STATUSES.contains(normalizedStatus)) {
+            throw new IllegalArgumentException("Invalid lead status");
+        }
+
+        return normalizedStatus;
+    }
 
     private LeadResponse map(LeadEntity entity) {
         return new LeadResponse(

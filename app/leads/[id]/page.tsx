@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText } from "lucide-react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 
 type Lead = {
   id: string
@@ -18,7 +18,6 @@ type Lead = {
 
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>()
-  const router = useRouter()
   const [lead, setLead] = useState<Lead | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -26,7 +25,7 @@ export default function LeadDetailPage() {
 
   const id = params?.id
 
-  const fetchLead = async () => {
+  const fetchLead = useCallback(async () => {
     try {
       setLoading(true)
       setError("")
@@ -47,7 +46,7 @@ export default function LeadDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
   const updateStatus = async (status: string) => {
     try {
@@ -80,7 +79,7 @@ export default function LeadDetailPage() {
     if (id) {
       fetchLead()
     }
-  }, [id])
+  }, [fetchLead, id])
 
   if (loading) {
     return (
