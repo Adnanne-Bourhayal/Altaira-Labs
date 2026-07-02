@@ -3,19 +3,18 @@ package com.altaira.backend.service;
 import com.altaira.backend.dto.lead.CreateLeadRequest;
 import com.altaira.backend.dto.lead.LeadResponse;
 import com.altaira.backend.entity.LeadEntity;
+import com.altaira.backend.exception.LeadNotFoundException;
+import com.altaira.backend.model.LeadStatus;
 import com.altaira.backend.repository.LeadRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class LeadService {
-
-    private static final Set<String> ALLOWED_STATUSES = Set.of("new", "contacted", "closed");
 
     private final LeadRepository leadRepository;
 
@@ -25,12 +24,12 @@ public class LeadService {
 
     public LeadResponse createLead(CreateLeadRequest request) {
         LeadEntity entity = new LeadEntity();
-        entity.setFullName(request.getFullName());
-        entity.setBusinessName(request.getBusinessName());
-        entity.setEmail(request.getEmail());
-        entity.setIndustry(request.getIndustry());
-        entity.setGoals(request.getGoals());
-        entity.setStatus("new");
+        entity.setFullName(trimRequired(request.getFullName()));
+        entity.setBusinessName(trimRequired(request.getBusinessName()));
+        entity.setEmail(trimRequired(request.getEmail()).toLowerCase(Locale.ROOT));
+        entity.setIndustry(trimOptional(request.getIndustry()));
+        entity.setGoals(trimOptional(request.getGoals()));
+        entity.setStatus(LeadStatus.NEW.value());
         entity.setCreatedAt(Instant.now());
 
         LeadEntity saved = leadRepository.save(entity);
@@ -38,7 +37,7 @@ public class LeadService {
     }
 
     public List<LeadResponse> getAllLeads() {
-        return leadRepository.findAll()
+        return leadRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::map)
                 .toList();
@@ -46,15 +45,16 @@ public class LeadService {
 
     public LeadResponse getLeadById(UUID id) {
         LeadEntity entity = leadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lead not found"));
+                .orElseThrow(() -> new LeadNotFoundException(id));
 
         return map(entity);
     }
+
     public LeadResponse updateStatus(UUID id, String status) {
-        String normalizedStatus = normalizeStatus(status);
+        String normalizedStatus = LeadStatus.parse(status).value();
 
         LeadEntity entity = leadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lead not found"));
+                .orElseThrow(() -> new LeadNotFoundException(id));
 
         entity.setStatus(normalizedStatus);
 
@@ -63,18 +63,16 @@ public class LeadService {
         return map(updated);
     }
 
-    private String normalizeStatus(String status) {
-        if (status == null || status.isBlank()) {
-            throw new IllegalArgumentException("Lead status is required");
+    private String trimRequired(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String trimOptional(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
         }
 
-        String normalizedStatus = status.trim().toLowerCase(Locale.ROOT);
-
-        if (!ALLOWED_STATUSES.contains(normalizedStatus)) {
-            throw new IllegalArgumentException("Invalid lead status");
-        }
-
-        return normalizedStatus;
+        return value.trim();
     }
 
     private LeadResponse map(LeadEntity entity) {

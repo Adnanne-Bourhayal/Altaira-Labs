@@ -28,7 +28,7 @@ Body:
 }
 ```
 
-Response:
+Success response: `201 Created`
 
 ```json
 {
@@ -40,6 +40,28 @@ Response:
   "goals": "Verify lead capture",
   "status": "new",
   "createdAt": "2026-07-02T12:31:20.338299Z"
+}
+```
+
+If the Spring Boot lead service is unavailable, the proxy returns:
+
+```json
+{
+  "error": "Lead service unavailable",
+  "message": "The lead service could not be reached. Please try again in a moment."
+}
+```
+
+Validation errors are passed through from the backend:
+
+```json
+{
+  "error": "Validation failed",
+  "message": "Failed to submit form",
+  "fields": {
+    "fullName": "Full name is required",
+    "email": "Email must be valid"
+  }
 }
 ```
 
@@ -87,6 +109,8 @@ Success:
 GET /api/internal/leads
 Cookie: altaira_admin_auth=true
 ```
+
+Returns leads ordered by newest first.
 
 Unauthenticated response:
 
@@ -154,7 +178,10 @@ POST /api/v1/leads
 Content-Type: application/json
 ```
 
-This endpoint is rate limited by IP.
+Success response: `201 Created`.
+
+This endpoint is rate limited by IP. Required fields are `fullName`, `businessName`, and `email`.
+The backend trims name/business/email input, lowercases email, stores new leads with status `new`, and rejects invalid email or missing required values.
 
 ### List Leads
 
@@ -166,6 +193,8 @@ X-Internal-API-Token: dev-internal-token
 ```
 
 Without a valid token, response is `401`.
+
+Returns leads ordered by newest first.
 
 ### Get Lead by ID
 
@@ -192,7 +221,13 @@ Body:
 { "status": "closed" }
 ```
 
-Invalid status returns `400`.
+Allowed statuses are exactly:
+
+- `new`
+- `contacted`
+- `closed`
+
+Status input is trimmed and normalized to lowercase. Invalid or missing status returns `400`.
 
 ## Error Shapes
 

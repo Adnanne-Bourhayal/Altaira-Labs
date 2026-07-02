@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { backendUrl, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
 import { isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 type RouteContext = {
@@ -12,16 +13,20 @@ export async function GET(_: Request, context: RouteContext) {
 
   const { id } = await context.params
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads/${id}`, {
-    headers: {
-      "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
-    },
-    cache: "no-store",
-  })
+  try {
+    const response = await fetch(backendUrl(`/api/v1/leads/${id}`), {
+      headers: {
+        "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
+      },
+      cache: "no-store",
+    })
 
-  const data = await response.json()
+    const data = await readJson(response)
 
-  return NextResponse.json(data, {
-    status: response.status,
-  })
+    return NextResponse.json(data, {
+      status: response.status,
+    })
+  } catch {
+    return leadServiceUnavailableResponse()
+  }
 }

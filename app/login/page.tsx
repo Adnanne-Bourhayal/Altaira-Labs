@@ -24,15 +24,17 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
+      const data = await response.json().catch(() => ({ error: "Could not sign in" }))
+
       if (!response.ok) {
-        throw new Error("Invalid credentials")
+        throw new Error(data?.error || "Invalid credentials")
       }
 
       router.push("/leads")
       router.refresh()
     } catch (err) {
       console.error(err)
-      setError("Invalid email or password")
+      setError(err instanceof Error ? err.message : "Invalid email or password")
     } finally {
       setLoading(false)
     }
@@ -51,6 +53,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
               className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
               placeholder="admin@altaira.local"
               required
@@ -63,6 +66,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
               placeholder="Enter password"
               required
@@ -70,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               {error}
             </div>
           )}

@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
-import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText } from "lucide-react"
-import { useParams } from "next/navigation"
+import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText, RefreshCw, AlertCircle } from "lucide-react"
+import { useParams, useRouter } from "next/navigation"
+import { LEAD_STATUS_OPTIONS, type LeadStatus, isLeadStatus, statusBadgeClass, statusLabel } from "@/lib/lead-status"
 
 type Lead = {
   id: string
@@ -18,40 +19,56 @@ type Lead = {
 
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const [lead, setLead] = useState<Lead | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
-  const [error, setError] = useState("")
+  const [loadError, setLoadError] = useState("")
+  const [statusError, setStatusError] = useState("")
+  const [statusMessage, setStatusMessage] = useState("")
 
   const id = params?.id
 
   const fetchLead = useCallback(async () => {
     try {
       setLoading(true)
-      setError("")
+      setLoadError("")
+      setStatusError("")
 
       const response = await fetch(`/api/internal/leads/${id}`, {
         cache: "no-store",
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch lead")
+      const data = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
       }
 
-      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || "Failed to fetch lead")
+      }
+
       setLead(data)
     } catch (err) {
       console.error(err)
-      setError("Could not load lead details.")
+      setLoadError(err instanceof Error ? err.message : "Could not load lead details.")
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, router])
 
-  const updateStatus = async (status: string) => {
+  const updateStatus = async (status: LeadStatus) => {
+    if (!isLeadStatus(status)) {
+      setStatusError("Invalid status selected.")
+      return
+    }
+
     try {
       setUpdating(true)
-      setError("")
+      setStatusError("")
+      setStatusMessage("")
 
       const response = await fetch(`/api/internal/leads/${id}/status`, {
         method: "PATCH",
@@ -61,15 +78,22 @@ export default function LeadDetailPage() {
         body: JSON.stringify({ status }),
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to update status")
+      const updatedLead = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
       }
 
-      const updatedLead = await response.json()
-      setLead(updatedLead)
+      if (!response.ok) {
+        throw new Error(updatedLead?.message || updatedLead?.error || "Failed to update status")
+      }
+
+      setLead(updatedLead as Lead)
+      setStatusMessage(`Status updated to ${statusLabel(status)}.`)
     } catch (err) {
       console.error(err)
-      setError("Could not update lead status.")
+      setStatusError(err instanceof Error ? err.message : "Could not update lead status.")
     } finally {
       setUpdating(false)
     }
@@ -84,12 +108,15 @@ export default function LeadDetailPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#050810] text-white px-6 py-12">
-        <div className="max-w-5xl mx-auto">Loading lead...</div>
+        <div className="max-w-5xl mx-auto rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white/60 flex items-center gap-3">
+          <RefreshCw className="w-4 h-4 animate-spin text-blue-300" />
+          Loading lead...
+        </div>
       </main>
     )
   }
 
-  if (error || !lead) {
+  if (loadError || !lead) {
     return (
       <main className="min-h-screen bg-[#050810] text-white px-6 py-12">
         <div className="max-w-5xl mx-auto">
@@ -99,7 +126,22 @@ export default function LeadDetailPage() {
           </Link>
 
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-red-300">
-            {error || "Lead not found."}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h2 className="font-semibold text-red-200">Could not load lead</h2>
+                  <p className="text-sm text-red-200/80 mt-1">{loadError || "Lead not found."}</p>
+                </div>
+              </div>
+              <button
+                onClick={fetchLead}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-100 hover:bg-red-500/20"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -122,27 +164,43 @@ export default function LeadDetailPage() {
             </div>
 
             <div className="flex gap-2 flex-wrap">
-              <span className="inline-flex px-3 py-1.5 rounded-full text-sm bg-blue-500/15 text-blue-300 border border-blue-500/20">
-                {lead.status}
+              <span className={`inline-flex px-3 py-1.5 rounded-full text-sm border ${statusBadgeClass(lead.status)}`}>
+                {statusLabel(lead.status)}
               </span>
 
-              <button
-                onClick={() => updateStatus("contacted")}
-                disabled={updating}
-                className="px-3 py-1.5 text-xs rounded-lg border border-yellow-500/20 bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20 disabled:opacity-50"
-              >
-                Mark contacted
-              </button>
+              {LEAD_STATUS_OPTIONS.map((status) => {
+                const isActive = lead.status === status.value
 
-              <button
-                onClick={() => updateStatus("closed")}
-                disabled={updating}
-                className="px-3 py-1.5 text-xs rounded-lg border border-green-500/20 bg-green-500/10 text-green-300 hover:bg-green-500/20 disabled:opacity-50"
-              >
-                Close
-              </button>
+                return (
+                  <button
+                    key={status.value}
+                    onClick={() => updateStatus(status.value)}
+                    disabled={updating || isActive}
+                    className={`px-3 py-1.5 text-xs rounded-lg border transition-colors disabled:opacity-50 ${
+                      isActive
+                        ? "border-white/10 bg-white/[0.06] text-white/50"
+                        : "border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    {isActive ? "Current" : `Set ${status.label}`}
+                  </button>
+                )
+              })}
             </div>
           </div>
+
+          {(statusError || statusMessage) && (
+            <div
+              role={statusError ? "alert" : "status"}
+              className={`mb-6 rounded-xl border px-4 py-3 text-sm ${
+                statusError
+                  ? "border-red-500/20 bg-red-500/10 text-red-300"
+                  : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+              }`}
+            >
+              {statusError || statusMessage}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">

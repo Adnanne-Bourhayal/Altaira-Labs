@@ -5,25 +5,101 @@ import { useState } from "react"
 import { Send, MessageCircle, Calendar, CheckCircle, ArrowRight, X } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 
+type ContactFormData = {
+  name: string
+  business: string
+  email: string
+  website: string
+}
+
+type ContactField = "name" | "business" | "email"
+type ContactFieldErrors = Partial<Record<ContactField, string>>
+
+type BackendErrorResponse = {
+  error?: string
+  message?: string
+  fields?: Partial<Record<"fullName" | "businessName" | "email", string>>
+}
+
+const initialFormData: ContactFormData = {
+  name: "",
+  business: "",
+  email: "",
+  website: "",
+}
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function Contact() {
   const { t } = useLanguage()
-  const [formData, setFormData] = useState({
-    name: "",
-    business: "",
-    email: "",
-    website: "",
-  })
+  const [formData, setFormData] = useState<ContactFormData>(initialFormData)
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCalendly, setShowCalendly] = useState(false)
   const [error, setError] = useState("")
 
+  const validateForm = () => {
+    const nextErrors: ContactFieldErrors = {}
+
+    if (formData.name.trim().length < 2) {
+      nextErrors.name = "Enter your full name."
+    }
+
+    if (formData.business.trim().length < 2) {
+      nextErrors.business = "Enter your business name."
+    }
+
+    if (!emailPattern.test(formData.email.trim())) {
+      nextErrors.email = "Enter a valid email address."
+    }
+
+    setFieldErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const inputClassName = (field: ContactField) =>
+    `w-full px-4 py-3 bg-white/[0.03] border rounded-xl text-white placeholder-white/25 focus:outline-none focus:bg-white/[0.05] transition-all duration-300 disabled:opacity-50 ${
+      fieldErrors[field]
+        ? "border-red-500/50 focus:border-red-400"
+        : "border-white/[0.08] focus:border-blue-500/50"
+    }`
+
+  const applyBackendFieldErrors = (fields: BackendErrorResponse["fields"]) => {
+    if (!fields) {
+      return
+    }
+
+    setFieldErrors({
+      name: fields.fullName,
+      business: fields.businessName,
+      email: fields.email,
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
     setError("")
+    setIsSubmitted(false)
+
+    if (formData.website.trim()) {
+      setIsSubmitted(true)
+      setFormData(initialFormData)
+      return
+    }
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    let timeoutId: number | undefined
 
     try {
+      const controller = new AbortController()
+      timeoutId = window.setTimeout(() => controller.abort(), 10000)
+
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: {
@@ -37,29 +113,48 @@ export default function Contact() {
           goals: "Interested in growing the business with Altaira Labs",
           website: formData.website,
         }),
+        signal: controller.signal,
       })
 
+      const data = await response.json().catch(() => ({} as BackendErrorResponse))
+
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data?.message || data?.error || "Failed to submit form")
+        applyBackendFieldErrors(data.fields)
+        throw new Error(data.message || data.error || "Could not submit the form. Please try again.")
       }
 
       setIsSubmitted(true)
-      setFormData({ name: "", business: "", email: "", website: "" })
+      setFieldErrors({})
+      setFormData(initialFormData)
 
       setTimeout(() => {
         setIsSubmitted(false)
       }, 5000)
     } catch (err) {
       console.error(err)
-      setError("Could not submit the form. Please try again.")
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("The lead service took too long to respond. Please try again in a moment.")
+      } else if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("Could not submit the form. Please try again.")
+      }
     } finally {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId)
+      }
       setIsSubmitting(false)
     }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+
+    if (name === "name" || name === "business" || name === "email") {
+      setFieldErrors((currentErrors) => ({ ...currentErrors, [name]: undefined }))
+      setError("")
+    }
   }
 
   const handleWhatsApp = () => {
@@ -90,7 +185,7 @@ export default function Contact() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-7 hover:border-white/[0.1] transition-all duration-300">
               {isSubmitted ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12" aria-live="polite">
                   <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
                     <CheckCircle className="w-7 h-7 text-emerald-400" />
                   </div>
@@ -100,45 +195,69 @@ export default function Contact() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-white/60 text-sm font-medium mb-2">{t.contact.name}</label>
+                    <label htmlFor="lead-name" className="block text-white/60 text-sm font-medium mb-2">{t.contact.name}</label>
                     <input
+                      id="lead-name"
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all duration-300 disabled:opacity-50"
+                      aria-invalid={Boolean(fieldErrors.name)}
+                      aria-describedby={fieldErrors.name ? "lead-name-error" : undefined}
+                      className={inputClassName("name")}
                       placeholder={t.contact.namePlaceholder}
                     />
+                    {fieldErrors.name && (
+                      <p id="lead-name-error" className="mt-2 text-sm text-red-300">
+                        {fieldErrors.name}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-white/60 text-sm font-medium mb-2">{t.contact.business}</label>
+                    <label htmlFor="lead-business" className="block text-white/60 text-sm font-medium mb-2">{t.contact.business}</label>
                     <input
+                      id="lead-business"
                       type="text"
                       name="business"
                       value={formData.business}
                       onChange={handleChange}
                       required
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all duration-300 disabled:opacity-50"
+                      aria-invalid={Boolean(fieldErrors.business)}
+                      aria-describedby={fieldErrors.business ? "lead-business-error" : undefined}
+                      className={inputClassName("business")}
                       placeholder={t.contact.businessPlaceholder}
                     />
+                    {fieldErrors.business && (
+                      <p id="lead-business-error" className="mt-2 text-sm text-red-300">
+                        {fieldErrors.business}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-white/60 text-sm font-medium mb-2">{t.contact.email}</label>
+                    <label htmlFor="lead-email" className="block text-white/60 text-sm font-medium mb-2">{t.contact.email}</label>
                     <input
+                      id="lead-email"
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       required
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-white/25 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition-all duration-300 disabled:opacity-50"
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      aria-describedby={fieldErrors.email ? "lead-email-error" : undefined}
+                      className={inputClassName("email")}
                       placeholder={t.contact.emailPlaceholder}
                     />
+                    {fieldErrors.email && (
+                      <p id="lead-email-error" className="mt-2 text-sm text-red-300">
+                        {fieldErrors.email}
+                      </p>
+                    )}
                   </div>
 
                   <div className="hidden" aria-hidden="true">
@@ -155,7 +274,7 @@ export default function Contact() {
                   </div>
 
                   {error && (
-                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                    <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}
                     </div>
                   )}

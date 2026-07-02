@@ -51,10 +51,15 @@ jdbc:h2:mem:altaira_test
 The current test class validates:
 
 - Spring context loads.
-- Public lead creation works without internal token.
+- Public lead creation works without internal token and returns `201 Created`.
+- Public lead creation trims name/business fields and lowercases email.
+- Invalid public lead submissions return field-level validation errors.
 - Lead listing is rejected without internal token.
 - Lead listing works with internal token.
+- Lead detail retrieval works with internal token.
+- Lead status updates work with internal token.
 - Invalid lead status is rejected.
+- Missing lead detail returns `404`.
 
 ## Manual Runtime Smoke Test
 
@@ -107,6 +112,12 @@ curl -i -X POST http://localhost:3000/api/leads \
   -d '{"fullName":"Test Lead","businessName":"Altaira QA","email":"qa@example.com"}'
 ```
 
+Expected:
+
+- `201 Created`.
+- Response status is `new`.
+- Lead is persisted in PostgreSQL.
+
 Login and list leads:
 
 ```bash
@@ -122,6 +133,60 @@ Expected:
 
 - Login: `200`.
 - Authenticated internal lead listing: `200`.
+
+Capture one lead ID and verify detail/status:
+
+```bash
+LEAD_ID="<paste-created-id>"
+
+curl -i -b "$COOKIE_JAR" "http://localhost:3000/api/internal/leads/$LEAD_ID"
+
+curl -i -b "$COOKIE_JAR" -X PATCH "http://localhost:3000/api/internal/leads/$LEAD_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"contacted"}'
+```
+
+Expected:
+
+- Detail request: `200`.
+- Status update: `200`.
+- Updated response status is `contacted`.
+
+Verify invalid status behavior:
+
+```bash
+curl -i -b "$COOKIE_JAR" -X PATCH "http://localhost:3000/api/internal/leads/$LEAD_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"archived"}'
+```
+
+Expected:
+
+- `400`.
+- Error says `Invalid lead status`.
+
+## Demo Dataset Approach
+
+Use one realistic lead created through the public flow, not direct database inserts. This keeps the demo evidence aligned with the actual MVP flow.
+
+Recommended demo payload:
+
+```json
+{
+  "fullName": "Marta Ruiz",
+  "businessName": "Ruiz Dental Studio",
+  "email": "marta.ruiz@example.com",
+  "industry": "Healthcare",
+  "goals": "Needs a clearer website contact flow and lead follow-up process."
+}
+```
+
+After the demo, remove test/demo leads from local PostgreSQL if needed:
+
+```bash
+PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+  -c "DELETE FROM leads WHERE email LIKE '%example.com';"
+```
 
 ## Known Testing Notes
 

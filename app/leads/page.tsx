@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
-import { RefreshCw, Search, Users, Mail, Building2, Activity, LogOut } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { RefreshCw, Search, Users, Mail, Building2, Activity, LogOut, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { LEAD_STATUS_OPTIONS, statusBadgeClass, statusLabel } from "@/lib/lead-status"
 
 type Lead = {
   id: string
@@ -25,7 +26,7 @@ export default function LeadsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
-  const fetchLeads = async (isManualRefresh = false) => {
+  const fetchLeads = useCallback(async (isManualRefresh = false) => {
     try {
       if (isManualRefresh) {
         setRefreshing(true)
@@ -39,20 +40,30 @@ export default function LeadsPage() {
         cache: "no-store",
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch leads")
+      const data = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
       }
 
-      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || "Failed to fetch leads")
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error("Lead service returned an unexpected response")
+      }
+
       setLeads(data)
     } catch (err) {
       console.error(err)
-      setError("Could not load leads.")
+      setError(err instanceof Error ? err.message : "Could not load leads.")
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [router])
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
@@ -62,7 +73,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     fetchLeads()
-  }, [])
+  }, [fetchLeads])
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -82,6 +93,8 @@ export default function LeadsPage() {
   const newLeads = leads.filter((lead) => lead.status === "new").length
   const uniqueBusinesses = new Set(leads.map((lead) => lead.businessName)).size
   const uniqueEmails = new Set(leads.map((lead) => lead.email)).size
+  const hasNoLeads = !loading && !error && leads.length === 0
+  const hasNoMatches = !loading && !error && leads.length > 0 && filteredLeads.length === 0
 
   return (
     <main className="min-h-screen bg-[#050810] text-white px-6 py-12">
@@ -167,26 +180,54 @@ export default function LeadsPage() {
               className="rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
             >
               <option value="all">All statuses</option>
-              <option value="new">New</option>
-              <option value="contacted">Contacted</option>
-              <option value="closed">Closed</option>
+              {LEAD_STATUS_OPTIONS.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
         {loading && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white/60">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white/60 flex items-center gap-3">
+            <RefreshCw className="w-4 h-4 animate-spin text-blue-300" />
             Loading leads...
           </div>
         )}
 
         {error && (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-red-300">
-            {error}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h2 className="font-semibold text-red-200">Could not load leads</h2>
+                  <p className="text-sm text-red-200/80 mt-1">{error}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => fetchLeads(true)}
+                disabled={refreshing}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-100 hover:bg-red-500/20 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+                Retry
+              </button>
+            </div>
           </div>
         )}
 
-        {!loading && !error && filteredLeads.length === 0 && (
+        {hasNoLeads && (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+            <h2 className="text-xl font-semibold mb-2">No leads yet</h2>
+            <p className="text-white/40">
+              Submit the public lead form once to verify the capture flow.
+            </p>
+          </div>
+        )}
+
+        {hasNoMatches && (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
             <h2 className="text-xl font-semibold mb-2">No matching leads</h2>
             <p className="text-white/40">
@@ -221,8 +262,8 @@ export default function LeadsPage() {
                   <div className="col-span-3 text-white/70 break-all">{lead.email}</div>
                   <div className="col-span-2 text-white/60">{lead.industry || "-"}</div>
                   <div className="col-span-1">
-                    <span className="inline-flex px-2 py-1 rounded-full text-xs bg-blue-500/15 text-blue-300 border border-blue-500/20">
-                      {lead.status}
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs border ${statusBadgeClass(lead.status)}`}>
+                      {statusLabel(lead.status)}
                     </span>
                   </div>
                   <div className="col-span-2 text-white/50">
@@ -244,8 +285,8 @@ export default function LeadsPage() {
                       <h3 className="text-lg font-semibold">{lead.fullName}</h3>
                       <p className="text-white/50 text-sm">{lead.businessName}</p>
                     </div>
-                    <span className="inline-flex px-2 py-1 rounded-full text-xs bg-blue-500/15 text-blue-300 border border-blue-500/20">
-                      {lead.status}
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs border ${statusBadgeClass(lead.status)}`}>
+                      {statusLabel(lead.status)}
                     </span>
                   </div>
 
