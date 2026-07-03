@@ -63,6 +63,18 @@ The current test class validates:
 
 ## Manual Runtime Smoke Test
 
+Confirm PostgreSQL is available before starting the backend:
+
+```bash
+PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+  -c "SELECT current_database(), current_user;"
+```
+
+Expected:
+
+- Database: `altaira`.
+- User: `altaira`.
+
 Start backend:
 
 ```bash

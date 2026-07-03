@@ -97,6 +97,19 @@ docker compose up -d postgres
 
 The compose file starts a PostgreSQL 16 container with the same local credentials.
 
+Validate local database connectivity:
+
+```bash
+PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+  -c "SELECT current_database(), current_user;"
+```
+
+Expected:
+
+```text
+altaira | altaira
+```
+
 ## Install Dependencies
 
 From the repo root:
@@ -163,6 +176,18 @@ cd backend && ./mvnw test
 ```
 
 Run only the checks relevant to the change while developing, but run the full set before marking a Jira task done.
+
+## Jira Execution
+
+Use the native Jira Software Scrum project as the main execution board:
+
+```text
+Project key: AWS
+Project name: Altaira Workspace Scrum
+Board: AWS board
+```
+
+Do not use the older business project `AL` as the main project for new execution work.
 
 ## MVP Boundary
 
