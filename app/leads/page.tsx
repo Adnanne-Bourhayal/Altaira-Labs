@@ -108,6 +108,20 @@ export default function LeadsPage() {
           </div>
 
           <div className="flex gap-3">
+            <Link
+              href="/clients"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all"
+            >
+              Clients
+            </Link>
+
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all"
+            >
+              Services
+            </Link>
+
             <button
               onClick={() => fetchLeads(true)}
               disabled={refreshing}

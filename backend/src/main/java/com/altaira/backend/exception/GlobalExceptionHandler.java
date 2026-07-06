@@ -18,9 +18,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
 
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                fieldErrors.put(error.getField(), error.getDefaultMessage())
-        );
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String message = error.getDefaultMessage();
+            String currentMessage = fieldErrors.get(error.getField());
+
+            if (currentMessage == null || isRequiredMessage(message)) {
+                fieldErrors.put(error.getField(), message);
+            }
+        });
 
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", Instant.now().toString());
@@ -29,6 +34,10 @@ public class GlobalExceptionHandler {
         response.put("fields", fieldErrors);
 
         return ResponseEntity.badRequest().body(response);
+    }
+
+    private boolean isRequiredMessage(String message) {
+        return message != null && message.endsWith("is required");
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -47,6 +56,16 @@ public class GlobalExceptionHandler {
         response.put("timestamp", Instant.now().toString());
         response.put("status", HttpStatus.NOT_FOUND.value());
         response.put("error", "Lead not found");
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", Instant.now().toString());
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", ex.getResourceName() + " not found");
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }

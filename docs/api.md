@@ -65,6 +65,15 @@ Validation errors are passed through from the backend:
 }
 ```
 
+Malformed JSON returns `400`:
+
+```json
+{
+  "error": "Invalid request body",
+  "message": "Lead submission must be valid JSON."
+}
+```
+
 ## Admin Frontend API
 
 These routes require the `altaira_admin_auth` cookie.
@@ -90,6 +99,8 @@ Success:
 ```json
 { "success": true }
 ```
+
+Malformed JSON or a non-object request body returns `400`.
 
 ### Logout
 
@@ -145,6 +156,100 @@ Allowed statuses:
 - `contacted`
 - `closed`
 
+### Create Client From Lead
+
+```http
+POST /api/internal/clients/from-lead/{leadId}
+Cookie: altaira_admin_auth=true
+```
+
+Creates a client from an existing lead. The operation is idempotent: if the lead already has a client, the existing client is returned.
+
+### List/Create Clients
+
+```http
+GET /api/internal/clients
+POST /api/internal/clients
+Cookie: altaira_admin_auth=true
+```
+
+Client creation body:
+
+```json
+{
+  "name": "Marta Ruiz",
+  "company": "Ruiz Dental Studio",
+  "email": "marta@example.com",
+  "phone": "+32 ..."
+}
+```
+
+### Client Detail
+
+```http
+GET /api/internal/clients/{id}
+Cookie: altaira_admin_auth=true
+```
+
+### Services Catalogue
+
+```http
+GET /api/internal/services
+POST /api/internal/services
+Cookie: altaira_admin_auth=true
+```
+
+### Assign Service To Client
+
+```http
+GET /api/internal/clients/{clientId}/services
+POST /api/internal/clients/{clientId}/services
+Cookie: altaira_admin_auth=true
+```
+
+Assignment body:
+
+```json
+{
+  "serviceId": "uuid",
+  "notes": "Start with booking flow."
+}
+```
+
+### Update Client Service Status
+
+```http
+PATCH /api/internal/client-services/{id}/status
+Cookie: altaira_admin_auth=true
+Content-Type: application/json
+```
+
+Allowed statuses:
+
+- `planned`
+- `in_progress`
+- `review`
+- `delivered`
+- `cancelled`
+
+### Internal Notes
+
+```http
+GET /api/internal/leads/{id}/notes
+POST /api/internal/leads/{id}/notes
+GET /api/internal/clients/{id}/notes
+POST /api/internal/clients/{id}/notes
+Cookie: altaira_admin_auth=true
+```
+
+Note body:
+
+```json
+{
+  "content": "Follow up tomorrow."
+}
+```
+
 ## Backend API
 
 ### Health
@@ -183,13 +288,21 @@ Success response: `201 Created`.
 This endpoint is rate limited by IP. Required fields are `fullName`, `businessName`, and `email`.
 The backend trims name/business/email input, lowercases email, stores new leads with status `new`, and rejects invalid email or missing required values.
 
+Validation rules:
+
+- `fullName`: required, 2-100 characters.
+- `businessName`: required, 2-120 characters.
+- `email`: required, valid email format.
+- `industry`: optional, max 50 characters.
+- `goals`: optional, max 1000 characters.
+
 ### List Leads
 
 Protected endpoint:
 
 ```http
 GET /api/v1/leads
-X-Internal-API-Token: dev-internal-token
+X-Internal-API-Token: <same-token-as-frontend>
 ```
 
 Without a valid token, response is `401`.
@@ -202,7 +315,7 @@ Protected endpoint:
 
 ```http
 GET /api/v1/leads/{id}
-X-Internal-API-Token: dev-internal-token
+X-Internal-API-Token: <same-token-as-frontend>
 ```
 
 ### Update Lead Status
@@ -211,7 +324,7 @@ Protected endpoint:
 
 ```http
 PATCH /api/v1/leads/{id}/status
-X-Internal-API-Token: dev-internal-token
+X-Internal-API-Token: <same-token-as-frontend>
 Content-Type: application/json
 ```
 
@@ -228,6 +341,7 @@ Allowed statuses are exactly:
 - `closed`
 
 Status input is trimmed and normalized to lowercase. Invalid or missing status returns `400`.
+Malformed JSON through the frontend proxy also returns `400`.
 
 ## Error Shapes
 

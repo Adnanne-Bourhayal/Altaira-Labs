@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { backendUrl, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
+import { backendUrl, invalidJsonResponse, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
 import { isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 type RouteContext = {
@@ -12,7 +12,13 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params
-  const body = await request.json()
+  let body: unknown
+
+  try {
+    body = await request.json()
+  } catch {
+    return invalidJsonResponse("Lead status update must be valid JSON.")
+  }
 
   try {
     const response = await fetch(backendUrl(`/api/v1/leads/${id}/status`), {

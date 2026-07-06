@@ -2,8 +2,31 @@ import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { email, password } = body
+  let body: unknown
+
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json(
+      {
+        error: "Invalid request body",
+        message: "Login request must be valid JSON.",
+      },
+      { status: 400 }
+    )
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json(
+      {
+        error: "Invalid request body",
+        message: "Login request must include email and password.",
+      },
+      { status: 400 }
+    )
+  }
+
+  const { email, password } = body as { email?: string; password?: string }
 
   const adminEmail = process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAIL
   const adminPassword = process.env.ADMIN_PASSWORD

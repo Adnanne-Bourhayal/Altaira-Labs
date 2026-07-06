@@ -1,6 +1,12 @@
 # MVP Lead Flow
 
-This document defines the Sprint 1 MVP lead flow. The scope is intentionally limited to lead capture and lead management.
+This document defines the original Sprint 1 MVP lead flow. The initial scope was intentionally limited to lead capture and lead management.
+
+The controlled Lead + Client + Service expansion is documented separately in:
+
+```text
+docs/core-client-service-flow.md
+```
 
 ## MVP Boundary
 
@@ -17,8 +23,8 @@ Included:
 
 Excluded for now:
 
-- Client management.
-- Service management.
+- Client management in the original Sprint 1 boundary.
+- Service management in the original Sprint 1 boundary.
 - CRM integrations.
 - Email automation.
 - Multi-user roles.
@@ -37,12 +43,14 @@ Excluded for now:
 
 Validation behavior:
 
-- `fullName` is required and must be at most 100 characters.
-- `businessName` is required and must be at most 120 characters.
+- `fullName` is required and must be between 2 and 100 characters.
+- `businessName` is required and must be between 2 and 120 characters.
 - `email` is required and must be valid.
 - `industry` is optional and must be at most 50 characters.
 - `goals` is optional and must be at most 1000 characters.
 - Email is normalized to lowercase before persistence.
+- The public form trims name, business name, and email before submitting.
+- Malformed JSON requests return `400` instead of being reported as service outages.
 
 Unavailable backend behavior:
 
@@ -107,6 +115,7 @@ Demo sequence:
 ## Manual Verification Checklist
 
 - Public form rejects missing name, missing business, and invalid email.
+- Public form rejects one-character name or business values.
 - Public form shows success after a valid lead submission.
 - Public form shows a clear message if the backend is unavailable.
 - `POST /api/leads` returns `201` for a valid lead.
@@ -122,7 +131,7 @@ Demo sequence:
 - Admin authentication is simple and intended for MVP demonstration, not enterprise identity management.
 - Database migrations are not yet implemented.
 - No email notification is sent when a lead is created.
-- No client or service module exists in Sprint 1.
+- Client and service management are covered by the controlled academic core expansion, not by the original lead-only Sprint 1 boundary.
 - Rate limiting is in-memory, so it resets when the backend restarts.
 
 ## Future Work Boundary

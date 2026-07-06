@@ -54,6 +54,7 @@ The current test class validates:
 - Public lead creation works without internal token and returns `201 Created`.
 - Public lead creation trims name/business fields and lowercases email.
 - Invalid public lead submissions return field-level validation errors.
+- One-character name or business values are rejected by backend validation.
 - Lead listing is rejected without internal token.
 - Lead listing works with internal token.
 - Lead detail retrieval works with internal token.
@@ -66,20 +67,20 @@ The current test class validates:
 Confirm PostgreSQL is available before starting the backend:
 
 ```bash
-PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+PGPASSWORD=<local-postgres-password> psql -h localhost -U <local-postgres-user> -d <local-database-name> \
   -c "SELECT current_database(), current_user;"
 ```
 
 Expected:
 
-- Database: `altaira`.
-- User: `altaira`.
+- Database: your local database name.
+- User: your local PostgreSQL user.
 
 Start backend:
 
 ```bash
 cd backend
-INTERNAL_API_TOKEN=dev-internal-token ./mvnw spring-boot:run
+INTERNAL_API_TOKEN=<same-token-as-frontend> ./mvnw spring-boot:run
 ```
 
 Check health:
@@ -92,7 +93,7 @@ Check backend protection:
 
 ```bash
 curl -i http://localhost:8080/api/v1/leads
-curl -i -H "X-Internal-API-Token: dev-internal-token" http://localhost:8080/api/v1/leads
+curl -i -H "X-Internal-API-Token: <same-token-as-frontend>" http://localhost:8080/api/v1/leads
 ```
 
 Expected:
@@ -115,6 +116,19 @@ curl -i http://localhost:3000/api/internal/leads
 Expected:
 
 - Not logged in: `401`.
+
+Check malformed public JSON handling through the frontend proxy:
+
+```bash
+curl -i -X POST http://localhost:3000/api/leads \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":'
+```
+
+Expected:
+
+- `400`.
+- Error says `Invalid request body`.
 
 Create lead through Next proxy:
 
@@ -177,6 +191,19 @@ Expected:
 - `400`.
 - Error says `Invalid lead status`.
 
+Verify malformed status JSON through the frontend proxy:
+
+```bash
+curl -i -b "$COOKIE_JAR" -X PATCH "http://localhost:3000/api/internal/leads/$LEAD_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status":'
+```
+
+Expected:
+
+- `400`.
+- Error says `Invalid request body`.
+
 ## Demo Dataset Approach
 
 Use one realistic lead created through the public flow, not direct database inserts. This keeps the demo evidence aligned with the actual MVP flow.
@@ -196,7 +223,7 @@ Recommended demo payload:
 After the demo, remove test/demo leads from local PostgreSQL if needed:
 
 ```bash
-PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+PGPASSWORD=<local-postgres-password> psql -h localhost -U altaira -d altaira \
   -c "DELETE FROM leads WHERE email LIKE '%example.com';"
 ```
 

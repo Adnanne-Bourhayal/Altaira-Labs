@@ -48,31 +48,43 @@ Create `.env.local` from `.env.local.example`:
 cp .env.local.example .env.local
 ```
 
-Local development values:
+Local development shape:
 
 ```text
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8080
 
 ADMIN_EMAIL=admin@altaira.local
-ADMIN_PASSWORD=altaira_admin_dev_password
-INTERNAL_API_TOKEN=dev-internal-token
+ADMIN_PASSWORD=<local-admin-password>
+INTERNAL_API_TOKEN=<same-token-as-backend>
 ```
 
 `.env.local` is ignored by Git. Do not commit real secrets.
 
+For the full environment variable map, including where each password/token comes from and where it must be configured, see:
+
+```text
+docs/environment.md
+```
+
 ## Backend Environment
 
-The backend has local defaults in `backend/src/main/resources/application.properties`:
+The backend has local fallback defaults in `backend/src/main/resources/application.properties`:
 
 ```text
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/altaira
 SPRING_DATASOURCE_USERNAME=altaira
-SPRING_DATASOURCE_PASSWORD=altaira_dev_password
-INTERNAL_API_TOKEN=dev-internal-token
+SPRING_DATASOURCE_PASSWORD=<local-postgres-password>
+INTERNAL_API_TOKEN=<same-token-as-frontend-server>
 ```
 
-For deployed environments, override these with platform environment variables.
+For Neon/Render validation, load real local secrets from:
+
+```text
+/Volumes/T7/Altaira_Labs/.secrets/neon-render.env
+```
+
+For deployed environments, override these with platform environment variables in Render and Vercel.
 
 ## Local PostgreSQL Setup
 
@@ -85,7 +97,7 @@ psql postgres
 Create the local role and database if missing:
 
 ```sql
-CREATE ROLE altaira LOGIN PASSWORD 'altaira_dev_password';
+CREATE ROLE altaira LOGIN PASSWORD '<local-postgres-password>';
 CREATE DATABASE altaira OWNER altaira;
 ```
 
@@ -100,7 +112,7 @@ The compose file starts a PostgreSQL 16 container with the same local credential
 Validate local database connectivity:
 
 ```bash
-PGPASSWORD=altaira_dev_password psql -h localhost -U altaira -d altaira \
+PGPASSWORD=<local-postgres-password> psql -h localhost -U altaira -d altaira \
   -c "SELECT current_database(), current_user;"
 ```
 
@@ -131,7 +143,7 @@ Terminal 1, backend:
 
 ```bash
 cd backend
-INTERNAL_API_TOKEN=dev-internal-token ./mvnw spring-boot:run
+INTERNAL_API_TOKEN=<same-token-as-frontend> ./mvnw spring-boot:run
 ```
 
 Backend health:

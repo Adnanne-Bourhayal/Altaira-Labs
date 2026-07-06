@@ -28,6 +28,10 @@ const initialFormData: ContactFormData = {
   website: "",
 }
 
+const NAME_MIN_LENGTH = 2
+const NAME_MAX_LENGTH = 100
+const BUSINESS_MIN_LENGTH = 2
+const BUSINESS_MAX_LENGTH = 120
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function Contact() {
@@ -41,16 +45,23 @@ export default function Contact() {
 
   const validateForm = () => {
     const nextErrors: ContactFieldErrors = {}
+    const name = formData.name.trim()
+    const business = formData.business.trim()
+    const email = formData.email.trim()
 
-    if (formData.name.trim().length < 2) {
-      nextErrors.name = "Enter your full name."
+    if (name.length < NAME_MIN_LENGTH) {
+      nextErrors.name = "Enter your full name using at least 2 characters."
+    } else if (name.length > NAME_MAX_LENGTH) {
+      nextErrors.name = "Full name must be at most 100 characters."
     }
 
-    if (formData.business.trim().length < 2) {
-      nextErrors.business = "Enter your business name."
+    if (business.length < BUSINESS_MIN_LENGTH) {
+      nextErrors.business = "Enter your business name using at least 2 characters."
+    } else if (business.length > BUSINESS_MAX_LENGTH) {
+      nextErrors.business = "Business name must be at most 120 characters."
     }
 
-    if (!emailPattern.test(formData.email.trim())) {
+    if (!emailPattern.test(email)) {
       nextErrors.email = "Enter a valid email address."
     }
 
@@ -106,9 +117,9 @@ export default function Contact() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fullName: formData.name,
-          businessName: formData.business,
-          email: formData.email,
+          fullName: formData.name.trim(),
+          businessName: formData.business.trim(),
+          email: formData.email.trim(),
           industry: "Website Lead",
           goals: "Interested in growing the business with Altaira Labs",
           website: formData.website,
@@ -193,7 +204,7 @@ export default function Contact() {
                   <p className="text-white/50">{t.contact.sentMessage}</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
                   <div>
                     <label htmlFor="lead-name" className="block text-white/60 text-sm font-medium mb-2">{t.contact.name}</label>
                     <input
@@ -203,6 +214,8 @@ export default function Contact() {
                       value={formData.name}
                       onChange={handleChange}
                       required
+                      maxLength={NAME_MAX_LENGTH}
+                      autoComplete="name"
                       disabled={isSubmitting}
                       aria-invalid={Boolean(fieldErrors.name)}
                       aria-describedby={fieldErrors.name ? "lead-name-error" : undefined}
@@ -225,6 +238,8 @@ export default function Contact() {
                       value={formData.business}
                       onChange={handleChange}
                       required
+                      maxLength={BUSINESS_MAX_LENGTH}
+                      autoComplete="organization"
                       disabled={isSubmitting}
                       aria-invalid={Boolean(fieldErrors.business)}
                       aria-describedby={fieldErrors.business ? "lead-business-error" : undefined}
@@ -247,6 +262,7 @@ export default function Contact() {
                       value={formData.email}
                       onChange={handleChange}
                       required
+                      autoComplete="email"
                       disabled={isSubmitting}
                       aria-invalid={Boolean(fieldErrors.email)}
                       aria-describedby={fieldErrors.email ? "lead-email-error" : undefined}
@@ -282,6 +298,7 @@ export default function Contact() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
+                    aria-busy={isSubmitting}
                     className="w-full relative group py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 text-white disabled:opacity-50 mt-2 overflow-hidden hover:scale-[1.02]"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 bg-[length:200%_100%] group-hover:animate-shimmer" />

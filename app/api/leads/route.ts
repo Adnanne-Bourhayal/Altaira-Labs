@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server"
-import { backendUrl, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
+import { backendUrl, invalidJsonResponse, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json()
+  let body: unknown
 
+  try {
+    body = await req.json()
+  } catch {
+    return invalidJsonResponse("Lead submission must be valid JSON.")
+  }
+
+  try {
     const response = await fetch(backendUrl("/api/v1/leads"), {
       method: "POST",
       headers: {

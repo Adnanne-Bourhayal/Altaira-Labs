@@ -24,11 +24,25 @@ export async function readJson(response: Response): Promise<Record<string, unkno
 }
 
 export function leadServiceUnavailableResponse() {
+  return backendServiceUnavailableResponse("Lead service")
+}
+
+export function backendServiceUnavailableResponse(serviceName = "Backend service") {
   return NextResponse.json(
     {
-      error: "Lead service unavailable",
-      message: "The lead service could not be reached. Please try again in a moment.",
+      error: `${serviceName} unavailable`,
+      message: `${serviceName} could not be reached. Please try again in a moment.`,
     },
     { status: 503 }
+  )
+}
+
+export function invalidJsonResponse(message = "Request body must be valid JSON.") {
+  return NextResponse.json(
+    {
+      error: "Invalid request body",
+      message,
+    },
+    { status: 400 }
   )
 }

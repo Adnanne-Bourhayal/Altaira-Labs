@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export function middleware(request: NextRequest) {
-  const isProtectedRoute = request.nextUrl.pathname.startsWith("/leads")
+  const protectedPrefixes = ["/leads", "/clients", "/services"]
+  const isProtectedRoute = protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix))
   const authCookie = request.cookies.get("altaira_admin_auth")?.value
 
   if (isProtectedRoute && authCookie !== "true") {
@@ -13,5 +14,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/leads/:path*"],
+  matcher: ["/leads/:path*", "/clients/:path*", "/services/:path*"],
 }

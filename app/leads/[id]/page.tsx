@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
-import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText, RefreshCw, AlertCircle } from "lucide-react"
+import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText, RefreshCw, AlertCircle, UserPlus, MessageSquare, Send } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { LEAD_STATUS_OPTIONS, type LeadStatus, isLeadStatus, statusBadgeClass, statusLabel } from "@/lib/lead-status"
 
@@ -17,6 +17,23 @@ type Lead = {
   createdAt: string
 }
 
+type Client = {
+  id: string
+  name: string
+  company: string
+  email: string
+  sourceLeadId: string | null
+  status: string
+}
+
+type InternalNote = {
+  id: string
+  leadId: string | null
+  content: string
+  author: string
+  createdAt: string
+}
+
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
@@ -26,6 +43,13 @@ export default function LeadDetailPage() {
   const [loadError, setLoadError] = useState("")
   const [statusError, setStatusError] = useState("")
   const [statusMessage, setStatusMessage] = useState("")
+  const [clientResult, setClientResult] = useState<Client | null>(null)
+  const [creatingClient, setCreatingClient] = useState(false)
+  const [clientError, setClientError] = useState("")
+  const [notes, setNotes] = useState<InternalNote[]>([])
+  const [noteContent, setNoteContent] = useState("")
+  const [notesError, setNotesError] = useState("")
+  const [addingNote, setAddingNote] = useState(false)
 
   const id = params?.id
 
@@ -56,6 +80,32 @@ export default function LeadDetailPage() {
       setLoadError(err instanceof Error ? err.message : "Could not load lead details.")
     } finally {
       setLoading(false)
+    }
+  }, [id, router])
+
+  const fetchNotes = useCallback(async () => {
+    try {
+      setNotesError("")
+
+      const response = await fetch(`/api/internal/leads/${id}/notes`, {
+        cache: "no-store",
+      })
+
+      const data = await response.json().catch(() => ({ error: "Unexpected response from notes service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || "Failed to fetch notes")
+      }
+
+      setNotes(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error(err)
+      setNotesError(err instanceof Error ? err.message : "Could not load notes.")
     }
   }, [id, router])
 
@@ -99,11 +149,77 @@ export default function LeadDetailPage() {
     }
   }
 
+  const createClientFromLead = async () => {
+    try {
+      setCreatingClient(true)
+      setClientError("")
+
+      const response = await fetch(`/api/internal/clients/from-lead/${id}`, {
+        method: "POST",
+      })
+
+      const data = await response.json().catch(() => ({ error: "Unexpected response from client service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || "Could not create client from lead")
+      }
+
+      setClientResult(data as Client)
+    } catch (err) {
+      console.error(err)
+      setClientError(err instanceof Error ? err.message : "Could not create client from lead.")
+    } finally {
+      setCreatingClient(false)
+    }
+  }
+
+  const addNote = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    try {
+      setAddingNote(true)
+      setNotesError("")
+
+      const response = await fetch(`/api/internal/leads/${id}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: noteContent }),
+      })
+
+      const data = await response.json().catch(() => ({ error: "Unexpected response from notes service" }))
+
+      if (response.status === 401) {
+        router.replace("/login")
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || "Could not add note")
+      }
+
+      setNotes((current) => [data as InternalNote, ...current])
+      setNoteContent("")
+    } catch (err) {
+      console.error(err)
+      setNotesError(err instanceof Error ? err.message : "Could not add note.")
+    } finally {
+      setAddingNote(false)
+    }
+  }
+
   useEffect(() => {
     if (id) {
       fetchLead()
+      fetchNotes()
     }
-  }, [fetchLead, id])
+  }, [fetchLead, fetchNotes, id])
 
   if (loading) {
     return (
@@ -151,10 +267,14 @@ export default function LeadDetailPage() {
   return (
     <main className="min-h-screen bg-[#050810] text-white px-6 py-12">
       <div className="max-w-5xl mx-auto">
-        <Link href="/leads" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-6">
-          <ArrowLeft className="w-4 h-4" />
-          Back to leads
-        </Link>
+        <div className="mb-6 flex flex-wrap gap-3">
+          <Link href="/leads" className="inline-flex items-center gap-2 text-white/60 hover:text-white">
+            <ArrowLeft className="w-4 h-4" />
+            Back to leads
+          </Link>
+          <Link href="/clients" className="text-white/45 hover:text-white">Clients</Link>
+          <Link href="/services" className="text-white/45 hover:text-white">Services</Link>
+        </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-8">
@@ -164,6 +284,15 @@ export default function LeadDetailPage() {
             </div>
 
             <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={createClientFromLead}
+                disabled={creatingClient}
+                className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-200 transition-colors hover:bg-blue-500/20 disabled:opacity-50"
+              >
+                <UserPlus className="w-4 h-4" />
+                {creatingClient ? "Creating..." : "Create Client"}
+              </button>
+
               <span className={`inline-flex px-3 py-1.5 rounded-full text-sm border ${statusBadgeClass(lead.status)}`}>
                 {statusLabel(lead.status)}
               </span>
@@ -199,6 +328,26 @@ export default function LeadDetailPage() {
               }`}
             >
               {statusError || statusMessage}
+            </div>
+          )}
+
+          {(clientError || clientResult) && (
+            <div
+              role={clientError ? "alert" : "status"}
+              className={`mb-6 rounded-xl border px-4 py-3 text-sm ${
+                clientError
+                  ? "border-red-500/20 bg-red-500/10 text-red-300"
+                  : "border-blue-500/20 bg-blue-500/10 text-blue-200"
+              }`}
+            >
+              {clientError || (
+                <>
+                  Client record ready:{" "}
+                  <Link href={`/clients/${clientResult?.id}`} className="font-semibold text-blue-100 hover:text-white">
+                    open {clientResult?.company}
+                  </Link>
+                </>
+              )}
             </div>
           )}
 
@@ -244,6 +393,51 @@ export default function LeadDetailPage() {
             <p className="text-white/80 leading-relaxed whitespace-pre-wrap">
               {lead.goals || "-"}
             </p>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+            <div className="flex items-center gap-2 text-white/40 text-sm mb-4">
+              <MessageSquare className="w-4 h-4" />
+              Internal Notes
+            </div>
+
+            {notesError && (
+              <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                {notesError}
+              </div>
+            )}
+
+            <form onSubmit={addNote} className="mb-5 flex flex-col gap-3">
+              <textarea
+                value={noteContent}
+                onChange={(event) => setNoteContent(event.target.value)}
+                rows={3}
+                placeholder="Add an internal follow-up note..."
+                className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/40"
+              />
+              <button
+                disabled={addingNote || noteContent.trim().length < 2}
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+              >
+                <Send className="w-4 h-4" />
+                {addingNote ? "Adding..." : "Add Note"}
+              </button>
+            </form>
+
+            {notes.length === 0 ? (
+              <p className="text-white/40">No notes yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {notes.map((note) => (
+                  <div key={note.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                    <p className="text-white/80 whitespace-pre-wrap">{note.content}</p>
+                    <p className="text-xs text-white/35 mt-3">
+                      {note.author} · {new Date(note.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
