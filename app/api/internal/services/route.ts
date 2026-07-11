@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { backendServiceUnavailableResponse, backendUrl, invalidJsonResponse, readJson } from "@/lib/server-backend-api"
-import { isAdminAuthenticated } from "@/lib/server-admin-auth"
+import { adminBackendHeaders, isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -9,9 +9,7 @@ export async function GET() {
 
   try {
     const response = await fetch(backendUrl("/api/v1/services"), {
-      headers: {
-        "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
-      },
+      headers: await adminBackendHeaders(),
       cache: "no-store",
     })
 
@@ -38,10 +36,7 @@ export async function POST(request: Request) {
   try {
     const response = await fetch(backendUrl("/api/v1/services"), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
-      },
+      headers: await adminBackendHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     })

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { backendUrl, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
-import { isAdminAuthenticated } from "@/lib/server-admin-auth"
+import { adminBackendHeaders, isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -15,9 +15,7 @@ export async function GET(_: Request, context: RouteContext) {
 
   try {
     const response = await fetch(backendUrl(`/api/v1/leads/${id}`), {
-      headers: {
-        "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
-      },
+      headers: await adminBackendHeaders(),
       cache: "no-store",
     })
 

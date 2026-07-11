@@ -25,16 +25,15 @@ Set these in Vercel:
 ```text
 NEXT_PUBLIC_APP_URL=https://<frontend-domain>
 NEXT_PUBLIC_API_URL=https://<backend-domain>
-ADMIN_EMAIL=<admin-email>
-ADMIN_PASSWORD=<strong-admin-password>
 INTERNAL_API_TOKEN=<same-token-as-backend>
 ```
 
 Security notes:
 
-- `ADMIN_PASSWORD` and `INTERNAL_API_TOKEN` must not be committed.
+- `INTERNAL_API_TOKEN` must not be committed.
 - `NEXT_PUBLIC_API_URL` is visible to the browser and must contain only the backend base URL.
 - Do not expose `INTERNAL_API_TOKEN` as a `NEXT_PUBLIC_` variable.
+- Admin passwords are validated by the backend, not by Vercel environment variables.
 
 ## Backend Environment
 
@@ -45,6 +44,11 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<database>?sslmode=require
 SPRING_DATASOURCE_USERNAME=<database-user>
 SPRING_DATASOURCE_PASSWORD=<database-password>
 INTERNAL_API_TOKEN=<same-token-as-frontend-server>
+ALTAIRA_AUTH_SESSION_HOURS=8
+ALTAIRA_DEMO_ADMIN_ENABLED=true
+ALTAIRA_DEMO_ADMIN_USERNAME=admin123
+ALTAIRA_DEMO_ADMIN_PASSWORD=admin123
+ALTAIRA_DEMO_ADMIN_ROLE=admin
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SPRING_JPA_SHOW_SQL=false
 ```

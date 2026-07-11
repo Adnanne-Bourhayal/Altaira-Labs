@@ -2,7 +2,10 @@
 -- Purpose: documented baseline for the lead-flow PostgreSQL database.
 -- Security: this file must not contain passwords, tokens, or full connection strings.
 --
--- Current MVP table: public.leads
+-- Baseline MVP table: public.leads
+-- Additional additive schema files:
+-- - core-expansion-migration.sql
+-- - auth-security-migration.sql
 -- Runtime note: Spring Boot/Hibernate can maintain this table during MVP using ddl-auto=update.
 -- Future hardening: replace ddl-auto with explicit migrations before production-grade release.
 

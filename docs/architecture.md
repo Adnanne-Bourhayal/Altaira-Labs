@@ -87,20 +87,21 @@ Public:
 
 Admin/internal:
 
-- Next internal API routes require the `altaira_admin_auth` cookie.
-- Backend lead read/update endpoints require `X-Internal-API-Token`.
-- The frontend server reads `INTERNAL_API_TOKEN` from `.env.local` and forwards it to the backend.
+- Next internal API routes require a valid `altaira_admin_session` cookie.
+- Next validates the session against Spring Boot `/api/v1/auth/me`.
+- Backend admin endpoints accept either `X-Internal-API-Token` for server-to-server calls or `X-Admin-Session-Token` for valid admin sessions.
+- The frontend server can still read `INTERNAL_API_TOKEN` from `.env.local` for server-to-server protection.
 
 Flow:
 
 ```text
 Admin browser
   -> POST /api/auth/login
-  -> receives httpOnly altaira_admin_auth cookie
+  -> Spring Boot validates app_users with BCrypt
+  -> receives httpOnly altaira_admin_session cookie
   -> calls /api/internal/*
-  -> Next route verifies cookie
-  -> Next route forwards X-Internal-API-Token
-  -> Spring Boot verifies token
+  -> Next route validates session with /api/v1/auth/me
+  -> Spring Boot verifies session/token before admin data access
 ```
 
 ## Data Model

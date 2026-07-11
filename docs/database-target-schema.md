@@ -217,7 +217,7 @@ Do not change the database status constraints before updating the backend and ad
 
 ## Role Model
 
-The enterprise documents define three future internal roles:
+The enterprise documents define three internal roles:
 
 ```text
 admin
@@ -225,7 +225,15 @@ consultant
 auditor
 ```
 
-The current MVP does not need full RBAC. The `users` table is included as a future foundation for assignment and audit evidence, not as a requirement to replace the current simple admin login immediately.
+The current MVP now implements a minimal authentication foundation:
+
+```text
+app_users
+app_user_sessions
+security_events
+```
+
+This is not full RBAC yet. The roles are stored and available for future authorization rules, while the current admin/demo user uses role `admin`.
 
 ## Implementation Phases
 

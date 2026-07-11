@@ -21,9 +21,9 @@ These belong in `.env.local` for local development and in Vercel environment var
 |---|---|---|---|---|
 | `NEXT_PUBLIC_APP_URL` | `.env.local`, Vercel | Local frontend URL or deployed frontend URL | No | Browser-visible. Local value is usually `http://localhost:3000`. |
 | `NEXT_PUBLIC_API_URL` | `.env.local`, Vercel | Local backend URL or Render backend URL | No | Browser-visible. Local value is usually `http://localhost:8080`; deployed value should be the Render backend URL. |
-| `ADMIN_EMAIL` | `.env.local`, Vercel | Chosen MVP admin email | Low sensitivity | Used by login route. |
-| `ADMIN_PASSWORD` | `.env.local`, Vercel | Chosen MVP admin password | Yes | Do not reuse personal passwords. Rotate if exposed. |
 | `INTERNAL_API_TOKEN` | `.env.local`, Vercel | Same shared token as backend | Yes | Must match backend `INTERNAL_API_TOKEN`. Never prefix with `NEXT_PUBLIC_`. |
+
+Admin credentials are validated by Spring Boot against `app_users`, not by Vercel/Next environment variables.
 
 ## Backend / Spring Boot Variables
 
@@ -36,6 +36,11 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `SPRING_DATASOURCE_USERNAME` | Local secrets helper file, Render | Neon Console role/user | Low sensitivity | Current validated user is stored in the local secrets file. |
 | `SPRING_DATASOURCE_PASSWORD` | Local secrets helper file, Render | Neon Console role password | Yes | Rotate in Neon if exposed. Update Render and local secrets after rotation. |
 | `INTERNAL_API_TOKEN` | Local secrets helper file, Render | Same shared token as frontend server | Yes | Must match Vercel and `.env.local`. |
+| `ALTAIRA_AUTH_SESSION_HOURS` | Local backend env, Render | Chosen session duration | No | Default/recommended demo value: `8`. |
+| `ALTAIRA_DEMO_ADMIN_ENABLED` | Local backend env, Render | Demo/TFG auth setup | No | Use `true` for TFG demo. Disable for serious production after creating a real admin. |
+| `ALTAIRA_DEMO_ADMIN_USERNAME` | Local backend env, Render | Demo/TFG auth setup | No | Current demo value: `admin123`. |
+| `ALTAIRA_DEMO_ADMIN_PASSWORD` | Local backend env, Render | Demo/TFG auth setup | Yes in real production | Current public demo value: `admin123`; change for real deployments. |
+| `ALTAIRA_DEMO_ADMIN_ROLE` | Local backend env, Render | Demo/TFG auth setup | No | Current demo value: `admin`. |
 
 ## Correct Database URL Shapes
 
@@ -65,7 +70,7 @@ Do not use phpMyAdmin. This project uses PostgreSQL, not MySQL.
 | Password/token | Provider/source | Put it here |
 |---|---|---|
 | Neon database password | Neon Console -> role/user password or connection details | Render `SPRING_DATASOURCE_PASSWORD`; local `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env`; visual DB client password field |
-| Admin password | You choose it for the MVP admin login | Vercel `ADMIN_PASSWORD`; local `.env.local` |
+| Demo/admin password | Backend auth seed or Render `ALTAIRA_DEMO_ADMIN_PASSWORD` | Stored in DB only as BCrypt `app_users.password_hash`; current TFG demo is `admin123` |
 | Internal API token | You choose/generate one shared token | Render `INTERNAL_API_TOKEN`; Vercel `INTERNAL_API_TOKEN`; local `.env.local`; local `.secrets/neon-render.env` |
 
 ## Rotation Checklist
@@ -76,6 +81,6 @@ If any password/token is exposed:
 2. Update Render environment variables.
 3. Update Vercel environment variables if relevant.
 4. Update `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env`.
-5. Update local `.env.local` if the internal API token or admin password changed.
+5. Update local `.env.local` if the internal API token changed.
 6. Restart local backend/frontend and redeploy affected services.
 7. Rerun the health and lead-flow smoke checks.

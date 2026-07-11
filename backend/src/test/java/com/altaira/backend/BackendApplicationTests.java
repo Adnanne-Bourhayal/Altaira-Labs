@@ -11,11 +11,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.altaira.backend.repository.AppUserRepository;
+import com.altaira.backend.repository.AppUserSessionRepository;
 import com.altaira.backend.repository.ClientRepository;
 import com.altaira.backend.repository.ClientServiceRepository;
 import com.altaira.backend.repository.InternalNoteRepository;
 import com.altaira.backend.repository.LeadRepository;
+import com.altaira.backend.repository.SecurityEventRepository;
 import com.altaira.backend.repository.ServiceRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
 
@@ -40,6 +44,15 @@ class BackendApplicationTests {
 	private LeadRepository leadRepository;
 
 	@Autowired
+	private AppUserRepository appUserRepository;
+
+	@Autowired
+	private AppUserSessionRepository appUserSessionRepository;
+
+	@Autowired
+	private SecurityEventRepository securityEventRepository;
+
+	@Autowired
 	private ClientRepository clientRepository;
 
 	@Autowired
@@ -54,8 +67,13 @@ class BackendApplicationTests {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	@BeforeEach
 	void resetDatabase() {
+		appUserSessionRepository.deleteAll();
+		securityEventRepository.deleteAll();
 		internalNoteRepository.deleteAll();
 		clientServiceRepository.deleteAll();
 		clientRepository.deleteAll();
@@ -204,6 +222,69 @@ class BackendApplicationTests {
 	}
 
 	@Test
+	void logsInDemoAdminWithBcryptPasswordAndCreatesHashedSession() throws Exception {
+		String response = mockMvc.perform(post("/api/v1/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "username": "admin123",
+								  "password": "admin123"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.sessionToken").exists())
+				.andExpect(jsonPath("$.user.username").value("admin123"))
+				.andExpect(jsonPath("$.user.role").value("admin"))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String sessionToken = objectMapper.readTree(response).get("sessionToken").asText();
+		var user = appUserRepository.findByUsernameIgnoreCase("admin123").orElseThrow();
+		var session = appUserSessionRepository.findAll().get(0);
+
+		org.junit.jupiter.api.Assertions.assertNotEquals("admin123", user.getPasswordHash());
+		org.junit.jupiter.api.Assertions.assertTrue(user.getPasswordHash().startsWith("$2"));
+		org.junit.jupiter.api.Assertions.assertTrue(passwordEncoder.matches("admin123", user.getPasswordHash()));
+		org.junit.jupiter.api.Assertions.assertNotEquals(sessionToken, session.getSessionTokenHash());
+		org.junit.jupiter.api.Assertions.assertEquals(64, session.getSessionTokenHash().length());
+		org.junit.jupiter.api.Assertions.assertEquals(1, securityEventRepository.countByEventType("login_success"));
+	}
+
+	@Test
+	void rejectsInvalidDemoAdminLoginAndStoresFailedLoginEvent() throws Exception {
+		mockMvc.perform(post("/api/v1/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "username": "admin123",
+								  "password": "wrong-password"
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error").value("Invalid credentials"));
+
+		org.junit.jupiter.api.Assertions.assertEquals(1, securityEventRepository.countByEventType("login_failed"));
+	}
+
+	@Test
+	void blocksCurrentUserEndpointWithoutSession() throws Exception {
+		mockMvc.perform(get("/api/v1/auth/me"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void allowsAdminEndpointWithValidSessionToken() throws Exception {
+		createLead("Session Admin", "Session Co", "session-admin@example.com");
+		String sessionToken = loginAndReturnSessionToken();
+
+		mockMvc.perform(get("/api/v1/leads")
+						.header("X-Admin-Session-Token", sessionToken))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].fullName").value("Session Admin"));
+	}
+
+	@Test
 	void createsClientWithInternalToken() throws Exception {
 		mockMvc.perform(post("/api/v1/clients")
 						.header("X-Internal-API-Token", INTERNAL_TOKEN)
@@ -283,6 +364,27 @@ class BackendApplicationTests {
 
 		String assignmentId = objectMapper.readTree(assignmentResponse).get("id").asText();
 
+		String duplicateResponse = mockMvc.perform(post("/api/v1/clients/" + clientId + "/services")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "serviceId": "%s",
+								  "notes": "Updated internal dashboard scope."
+								}
+								""".formatted(serviceId)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.clientId").value(clientId))
+				.andExpect(jsonPath("$.service.id").value(serviceId))
+				.andExpect(jsonPath("$.notes").value("Updated internal dashboard scope."))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String duplicateAssignmentId = objectMapper.readTree(duplicateResponse).get("id").asText();
+		org.junit.jupiter.api.Assertions.assertEquals(assignmentId, duplicateAssignmentId);
+		org.junit.jupiter.api.Assertions.assertEquals(1, clientServiceRepository.count());
+
 		mockMvc.perform(patch("/api/v1/client-services/" + assignmentId + "/status")
 						.header("X-Internal-API-Token", INTERNAL_TOKEN)
 						.contentType(MediaType.APPLICATION_JSON)
@@ -353,6 +455,23 @@ class BackendApplicationTests {
 				.getContentAsString();
 
 		return objectMapper.readTree(response).get("id").asText();
+	}
+
+	private String loginAndReturnSessionToken() throws Exception {
+		String response = mockMvc.perform(post("/api/v1/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "username": "admin123",
+								  "password": "admin123"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		return objectMapper.readTree(response).get("sessionToken").asText();
 	}
 
 	private String firstServiceId() {

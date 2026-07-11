@@ -53,9 +53,6 @@ Local development shape:
 ```text
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8080
-
-ADMIN_EMAIL=admin@altaira.local
-ADMIN_PASSWORD=<local-admin-password>
 INTERNAL_API_TOKEN=<same-token-as-backend>
 ```
 
@@ -76,6 +73,10 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/altaira
 SPRING_DATASOURCE_USERNAME=altaira
 SPRING_DATASOURCE_PASSWORD=<local-postgres-password>
 INTERNAL_API_TOKEN=<same-token-as-frontend-server>
+ALTAIRA_DEMO_ADMIN_ENABLED=true
+ALTAIRA_DEMO_ADMIN_USERNAME=admin123
+ALTAIRA_DEMO_ADMIN_PASSWORD=admin123
+ALTAIRA_DEMO_ADMIN_ROLE=admin
 ```
 
 For Neon/Render validation, load real local secrets from:
@@ -173,8 +174,8 @@ http://localhost:3000/login
 Local admin credentials:
 
 ```text
-admin@altaira.local
-altaira_admin_dev_password
+username: admin123
+password: admin123
 ```
 
 ## Daily Workflow

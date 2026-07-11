@@ -2,7 +2,7 @@ package com.altaira.backend.controller;
 
 import com.altaira.backend.dto.note.CreateInternalNoteRequest;
 import com.altaira.backend.dto.note.InternalNoteResponse;
-import com.altaira.backend.security.InternalApiTokenService;
+import com.altaira.backend.security.AdminAccessService;
 import com.altaira.backend.service.InternalNoteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,19 +20,20 @@ import java.util.UUID;
 public class InternalNoteController {
 
     private final InternalNoteService internalNoteService;
-    private final InternalApiTokenService internalApiTokenService;
+    private final AdminAccessService adminAccessService;
 
-    public InternalNoteController(InternalNoteService internalNoteService, InternalApiTokenService internalApiTokenService) {
+    public InternalNoteController(InternalNoteService internalNoteService, AdminAccessService adminAccessService) {
         this.internalNoteService = internalNoteService;
-        this.internalApiTokenService = internalApiTokenService;
+        this.adminAccessService = adminAccessService;
     }
 
     @GetMapping("/api/v1/leads/{leadId}/notes")
     public List<InternalNoteResponse> getLeadNotes(
             @PathVariable UUID leadId,
-            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
     ) {
-        internalApiTokenService.requireValidToken(internalApiToken);
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return internalNoteService.getLeadNotes(leadId);
     }
 
@@ -40,9 +41,10 @@ public class InternalNoteController {
     public ResponseEntity<InternalNoteResponse> addLeadNote(
             @PathVariable UUID leadId,
             @Valid @RequestBody CreateInternalNoteRequest request,
-            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
     ) {
-        internalApiTokenService.requireValidToken(internalApiToken);
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return ResponseEntity.status(HttpStatus.CREATED).body(internalNoteService.addLeadNote(leadId, request));
     }
 }

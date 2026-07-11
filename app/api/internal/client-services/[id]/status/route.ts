@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { backendServiceUnavailableResponse, backendUrl, invalidJsonResponse, readJson } from "@/lib/server-backend-api"
-import { isAdminAuthenticated } from "@/lib/server-admin-auth"
+import { adminBackendHeaders, isAdminAuthenticated } from "@/lib/server-admin-auth"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -23,10 +23,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const response = await fetch(backendUrl(`/api/v1/client-services/${id}/status`), {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-API-Token": process.env.INTERNAL_API_TOKEN || "",
-      },
+      headers: await adminBackendHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     })

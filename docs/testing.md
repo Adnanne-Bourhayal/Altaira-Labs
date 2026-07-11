@@ -150,7 +150,7 @@ Login and list leads:
 COOKIE_JAR=/tmp/altaira-cookies.txt
 curl -i -c "$COOKIE_JAR" -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@altaira.local","password":"altaira_admin_dev_password"}'
+  -d '{"username":"admin123","password":"admin123"}'
 
 curl -i -b "$COOKIE_JAR" http://localhost:3000/api/internal/leads
 ```

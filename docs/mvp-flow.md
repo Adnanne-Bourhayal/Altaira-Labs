@@ -60,11 +60,11 @@ Unavailable backend behavior:
 ## Admin Lead Management Flow
 
 1. Admin signs in at `/login`.
-2. Successful login creates the `altaira_admin_auth` HTTP-only cookie.
+2. Successful login creates the `altaira_admin_session` HTTP-only cookie.
 3. Middleware allows access to `/leads`.
 4. The lead dashboard calls `GET /api/internal/leads`.
-5. Next verifies the admin cookie.
-6. Next calls Spring Boot with `X-Internal-API-Token`.
+5. Next validates the admin session against Spring Boot `/api/v1/auth/me`.
+6. Next calls Spring Boot with session/internal admin headers.
 7. Spring Boot returns leads ordered by newest first.
 8. Admin opens a lead detail page at `/leads/{id}`.
 9. Admin updates status through `PATCH /api/internal/leads/{id}/status`.

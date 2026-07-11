@@ -32,6 +32,7 @@ Backend:
 - Java 21
 - Spring Boot 3
 - Spring Data JPA / Hibernate
+- BCrypt password hashing via Spring Security crypto
 
 Database:
 - PostgreSQL (Neon)
@@ -67,6 +68,10 @@ Although simplified for demonstration purposes, the system includes practical se
 
 - Rate limiting (Bucket4j) to mitigate abuse and automated submissions  
 - Input validation using Jakarta Validation  
+- Database-backed demo/admin users with BCrypt password hashes
+- HTTP-only admin session cookies with hashed backend sessions
+- Basic security event logging for login and user lifecycle events
+- Minimal roles: admin, consultant, auditor
 - Separation between public endpoints and internal routes  
 - API proxy layer to avoid direct exposure of backend services  
 - Environment variable isolation (no secrets in codebase)
@@ -91,6 +96,8 @@ These decisions reflect common backend protections used in production environmen
 ## Core Functionality
 
 - Lead creation and persistence
+- Admin login and protected admin workspace
+- Client and service management core
 - Backend validation and error handling
 - Controlled API exposure
 - Integration between distributed services (frontend ↔ backend ↔ database)
@@ -100,10 +107,16 @@ These decisions reflect common backend protections used in production environmen
 
 ## API Overview
 
+POST   /api/v1/auth/login
+GET    /api/v1/auth/me
+POST   /api/v1/auth/logout
 POST   /api/v1/leads  
 GET    /api/v1/leads  
 GET    /api/v1/leads/{id}  
 PATCH  /api/v1/leads/{id}/status  
+GET    /api/v1/clients
+POST   /api/v1/clients
+GET    /api/v1/services
 
 Health:
 GET /api/v1/health  

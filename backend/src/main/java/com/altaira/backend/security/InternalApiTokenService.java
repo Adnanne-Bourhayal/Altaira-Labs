@@ -15,8 +15,12 @@ public class InternalApiTokenService {
     }
 
     public void requireValidToken(String providedToken) {
-        if (providedToken == null || providedToken.isBlank() || !providedToken.equals(internalApiToken)) {
+        if (!isValidToken(providedToken)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal API token");
         }
+    }
+
+    public boolean isValidToken(String providedToken) {
+        return providedToken != null && !providedToken.isBlank() && providedToken.equals(internalApiToken);
     }
 }

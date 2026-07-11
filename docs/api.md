@@ -76,7 +76,7 @@ Malformed JSON returns `400`:
 
 ## Admin Frontend API
 
-These routes require the `altaira_admin_auth` cookie.
+These routes require the `altaira_admin_session` HTTP-only cookie.
 
 ### Login
 
@@ -89,15 +89,21 @@ Body:
 
 ```json
 {
-  "email": "admin@altaira.local",
-  "password": "altaira_admin_dev_password"
+  "username": "admin123",
+  "password": "admin123"
 }
 ```
 
 Success:
 
 ```json
-{ "success": true }
+{
+  "success": true,
+  "user": {
+    "username": "admin123",
+    "role": "admin"
+  }
+}
 ```
 
 Malformed JSON or a non-object request body returns `400`.
@@ -118,7 +124,7 @@ Success:
 
 ```http
 GET /api/internal/leads
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 Returns leads ordered by newest first.
@@ -133,14 +139,14 @@ Unauthenticated response:
 
 ```http
 GET /api/internal/leads/{id}
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 ### Update Lead Status
 
 ```http
 PATCH /api/internal/leads/{id}/status
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 Content-Type: application/json
 ```
 
@@ -160,7 +166,7 @@ Allowed statuses:
 
 ```http
 POST /api/internal/clients/from-lead/{leadId}
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 Creates a client from an existing lead. The operation is idempotent: if the lead already has a client, the existing client is returned.
@@ -170,7 +176,7 @@ Creates a client from an existing lead. The operation is idempotent: if the lead
 ```http
 GET /api/internal/clients
 POST /api/internal/clients
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 Client creation body:
@@ -188,7 +194,7 @@ Client creation body:
 
 ```http
 GET /api/internal/clients/{id}
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 ### Services Catalogue
@@ -196,7 +202,7 @@ Cookie: altaira_admin_auth=true
 ```http
 GET /api/internal/services
 POST /api/internal/services
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 ### Assign Service To Client
@@ -204,7 +210,7 @@ Cookie: altaira_admin_auth=true
 ```http
 GET /api/internal/clients/{clientId}/services
 POST /api/internal/clients/{clientId}/services
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 Assignment body:
@@ -220,7 +226,7 @@ Assignment body:
 
 ```http
 PATCH /api/internal/client-services/{id}/status
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 Content-Type: application/json
 ```
 
@@ -239,7 +245,7 @@ GET /api/internal/leads/{id}/notes
 POST /api/internal/leads/{id}/notes
 GET /api/internal/clients/{id}/notes
 POST /api/internal/clients/{id}/notes
-Cookie: altaira_admin_auth=true
+Cookie: altaira_admin_session=<http-only-session-cookie>
 ```
 
 Note body:

@@ -148,7 +148,10 @@ export default function ClientDetailPage() {
     fetchClientData()
   }, [fetchClientData])
 
-  const activeServices = useMemo(() => services.filter((service) => service.active), [services])
+  const assignableServices = useMemo(() => {
+    const assignedServiceIds = new Set(clientServices.map((assignment) => assignment.service.id))
+    return services.filter((service) => service.active && !assignedServiceIds.has(service.id))
+  }, [clientServices, services])
 
   const assignService = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -439,12 +442,17 @@ export default function ClientDetailPage() {
                 className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
               >
                 <option value="">Select service</option>
-                {activeServices.map((service) => (
+                {assignableServices.map((service) => (
                   <option key={service.id} value={service.id}>
                     {service.name}
                   </option>
                 ))}
               </select>
+              {assignableServices.length === 0 && (
+                <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                  All active services are already assigned to this client.
+                </p>
+              )}
               <textarea
                 value={serviceNotes}
                 onChange={(event) => setServiceNotes(event.target.value)}
@@ -453,7 +461,7 @@ export default function ClientDetailPage() {
                 className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500/40"
               />
               <button
-                disabled={assigning}
+                disabled={assigning || assignableServices.length === 0}
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
               >
                 {assigning ? "Assigning..." : "Assign Service"}

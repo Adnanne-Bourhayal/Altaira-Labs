@@ -36,6 +36,21 @@ public class ClientServiceAssignmentService {
         ClientEntity client = clientManagementService.findClientEntity(clientId);
         ServiceEntity service = serviceCatalogService.findServiceEntity(request.getServiceId());
 
+        var existingAssignment = clientServiceRepository.findByClientAndService(client, service);
+        if (existingAssignment.isPresent()) {
+            ClientServiceEntity entity = existingAssignment.get();
+
+            if (request.getStatus() != null && !request.getStatus().isBlank()) {
+                entity.setStatus(ClientServiceStatus.parse(request.getStatus()).value());
+            }
+
+            if (request.getNotes() != null && !request.getNotes().isBlank()) {
+                entity.setNotes(trimOptional(request.getNotes()));
+            }
+
+            return map(clientServiceRepository.save(entity));
+        }
+
         ClientServiceEntity entity = new ClientServiceEntity();
         entity.setClient(client);
         entity.setService(service);

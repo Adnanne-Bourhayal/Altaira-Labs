@@ -120,6 +120,10 @@ This keeps the system practical without adding a heavy communication module.
 11. Add a client note.
 12. Verify records in PostgreSQL/Neon using DBeaver, pgAdmin, TablePlus, or Neon Console.
 
+The service assignment action is intentionally idempotent for the same client and service.
+If an admin tries to assign a service that is already linked to the client, the existing
+`client_services` row is reused instead of creating duplicate work.
+
 ## Database Verification
 
 Useful SQL:
@@ -148,9 +152,20 @@ left join public.services s on s.id = cs.service_id
 order by c.created_at desc;
 ```
 
+## Admin Login Visibility
+
+Recommended setup for the TFG/demo:
+
+- Keep `/login` accessible by direct URL.
+- Do not show the admin login in the public website menu.
+- Use the direct login URL during the TFG presentation.
+- For a future real product, move toward a dedicated workspace/admin entry point and stronger production auth.
+
+This keeps the demo easy to access without presenting internal administration as part of the public marketing site.
+
 ## Known Limits
 
-- Admin auth is still simple MVP auth.
+- Admin auth is DB-backed demo/TFG auth with BCrypt and session cookies, but still has no MFA or password reset.
 - No payment, invoicing or external CRM integration is implemented.
 - No file upload system is implemented.
 - No advanced RBAC is implemented.

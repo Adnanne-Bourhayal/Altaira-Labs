@@ -36,6 +36,11 @@ SPRING_DATASOURCE_URL
 SPRING_DATASOURCE_USERNAME
 SPRING_DATASOURCE_PASSWORD
 INTERNAL_API_TOKEN
+ALTAIRA_AUTH_SESSION_HOURS
+ALTAIRA_DEMO_ADMIN_ENABLED
+ALTAIRA_DEMO_ADMIN_USERNAME
+ALTAIRA_DEMO_ADMIN_PASSWORD
+ALTAIRA_DEMO_ADMIN_ROLE
 ```
 
 Expected local helper variable:
@@ -159,6 +164,43 @@ Allowed statuses:
 
 `internal_notes` stores internal notes attached to a lead or a client.
 
+## Auth/Security Schema
+
+Admin/demo authentication now adds:
+
+```text
+public.app_users
+public.app_user_sessions
+public.security_events
+```
+
+Migration SQL:
+
+```text
+backend/database/auth-security-migration.sql
+```
+
+Demo admin seed SQL:
+
+```text
+backend/database/auth-demo-admin-seed.sql
+```
+
+Demo/local/TFG login:
+
+```text
+username: admin123
+password: admin123
+role: admin
+```
+
+Important security details:
+
+- `app_users.password_hash` stores BCrypt hashes, not plaintext passwords.
+- `app_user_sessions.session_token_hash` stores SHA-256 hashes of session tokens, not raw session tokens.
+- `security_events` records `login_success`, `login_failed`, `user_created`, `logout`, and reserved future events.
+- The demo credential is for local/TFG demonstration, not serious production.
+
 ## Visual Database Checks
 
 Use Neon Console, DBeaver, pgAdmin, or TablePlus.
@@ -171,6 +213,9 @@ select count(*) from public.clients;
 select count(*) from public.services;
 select count(*) from public.client_services;
 select count(*) from public.internal_notes;
+select count(*) from public.app_users;
+select count(*) from public.app_user_sessions;
+select count(*) from public.security_events;
 ```
 
 Connected flow check:

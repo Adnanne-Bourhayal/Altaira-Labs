@@ -3,7 +3,7 @@ package com.altaira.backend.controller;
 import com.altaira.backend.dto.lead.CreateLeadRequest;
 import com.altaira.backend.dto.lead.LeadResponse;
 import com.altaira.backend.dto.lead.UpdateLeadStatusRequest;
-import com.altaira.backend.security.InternalApiTokenService;
+import com.altaira.backend.security.AdminAccessService;
 import com.altaira.backend.security.RateLimiterService;
 import com.altaira.backend.service.LeadService;
 import io.github.bucket4j.Bucket;
@@ -27,32 +27,34 @@ public class LeadController {
 
     private final LeadService leadService;
     private final RateLimiterService rateLimiterService;
-    private final InternalApiTokenService internalApiTokenService;
+    private final AdminAccessService adminAccessService;
 
     public LeadController(
             LeadService leadService,
             RateLimiterService rateLimiterService,
-            InternalApiTokenService internalApiTokenService
+            AdminAccessService adminAccessService
     ) {
         this.leadService = leadService;
         this.rateLimiterService = rateLimiterService;
-        this.internalApiTokenService = internalApiTokenService;
+        this.adminAccessService = adminAccessService;
     }
 
     @GetMapping
     public List<LeadResponse> getAllLeads(
-            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
     ) {
-        internalApiTokenService.requireValidToken(internalApiToken);
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return leadService.getAllLeads();
     }
 
     @GetMapping("/{id}")
     public LeadResponse getLeadById(
             @PathVariable UUID id,
-            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
     ) {
-        internalApiTokenService.requireValidToken(internalApiToken);
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return leadService.getLeadById(id);
     }
 
@@ -60,9 +62,10 @@ public class LeadController {
     public LeadResponse updateStatus(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateLeadStatusRequest request,
-            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
     ) {
-        internalApiTokenService.requireValidToken(internalApiToken);
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return leadService.updateStatus(id, request.getStatus());
     }
 
