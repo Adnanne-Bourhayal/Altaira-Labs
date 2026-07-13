@@ -80,8 +80,10 @@ Start backend:
 
 ```bash
 cd backend
-INTERNAL_API_TOKEN=<same-token-as-frontend> ./mvnw spring-boot:run
+./mvnw spring-boot:run
 ```
+
+This loads `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` through Spring Boot config import.
 
 Check health:
 
@@ -135,7 +137,7 @@ Create lead through Next proxy:
 ```bash
 curl -i -X POST http://localhost:3000/api/leads \
   -H "Content-Type: application/json" \
-  -d '{"fullName":"Test Lead","businessName":"Altaira QA","email":"qa@example.com"}'
+  -d '{"fullName":"Test Lead","businessName":"Altaira QA","email":"qa@example.com","phone":"+32 470 00 00 00","industry":"Contact request","serviceInterest":"Booking Systems","goals":"Testing the public contact flow."}'
 ```
 
 Expected:
@@ -143,6 +145,7 @@ Expected:
 - `201 Created`.
 - Response status is `new`.
 - Lead is persisted in PostgreSQL.
+- Response includes `emailNotificationSent`; if it is `false`, the lead is still saved and SMTP needs configuration.
 
 Login and list leads:
 

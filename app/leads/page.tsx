@@ -11,7 +11,9 @@ type Lead = {
   fullName: string
   businessName: string
   email: string
+  phone?: string
   industry: string
+  serviceInterest?: string
   goals: string
   status: string
   createdAt: string
@@ -43,7 +45,7 @@ export default function LeadsPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -67,7 +69,7 @@ export default function LeadsPage() {
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
-    router.push("/login")
+    router.push("/admin/login")
     router.refresh()
   }
 
@@ -80,7 +82,9 @@ export default function LeadsPage() {
       const matchesSearch =
         lead.fullName.toLowerCase().includes(search.toLowerCase()) ||
         lead.businessName.toLowerCase().includes(search.toLowerCase()) ||
-        lead.email.toLowerCase().includes(search.toLowerCase())
+        lead.email.toLowerCase().includes(search.toLowerCase()) ||
+        (lead.phone || "").toLowerCase().includes(search.toLowerCase()) ||
+        (lead.serviceInterest || "").toLowerCase().includes(search.toLowerCase())
 
       const matchesStatus =
         statusFilter === "all" ? true : lead.status.toLowerCase() === statusFilter.toLowerCase()
@@ -257,7 +261,7 @@ export default function LeadsPage() {
                 <div className="col-span-2">Name</div>
                 <div className="col-span-2">Business</div>
                 <div className="col-span-3">Email</div>
-                <div className="col-span-2">Industry</div>
+                <div className="col-span-2">Interest</div>
                 <div className="col-span-1">Status</div>
                 <div className="col-span-2">Created</div>
               </div>
@@ -274,7 +278,7 @@ export default function LeadsPage() {
                   </div>
                   <div className="col-span-2 text-white/80">{lead.businessName}</div>
                   <div className="col-span-3 text-white/70 break-all">{lead.email}</div>
-                  <div className="col-span-2 text-white/60">{lead.industry || "-"}</div>
+                  <div className="col-span-2 text-white/60">{lead.serviceInterest || lead.industry || "-"}</div>
                   <div className="col-span-1">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs border ${statusBadgeClass(lead.status)}`}>
                       {statusLabel(lead.status)}
@@ -308,8 +312,13 @@ export default function LeadsPage() {
                     <p className="text-white/70 break-all">
                       <span className="text-white/40">Email:</span> {lead.email}
                     </p>
+                    {lead.phone && (
+                      <p className="text-white/70">
+                        <span className="text-white/40">Phone:</span> {lead.phone}
+                      </p>
+                    )}
                     <p className="text-white/70">
-                      <span className="text-white/40">Industry:</span> {lead.industry || "-"}
+                      <span className="text-white/40">Interest:</span> {lead.serviceInterest || lead.industry || "-"}
                     </p>
                     <p className="text-white/50">
                       <span className="text-white/40">Created:</span>{" "}

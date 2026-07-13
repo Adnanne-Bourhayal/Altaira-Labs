@@ -21,7 +21,12 @@ public class LeadEntity {
     @Column(nullable = false)
     private String email;
 
+    private String phone;
     private String industry;
+
+    @Column(name = "service_interest")
+    private String serviceInterest;
+
     private String goals;
 
     @Column(nullable = false)
@@ -44,8 +49,14 @@ public class LeadEntity {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
     public String getIndustry() { return industry; }
     public void setIndustry(String industry) { this.industry = industry; }
+
+    public String getServiceInterest() { return serviceInterest; }
+    public void setServiceInterest(String serviceInterest) { this.serviceInterest = serviceInterest; }
 
     public String getGoals() { return goals; }
     public void setGoals(String goals) { this.goals = goals; }

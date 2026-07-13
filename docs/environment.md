@@ -41,6 +41,15 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `ALTAIRA_DEMO_ADMIN_USERNAME` | Local backend env, Render | Demo/TFG auth setup | No | Current demo value: `admin123`. |
 | `ALTAIRA_DEMO_ADMIN_PASSWORD` | Local backend env, Render | Demo/TFG auth setup | Yes in real production | Current public demo value: `admin123`; change for real deployments. |
 | `ALTAIRA_DEMO_ADMIN_ROLE` | Local backend env, Render | Demo/TFG auth setup | No | Current demo value: `admin`. |
+| `CONTACT_EMAIL_ENABLED` | Local backend env, Render | Chosen email notification setting | No | Use `true` to send contact notifications. |
+| `CONTACT_NOTIFICATION_TO` | Local backend env, Render | Business inbox | No | Current target: `altairalabs@gmail.com`. |
+| `CONTACT_NOTIFICATION_FROM` | Local backend env, Render | Verified SMTP sender | Low sensitivity | Usually the same mailbox or a verified sender address. |
+| `SPRING_MAIL_HOST` | Local backend env, Render | SMTP provider | No | Example shape: `smtp.gmail.com`, SendGrid, Brevo, Mailgun, etc. |
+| `SPRING_MAIL_PORT` | Local backend env, Render | SMTP provider | No | Usually `587` for STARTTLS. |
+| `SPRING_MAIL_USERNAME` | Local backend env, Render | SMTP provider | Yes | SMTP username or email address. |
+| `SPRING_MAIL_PASSWORD` | Local backend env, Render | SMTP provider | Yes | SMTP password, API key, or Gmail app password. |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | Local backend env, Render | SMTP provider | No | Usually `true`. |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | Local backend env, Render | SMTP provider | No | Usually `true` for port `587`. |
 
 ## Correct Database URL Shapes
 
@@ -72,6 +81,7 @@ Do not use phpMyAdmin. This project uses PostgreSQL, not MySQL.
 | Neon database password | Neon Console -> role/user password or connection details | Render `SPRING_DATASOURCE_PASSWORD`; local `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env`; visual DB client password field |
 | Demo/admin password | Backend auth seed or Render `ALTAIRA_DEMO_ADMIN_PASSWORD` | Stored in DB only as BCrypt `app_users.password_hash`; current TFG demo is `admin123` |
 | Internal API token | You choose/generate one shared token | Render `INTERNAL_API_TOKEN`; Vercel `INTERNAL_API_TOKEN`; local `.env.local`; local `.secrets/neon-render.env` |
+| SMTP password/API key | Email provider dashboard or Gmail app password flow | Render `SPRING_MAIL_PASSWORD`; local backend secrets file if testing email locally |
 
 ## Rotation Checklist
 

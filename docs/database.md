@@ -21,6 +21,8 @@ Do not commit database passwords or full connection strings. Local secrets are s
 /Volumes/T7/Altaira_Labs/.secrets/neon-render.env
 ```
 
+The local Spring Boot backend imports this file automatically through `backend/src/main/resources/application.properties`.
+
 For the full map of where each environment variable, password, and token belongs, see:
 
 ```text
@@ -65,7 +67,9 @@ Current columns:
 | `full_name` | `character varying` | no | none |
 | `business_name` | `character varying` | no | none |
 | `email` | `character varying` | no | none |
+| `phone` | `character varying` | yes | none |
 | `industry` | `character varying` | yes | none |
+| `service_interest` | `character varying` | yes | none |
 | `goals` | `character varying` | yes | none |
 | `status` | `character varying` | no | `'new'` |
 | `created_at` | `timestamp with time zone` | no | `now()` |
@@ -83,6 +87,12 @@ The documented SQL baseline lives at:
 
 ```text
 backend/database/schema.sql
+```
+
+The additive SQL for the public contact lead fields lives at:
+
+```text
+backend/database/contact-lead-fields-migration.sql
 ```
 
 No seed file is required for the MVP. Demo/test data should be created through the public lead form or API so the real flow is exercised.
@@ -240,11 +250,16 @@ Run from the backend folder:
 
 ```bash
 cd /Volumes/T7/Altaira_Labs/Altaira_Labs_web/backend
-set -a
-source /Volumes/T7/Altaira_Labs/.secrets/neon-render.env
-set +a
 ./mvnw spring-boot:run
 ```
+
+The command above uses Neon because `application.properties` imports:
+
+```text
+/Volumes/T7/Altaira_Labs/.secrets/neon-render.env
+```
+
+If you see `FATAL: role "altaira" does not exist`, the backend is using the old local PostgreSQL fallback. The current configuration should not set `SPRING_DATASOURCE_USERNAME=altaira` unless you intentionally created that local role.
 
 Verify local backend health:
 

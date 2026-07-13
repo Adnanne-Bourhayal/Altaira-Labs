@@ -66,12 +66,20 @@ docs/environment.md
 
 ## Backend Environment
 
-The backend has local fallback defaults in `backend/src/main/resources/application.properties`:
+Current recommended local backend database: Neon PostgreSQL.
+
+`backend/src/main/resources/application.properties` imports the local secrets file automatically:
 
 ```text
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/altaira
-SPRING_DATASOURCE_USERNAME=altaira
-SPRING_DATASOURCE_PASSWORD=<local-postgres-password>
+/Volumes/T7/Altaira_Labs/.secrets/neon-render.env
+```
+
+Required variables:
+
+```text
+SPRING_DATASOURCE_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require
+SPRING_DATASOURCE_USERNAME=<neon-database-user>
+SPRING_DATASOURCE_PASSWORD=<neon-database-password>
 INTERNAL_API_TOKEN=<same-token-as-frontend-server>
 ALTAIRA_DEMO_ADMIN_ENABLED=true
 ALTAIRA_DEMO_ADMIN_USERNAME=admin123
@@ -79,17 +87,15 @@ ALTAIRA_DEMO_ADMIN_PASSWORD=admin123
 ALTAIRA_DEMO_ADMIN_ROLE=admin
 ```
 
-For Neon/Render validation, load real local secrets from:
+The previous fallback values `SPRING_DATASOURCE_USERNAME=altaira` and `jdbc:postgresql://localhost:5432/altaira` are no longer the default because they fail unless a matching local PostgreSQL role and database exist.
 
-```text
-/Volumes/T7/Altaira_Labs/.secrets/neon-render.env
-```
+For deployed environments, configure the same backend variables in Render. Configure frontend variables such as `NEXT_PUBLIC_API_URL` and `INTERNAL_API_TOKEN` in Vercel.
 
-For deployed environments, override these with platform environment variables in Render and Vercel.
+## Optional Local PostgreSQL Setup
 
-## Local PostgreSQL Setup
+Use this only if you intentionally want a local database instead of Neon.
 
-Option A: existing local PostgreSQL.
+Option A: existing local PostgreSQL:
 
 ```bash
 psql postgres
@@ -102,13 +108,11 @@ CREATE ROLE altaira LOGIN PASSWORD '<local-postgres-password>';
 CREATE DATABASE altaira OWNER altaira;
 ```
 
-Option B: Docker Compose, if Docker is installed.
+Option B: Docker Compose, if Docker is installed:
 
 ```bash
 docker compose up -d postgres
 ```
-
-The compose file starts a PostgreSQL 16 container with the same local credentials.
 
 Validate local database connectivity:
 
@@ -144,8 +148,10 @@ Terminal 1, backend:
 
 ```bash
 cd backend
-INTERNAL_API_TOKEN=<same-token-as-frontend> ./mvnw spring-boot:run
+./mvnw spring-boot:run
 ```
+
+This uses `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` automatically.
 
 Backend health:
 

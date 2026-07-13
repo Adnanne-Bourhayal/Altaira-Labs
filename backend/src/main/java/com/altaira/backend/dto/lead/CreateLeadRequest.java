@@ -18,8 +18,14 @@ public class CreateLeadRequest {
     @Email(message = "Email must be valid")
     private String email;
 
+    @Size(max = 50, message = "Phone must be at most 50 characters")
+    private String phone;
+
     @Size(max = 50, message = "Industry must be at most 50 characters")
     private String industry;
+
+    @Size(max = 120, message = "Service interest must be at most 120 characters")
+    private String serviceInterest;
 
     @Size(max = 1000, message = "Goals must be at most 1000 characters")
     private String goals;
@@ -50,12 +56,28 @@ public class CreateLeadRequest {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public String getIndustry() {
         return industry;
     }
 
     public void setIndustry(String industry) {
         this.industry = industry;
+    }
+
+    public String getServiceInterest() {
+        return serviceInterest;
+    }
+
+    public void setServiceInterest(String serviceInterest) {
+        this.serviceInterest = serviceInterest;
     }
 
     public String getGoals() {

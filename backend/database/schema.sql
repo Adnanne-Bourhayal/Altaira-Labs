@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS public.leads (
     full_name character varying NOT NULL,
     business_name character varying NOT NULL,
     email character varying NOT NULL,
+    phone character varying,
     industry character varying,
+    service_interest character varying,
     goals character varying,
     status character varying NOT NULL DEFAULT 'new',
     created_at timestamp with time zone NOT NULL DEFAULT now()

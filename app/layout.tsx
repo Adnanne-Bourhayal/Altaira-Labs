@@ -1,32 +1,28 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
-import { LanguageProvider } from "@/lib/language-context"
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-  variable: "--font-inter",
-})
 
 export const metadata: Metadata = {
-  title: "Altaira Labs - More Clients. Less Manual Work.",
+  title: "Altaira Labs | Digital systems for local SMEs",
   description:
-    "Digital growth agency helping businesses grow online with websites, automation, and lead generation systems that work 24/7. Get more clients on autopilot.",
-  keywords: "digital agency, lead generation, business automation, website design, booking systems, growth marketing, Belgium, Spain, Netherlands",
+    "Altaira Labs helps small businesses replace manual work with clear digital systems: websites, booking flows, dashboards, automations and client management tools.",
+  keywords:
+    "technology consulting for SMEs, small business automation, booking systems, management dashboards, CRM lead management, professional websites, workflow automation, Belgium SMEs, Benelux digital systems, local business software",
   authors: [{ name: "Altaira Labs" }],
   openGraph: {
-    title: "Altaira Labs - More Clients. Less Manual Work.",
-    description: "Digital growth agency - websites, automation & lead generation that works 24/7",
+    title: "Altaira Labs | Digital systems for local SMEs",
+    description:
+      "Practical technology systems for SMEs that want more control, less manual work and a clearer way to manage clients, services and daily operations.",
     type: "website",
   },
-  generator: 'v0.app'
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#050810",
+  themeColor: "#f8fafc",
   width: "device-width",
   initialScale: 1,
 }
@@ -37,15 +33,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <head>
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
-      <body className="font-sans antialiased">
-        <LanguageProvider>
-          {children}
-        </LanguageProvider>
-      </body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   )
 }

@@ -107,7 +107,7 @@ export default function ClientDetailPage() {
       ])
 
       if ([clientResponse, servicesResponse, assignedResponse, notesResponse].some((response) => response.status === 401)) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -174,7 +174,7 @@ export default function ClientDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected assignment response" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -203,7 +203,7 @@ export default function ClientDetailPage() {
     const data = await response.json().catch(() => ({ error: "Unexpected status response" }))
 
     if (response.status === 401) {
-      router.replace("/login")
+      router.replace("/admin/login")
       return
     }
 
@@ -233,7 +233,7 @@ export default function ClientDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected note response" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 

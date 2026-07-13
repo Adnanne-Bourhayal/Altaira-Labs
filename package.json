@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "clean:appledouble": "find . -name '._*' -not -path './node_modules/*' -not -path './.git/*' -delete",
+    "clean:next": "rm -rf .next",
     "dev": "next dev",
+    "predev": "npm run clean:appledouble && npm run clean:next",
     "lint": "eslint .",
     "start": "next start"
   },

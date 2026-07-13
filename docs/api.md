@@ -23,7 +23,9 @@ Body:
   "fullName": "Test Lead",
   "businessName": "Altaira QA",
   "email": "qa@example.com",
+  "phone": "+32 470 00 00 00",
   "industry": "Testing",
+  "serviceInterest": "Booking Systems",
   "goals": "Verify lead capture"
 }
 ```
@@ -36,12 +38,20 @@ Success response: `201 Created`
   "fullName": "Test Lead",
   "businessName": "Altaira QA",
   "email": "qa@example.com",
+  "phone": "+32 470 00 00 00",
   "industry": "Testing",
+  "serviceInterest": "Booking Systems",
   "goals": "Verify lead capture",
   "status": "new",
-  "createdAt": "2026-07-02T12:31:20.338299Z"
+  "createdAt": "2026-07-02T12:31:20.338299Z",
+  "emailNotificationSent": true,
+  "emailNotificationMessage": "Email notification sent."
 }
 ```
+
+The lead is persisted before the email notification is attempted. If SMTP is missing or the email provider rejects the
+message, the response can still be `201 Created` with `emailNotificationSent: false`; the lead is still stored and should
+be visible in the admin dashboard.
 
 If the Spring Boot lead service is unavailable, the proxy returns:
 
@@ -292,7 +302,7 @@ Content-Type: application/json
 Success response: `201 Created`.
 
 This endpoint is rate limited by IP. Required fields are `fullName`, `businessName`, and `email`.
-The backend trims name/business/email input, lowercases email, stores new leads with status `new`, and rejects invalid email or missing required values.
+The backend trims name/business/email input, lowercases email, stores new leads with status `new`, tries to send an email notification to the configured contact inbox, and rejects invalid email or missing required values.
 
 Validation rules:
 

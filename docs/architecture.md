@@ -23,7 +23,7 @@ Local development:
 ```text
 Next.js dev server: http://localhost:3000
 Spring Boot backend: http://localhost:8080
-PostgreSQL: localhost:5432/altaira
+PostgreSQL: Neon via /Volumes/T7/Altaira_Labs/.secrets/neon-render.env
 ```
 
 ## Frontend Responsibilities

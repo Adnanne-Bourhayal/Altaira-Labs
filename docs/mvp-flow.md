@@ -26,27 +26,30 @@ Excluded for now:
 - Client management in the original Sprint 1 boundary.
 - Service management in the original Sprint 1 boundary.
 - CRM integrations.
-- Email automation.
+- Advanced email automation.
 - Multi-user roles.
 - Advanced analytics.
 
 ## Public Lead Submission Flow
 
-1. A visitor fills in name, business name, and email in the website contact form.
+1. A visitor fills in name, business name, email, optional phone and message in a public website contact form.
 2. The browser performs basic client-side validation.
 3. The form submits to the Next.js route `POST /api/leads`.
 4. Next forwards the request to Spring Boot at `POST /api/v1/leads`.
 5. Spring Boot validates the DTO.
 6. The lead is trimmed, normalized, assigned status `new`, and saved to PostgreSQL.
-7. The response returns to Next and then to the browser.
-8. The visitor sees success feedback or a clear error message.
+7. Spring Boot tries to send an internal email notification to the configured inbox.
+8. The response returns to Next and then to the browser.
+9. The visitor sees success feedback, an email-configuration warning, or a clear error message.
 
 Validation behavior:
 
 - `fullName` is required and must be between 2 and 100 characters.
 - `businessName` is required and must be between 2 and 120 characters.
 - `email` is required and must be valid.
+- `phone` is optional and must be at most 50 characters.
 - `industry` is optional and must be at most 50 characters.
+- `serviceInterest` is optional and must be at most 120 characters.
 - `goals` is optional and must be at most 1000 characters.
 - Email is normalized to lowercase before persistence.
 - The public form trims name, business name, and email before submitting.
@@ -56,6 +59,10 @@ Unavailable backend behavior:
 
 - If Spring Boot cannot be reached, Next returns `503`.
 - The public form shows a retry-friendly service unavailable message.
+- If the lead is saved but the email notification fails, the API still returns the saved lead with
+  `emailNotificationSent: false`.
+- The email notification body includes lead id, name, business, email, phone, context, service/interest, status,
+  created timestamp and message/goals.
 
 ## Admin Lead Management Flow
 
@@ -130,10 +137,10 @@ Demo sequence:
 
 - Admin authentication is simple and intended for MVP demonstration, not enterprise identity management.
 - Database migrations are not yet implemented.
-- No email notification is sent when a lead is created.
+- Email notification now exists for public lead creation, but it depends on SMTP variables being configured in Render.
 - Client and service management are covered by the controlled academic core expansion, not by the original lead-only Sprint 1 boundary.
 - Rate limiting is in-memory, so it resets when the backend restarts.
 
 ## Future Work Boundary
 
-Future work can add client/service modules, roles, production authentication, email notifications, migration tooling, and deployment hardening. Those items should not be added inside Sprint 1 unless required to keep the lead MVP stable.
+Future work can add client invitation flows, roles, production authentication, richer email automation, migration tooling, and deployment hardening. Those items should not be added inside Sprint 1 unless required to keep the lead MVP stable.

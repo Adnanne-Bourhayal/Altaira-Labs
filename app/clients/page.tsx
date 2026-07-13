@@ -49,7 +49,7 @@ export default function ClientsPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from client service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -100,7 +100,7 @@ export default function ClientsPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from client service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 

@@ -65,7 +65,7 @@ public class ClientManagementService {
         entity.setName(lead.getFullName());
         entity.setCompany(lead.getBusinessName());
         entity.setEmail(lead.getEmail());
-        entity.setPhone("");
+        entity.setPhone(trimOptional(lead.getPhone()));
         entity.setSourceLead(lead);
         entity.setStatus(ClientStatus.ACTIVE.value());
 

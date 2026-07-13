@@ -7,7 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +23,8 @@ import com.altaira.backend.repository.LeadRepository;
 import com.altaira.backend.repository.SecurityEventRepository;
 import com.altaira.backend.repository.ServiceRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.util.UUID;
 
@@ -70,8 +75,12 @@ class BackendApplicationTests {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@MockitoBean
+	private JavaMailSender mailSender;
+
 	@BeforeEach
 	void resetDatabase() {
+		Mockito.reset(mailSender);
 		appUserSessionRepository.deleteAll();
 		securityEventRepository.deleteAll();
 		internalNoteRepository.deleteAll();
@@ -93,7 +102,9 @@ class BackendApplicationTests {
 								  "fullName": " Ada Lovelace ",
 								  "businessName": " Analytical Engines ",
 								  "email": "ADA@EXAMPLE.COM",
+								  "phone": " +32 470 11 22 33 ",
 								  "industry": " Software ",
+								  "serviceInterest": " Workflow Automation ",
 								  "goals": " Capture leads reliably "
 								}
 								"""))
@@ -102,7 +113,46 @@ class BackendApplicationTests {
 				.andExpect(jsonPath("$.fullName").value("Ada Lovelace"))
 				.andExpect(jsonPath("$.businessName").value("Analytical Engines"))
 				.andExpect(jsonPath("$.email").value("ada@example.com"))
+				.andExpect(jsonPath("$.phone").value("+32 470 11 22 33"))
+				.andExpect(jsonPath("$.serviceInterest").value("Workflow Automation"))
 				.andExpect(jsonPath("$.status").value("new"));
+	}
+
+	@Test
+	void sendsEmailNotificationWithFullPublicContactContext() throws Exception {
+		mockMvc.perform(post("/api/v1/leads")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Marta Ruiz",
+								  "businessName": "Ruiz Dental Studio",
+								  "email": "marta@example.com",
+								  "phone": "+32 470 44 55 66",
+								  "industry": "Service request",
+								  "serviceInterest": "Booking Systems",
+								  "goals": "Needs appointment requests and patient follow-up."
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.emailNotificationSent").value(true));
+
+		ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+		Mockito.verify(mailSender).send(messageCaptor.capture());
+
+		SimpleMailMessage message = messageCaptor.getValue();
+		String body = message.getText();
+
+		org.junit.jupiter.api.Assertions.assertEquals("altairalabs@gmail.com", message.getTo()[0]);
+		org.junit.jupiter.api.Assertions.assertEquals("marta@example.com", message.getReplyTo());
+		org.junit.jupiter.api.Assertions.assertEquals("New Altaira Labs lead: Ruiz Dental Studio", message.getSubject());
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Name: Marta Ruiz"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Business: Ruiz Dental Studio"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Email: marta@example.com"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Phone: +32 470 44 55 66"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Industry/context: Service request"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Service/interest: Booking Systems"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Created at: "));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Needs appointment requests and patient follow-up."));
 	}
 
 	@Test

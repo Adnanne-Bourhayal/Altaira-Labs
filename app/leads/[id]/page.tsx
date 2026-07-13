@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
-import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText, RefreshCw, AlertCircle, UserPlus, MessageSquare, Send } from "lucide-react"
+import { ArrowLeft, Building2, Mail, Briefcase, Calendar, FileText, RefreshCw, AlertCircle, UserPlus, MessageSquare, Send, Phone, Target } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { LEAD_STATUS_OPTIONS, type LeadStatus, isLeadStatus, statusBadgeClass, statusLabel } from "@/lib/lead-status"
 
@@ -11,7 +11,9 @@ type Lead = {
   fullName: string
   businessName: string
   email: string
+  phone?: string
   industry: string
+  serviceInterest?: string
   goals: string
   status: string
   createdAt: string
@@ -66,7 +68,7 @@ export default function LeadDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -94,7 +96,7 @@ export default function LeadDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from notes service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -131,7 +133,7 @@ export default function LeadDetailPage() {
       const updatedLead = await response.json().catch(() => ({ error: "Unexpected response from lead service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -161,7 +163,7 @@ export default function LeadDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from client service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -196,7 +198,7 @@ export default function LeadDetailPage() {
       const data = await response.json().catch(() => ({ error: "Unexpected response from notes service" }))
 
       if (response.status === 401) {
-        router.replace("/login")
+        router.replace("/admin/login")
         return
       }
 
@@ -370,10 +372,26 @@ export default function LeadDetailPage() {
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
               <div className="flex items-center gap-2 text-white/40 text-sm mb-3">
+                <Phone className="w-4 h-4" />
+                Phone
+              </div>
+              <p className="text-white/90">{lead.phone || "-"}</p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+              <div className="flex items-center gap-2 text-white/40 text-sm mb-3">
                 <Briefcase className="w-4 h-4" />
-                Industry
+                Context
               </div>
               <p className="text-white/90">{lead.industry || "-"}</p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+              <div className="flex items-center gap-2 text-white/40 text-sm mb-3">
+                <Target className="w-4 h-4" />
+                Service / interest
+              </div>
+              <p className="text-white/90">{lead.serviceInterest || "-"}</p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
