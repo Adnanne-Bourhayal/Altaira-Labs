@@ -50,6 +50,9 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `SPRING_MAIL_PASSWORD` | Local backend env, Render | SMTP provider | Yes | SMTP password, API key, or Gmail app password. |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH` | Local backend env, Render | SMTP provider | No | Usually `true`. |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | Local backend env, Render | SMTP provider | No | Usually `true` for port `587`. |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so a broken SMTP connection does not block the contact form. |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP reads cannot hang the request. |
+| `SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP writes cannot hang the request. |
 
 ## Correct Database URL Shapes
 
