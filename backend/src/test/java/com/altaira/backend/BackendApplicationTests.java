@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "altaira.contact.email.timeout-ms=250")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class BackendApplicationTests {
@@ -153,6 +153,39 @@ class BackendApplicationTests {
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Service/interest: Booking Systems"));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Created at: "));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Needs appointment requests and patient follow-up."));
+	}
+
+	@Test
+	void savesLeadWhenEmailNotificationTimesOut() throws Exception {
+		Mockito.doAnswer(invocation -> {
+			Thread.sleep(1500);
+			return null;
+		}).when(mailSender).send(Mockito.any(SimpleMailMessage.class));
+
+		String responseBody = mockMvc.perform(post("/api/v1/leads")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Slow SMTP",
+								  "businessName": "Timeout Test",
+								  "email": "slow-smtp@example.com",
+								  "phone": "+32 470 00 00 00",
+								  "industry": "Email timeout",
+								  "serviceInterest": "General contact",
+								  "goals": "The lead must be saved even if SMTP is slow."
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.emailNotificationSent").value(false))
+				.andExpect(jsonPath("$.emailNotificationMessage").value("Email notification timed out; lead was saved."))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode response = objectMapper.readTree(responseBody);
+		UUID leadId = UUID.fromString(response.get("id").asText());
+
+		org.junit.jupiter.api.Assertions.assertTrue(leadRepository.findById(leadId).isPresent());
 	}
 
 	@Test
