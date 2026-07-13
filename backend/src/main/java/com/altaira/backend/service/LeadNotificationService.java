@@ -6,11 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,8 +100,50 @@ public class LeadNotificationService {
             return EmailNotificationResult.success();
         } catch (MailException | IllegalArgumentException ex) {
             logger.warn("Lead email notification could not be sent for lead {}", lead.getId(), ex);
-            return EmailNotificationResult.notSent("Email notification could not be sent.");
+            return EmailNotificationResult.notSent(describeFailure(ex));
         }
+    }
+
+    private String describeFailure(Exception ex) {
+        String details = failureDetails(ex);
+
+        if (ex instanceof MailAuthenticationException
+                || details.contains("authentication")
+                || details.contains("authenticate")
+                || details.contains("username")
+                || details.contains("password")
+                || details.contains("credentials")) {
+            return "Email authentication failed. Check Render SMTP username/password or Google App Password.";
+        }
+
+        if (details.contains("connection")
+                || details.contains("connect")
+                || details.contains("timed out")
+                || details.contains("timeout")
+                || details.contains("refused")
+                || details.contains("unknown host")) {
+            return "Email SMTP connection failed. Check Render SMTP host, port, STARTTLS and outbound access.";
+        }
+
+        if (details.contains("invalid address") || details.contains("address failed")) {
+            return "Email address configuration is invalid. Check CONTACT_NOTIFICATION_TO and CONTACT_NOTIFICATION_FROM.";
+        }
+
+        return "Email notification could not be sent. Check Render SMTP environment variables and backend logs.";
+    }
+
+    private String failureDetails(Exception ex) {
+        Throwable root = ex;
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+
+        String message = root.getMessage();
+        if (message == null || message.isBlank()) {
+            message = ex.getMessage();
+        }
+
+        return message == null ? "" : message.toLowerCase(Locale.ROOT);
     }
 
     private String buildBody(LeadEntity lead) {
