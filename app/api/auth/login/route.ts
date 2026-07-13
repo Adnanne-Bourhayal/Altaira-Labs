@@ -1,24 +1,68 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
+import { ADMIN_SESSION_COOKIE } from "@/lib/server-admin-auth"
+import { backendServiceUnavailableResponse, backendUrl, invalidJsonResponse, readJson } from "@/lib/server-backend-api"
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { email, password } = body
+  let body: unknown
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL
-  const adminPassword = process.env.ADMIN_PASSWORD
-
-  if (email !== adminEmail || password !== adminPassword) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+  try {
+    body = await request.json()
+  } catch {
+    return invalidJsonResponse("Login request must be valid JSON.")
   }
 
-  const cookieStore = await cookies()
-  cookieStore.set("altaira_admin_auth", "true", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    path: "/",
-  })
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return invalidJsonResponse("Login request must include username and password.")
+  }
 
-  return NextResponse.json({ success: true })
+  const { username, email, password } = body as { username?: string; email?: string; password?: string }
+  const loginName = username || email
+
+  try {
+    const response = await fetch(backendUrl("/api/v1/auth/login"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: loginName,
+        password,
+      }),
+      cache: "no-store",
+    })
+
+    const data = await readJson(response)
+
+    if (!response.ok || !data || Array.isArray(data) || typeof data.sessionToken !== "string") {
+      return NextResponse.json(data, { status: response.status })
+    }
+
+    const maxAge = typeof data.expiresAt === "string"
+      ? Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000))
+      : 60 * 60 * 8
+
+    const cookieStore = await cookies()
+    cookieStore.set(ADMIN_SESSION_COOKIE, data.sessionToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge,
+    })
+    cookieStore.set("altaira_admin_auth", "", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 0,
+    })
+
+    return NextResponse.json({
+      success: true,
+      user: data.user,
+    })
+  } catch {
+    return backendServiceUnavailableResponse("Auth service")
+  }
 }

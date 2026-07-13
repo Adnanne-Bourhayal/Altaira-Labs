@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -21,18 +21,20 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       })
 
+      const data = await response.json().catch(() => ({ error: "Could not sign in" }))
+
       if (!response.ok) {
-        throw new Error("Invalid credentials")
+        throw new Error(data?.error || "Invalid credentials")
       }
 
       router.push("/leads")
       router.refresh()
     } catch (err) {
       console.error(err)
-      setError("Invalid email or password")
+      setError(err instanceof Error ? err.message : "Invalid email or password")
     } finally {
       setLoading(false)
     }
@@ -46,13 +48,15 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm text-white/50 mb-2">Email</label>
+            <label className="block text-sm text-white/50 mb-2">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
               className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
-              placeholder="admin@altaira.local"
+              placeholder="admin123"
+              autoComplete="username"
               required
             />
           </div>
@@ -63,14 +67,16 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               className="w-full rounded-xl border border-white/10 bg-[#0b1220] px-4 py-3 text-white focus:outline-none focus:border-blue-500/40"
               placeholder="Enter password"
+              autoComplete="current-password"
               required
             />
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               {error}
             </div>
           )}

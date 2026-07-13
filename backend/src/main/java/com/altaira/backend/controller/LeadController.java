@@ -2,11 +2,14 @@ package com.altaira.backend.controller;
 
 import com.altaira.backend.dto.lead.CreateLeadRequest;
 import com.altaira.backend.dto.lead.LeadResponse;
+import com.altaira.backend.dto.lead.UpdateLeadStatusRequest;
+import com.altaira.backend.security.AdminAccessService;
 import com.altaira.backend.security.RateLimiterService;
 import com.altaira.backend.service.LeadService;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,26 +27,46 @@ public class LeadController {
 
     private final LeadService leadService;
     private final RateLimiterService rateLimiterService;
+    private final AdminAccessService adminAccessService;
 
-    public LeadController(LeadService leadService, RateLimiterService rateLimiterService) {
+    public LeadController(
+            LeadService leadService,
+            RateLimiterService rateLimiterService,
+            AdminAccessService adminAccessService
+    ) {
         this.leadService = leadService;
         this.rateLimiterService = rateLimiterService;
+        this.adminAccessService = adminAccessService;
     }
 
     @GetMapping
-    public List<LeadResponse> getAllLeads() {
+    public List<LeadResponse> getAllLeads(
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return leadService.getAllLeads();
     }
 
     @GetMapping("/{id}")
-    public LeadResponse getLeadById(@PathVariable UUID id) {
+    public LeadResponse getLeadById(
+            @PathVariable UUID id,
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return leadService.getLeadById(id);
     }
 
     @PatchMapping("/{id}/status")
-    public LeadResponse updateStatus(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-        String status = body.get("status");
-        return leadService.updateStatus(id, status);
+    public LeadResponse updateStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateLeadStatusRequest request,
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
+        return leadService.updateStatus(id, request.getStatus());
     }
 
     @PostMapping
@@ -59,6 +82,6 @@ public class LeadController {
         }
 
         LeadResponse createdLead = leadService.createLead(request);
-        return ResponseEntity.ok(createdLead);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdLead);
     }
 }

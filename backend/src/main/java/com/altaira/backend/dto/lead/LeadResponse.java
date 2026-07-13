@@ -9,23 +9,43 @@ public class LeadResponse {
     private String fullName;
     private String businessName;
     private String email;
+    private String phone;
     private String industry;
+    private String serviceInterest;
     private String goals;
     private String status;
     private Instant createdAt;
+    private Boolean emailNotificationSent;
+    private String emailNotificationMessage;
 
     public LeadResponse() {
     }
 
     public LeadResponse(UUID id, String fullName, String businessName, String email, String industry, String goals, String status, Instant createdAt) {
+        this(id, fullName, businessName, email, null, industry, null, goals, status, createdAt, null, null);
+    }
+
+    public LeadResponse(UUID id, String fullName, String businessName, String email, String phone, String industry, String serviceInterest, String goals, String status, Instant createdAt) {
+        this(id, fullName, businessName, email, phone, industry, serviceInterest, goals, status, createdAt, null, null);
+    }
+
+    public LeadResponse(UUID id, String fullName, String businessName, String email, String industry, String goals, String status, Instant createdAt, Boolean emailNotificationSent, String emailNotificationMessage) {
+        this(id, fullName, businessName, email, null, industry, null, goals, status, createdAt, emailNotificationSent, emailNotificationMessage);
+    }
+
+    public LeadResponse(UUID id, String fullName, String businessName, String email, String phone, String industry, String serviceInterest, String goals, String status, Instant createdAt, Boolean emailNotificationSent, String emailNotificationMessage) {
         this.id = id;
         this.fullName = fullName;
         this.businessName = businessName;
         this.email = email;
+        this.phone = phone;
         this.industry = industry;
+        this.serviceInterest = serviceInterest;
         this.goals = goals;
         this.status = status;
         this.createdAt = createdAt;
+        this.emailNotificationSent = emailNotificationSent;
+        this.emailNotificationMessage = emailNotificationMessage;
     }
 
     public UUID getId() {
@@ -60,12 +80,28 @@ public class LeadResponse {
         this.email = email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public String getIndustry() {
         return industry;
     }
 
     public void setIndustry(String industry) {
         this.industry = industry;
+    }
+
+    public String getServiceInterest() {
+        return serviceInterest;
+    }
+
+    public void setServiceInterest(String serviceInterest) {
+        this.serviceInterest = serviceInterest;
     }
 
     public String getGoals() {
@@ -90,5 +126,21 @@ public class LeadResponse {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getEmailNotificationSent() {
+        return emailNotificationSent;
+    }
+
+    public void setEmailNotificationSent(Boolean emailNotificationSent) {
+        this.emailNotificationSent = emailNotificationSent;
+    }
+
+    public String getEmailNotificationMessage() {
+        return emailNotificationMessage;
+    }
+
+    public void setEmailNotificationMessage(String emailNotificationMessage) {
+        this.emailNotificationMessage = emailNotificationMessage;
     }
 }

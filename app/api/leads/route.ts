@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server"
+import { backendUrl, invalidJsonResponse, leadServiceUnavailableResponse, readJson } from "@/lib/server-backend-api"
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json()
+  let body: unknown
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leads`, {
+  try {
+    body = await req.json()
+  } catch {
+    return invalidJsonResponse("Lead submission must be valid JSON.")
+  }
+
+  try {
+    const response = await fetch(backendUrl("/api/v1/leads"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -13,24 +20,21 @@ export async function POST(req: Request) {
       cache: "no-store",
     })
 
-    const data = await response.json().catch(() => ({}))
+    const data = await readJson(response)
 
     if (!response.ok) {
       return NextResponse.json(
         {
-          error: data?.error || "Failed to submit form",
-          message: data?.message || "Failed to submit form",
-          fields: data?.fields || null,
+          error: !Array.isArray(data) && data.error ? data.error : "Failed to submit form",
+          message: !Array.isArray(data) && data.message ? data.message : "Failed to submit form",
+          fields: !Array.isArray(data) && data.fields ? data.fields : null,
         },
         { status: response.status }
       )
     }
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json(data, { status: response.status })
   } catch {
-    return NextResponse.json(
-      { error: "Internal proxy error" },
-      { status: 500 }
-    )
+    return leadServiceUnavailableResponse()
   }
 }
