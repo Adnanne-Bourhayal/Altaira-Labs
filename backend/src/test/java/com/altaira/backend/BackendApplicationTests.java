@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -35,7 +36,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "altaira.contact.email.timeout-ms=250")
+@SpringBootTest(properties = {
+		"altaira.contact.email.timeout-ms=250",
+		"altaira.rate-limit.leads.capacity=100",
+		"altaira.rate-limit.leads.refill-per-minute=100",
+		"altaira.rate-limit.login.capacity=100",
+		"altaira.rate-limit.login.refill-per-five-minutes=100"
+})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class BackendApplicationTests {
@@ -178,6 +185,38 @@ class BackendApplicationTests {
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.emailNotificationSent").value(false))
 				.andExpect(jsonPath("$.emailNotificationMessage").value("Email notification timed out; lead was saved."))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode response = objectMapper.readTree(responseBody);
+		UUID leadId = UUID.fromString(response.get("id").asText());
+
+		org.junit.jupiter.api.Assertions.assertTrue(leadRepository.findById(leadId).isPresent());
+	}
+
+	@Test
+	void reportsEmailAuthenticationFailureWithoutLosingLead() throws Exception {
+		Mockito.doThrow(new MailAuthenticationException("Bad credentials"))
+				.when(mailSender).send(Mockito.any(SimpleMailMessage.class));
+
+		String responseBody = mockMvc.perform(post("/api/v1/leads")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "SMTP Auth Failure",
+								  "businessName": "Auth Test",
+								  "email": "smtp-auth@example.com",
+								  "phone": "+32 470 00 00 01",
+								  "industry": "Email authentication",
+								  "serviceInterest": "General contact",
+								  "goals": "The lead must be saved even if SMTP authentication fails."
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.emailNotificationSent").value(false))
+				.andExpect(jsonPath("$.emailNotificationMessage")
+						.value("Email authentication failed. Check Render SMTP username/password or Google App Password."))
 				.andReturn()
 				.getResponse()
 				.getContentAsString();
