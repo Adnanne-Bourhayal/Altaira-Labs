@@ -44,6 +44,7 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `CONTACT_EMAIL_ENABLED` | Local backend env, Render | Chosen email notification setting | No | Use `true` to send contact notifications. |
 | `CONTACT_NOTIFICATION_TO` | Local backend env, Render | Business inbox | No | Current target: `altairalabs@gmail.com`. |
 | `CONTACT_NOTIFICATION_FROM` | Local backend env, Render | Verified SMTP sender | Low sensitivity | Usually the same mailbox or a verified sender address. |
+| `CONTACT_EMAIL_TIMEOUT_MS` | Local backend env, Render | Chosen backend timeout policy | No | Recommended: `6000` so the API returns even if SMTP is slow. |
 | `SPRING_MAIL_HOST` | Local backend env, Render | SMTP provider | No | Example shape: `smtp.gmail.com`, SendGrid, Brevo, Mailgun, etc. |
 | `SPRING_MAIL_PORT` | Local backend env, Render | SMTP provider | No | Usually `587` for STARTTLS. |
 | `SPRING_MAIL_USERNAME` | Local backend env, Render | SMTP provider | Yes | SMTP username or email address. |
