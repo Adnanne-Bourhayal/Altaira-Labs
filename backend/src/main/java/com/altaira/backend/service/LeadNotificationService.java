@@ -1,7 +1,6 @@
 package com.altaira.backend.service;
 
 import com.altaira.backend.entity.LeadEntity;
-import com.altaira.backend.dto.diagnostics.EmailDiagnosticsResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
@@ -182,22 +181,22 @@ public class LeadNotificationService {
         }
     }
 
-    public EmailDiagnosticsResponse getDiagnostics() {
-        return new EmailDiagnosticsResponse(
-                enabled,
-                emailProvider,
-                blankToNull(notificationTo),
-                blankToNull(notificationFrom),
-                notificationTimeoutMs,
-                resendApiUrl.toString(),
-                !resendApiKey.isBlank(),
-                blankToNull(smtpHost),
-                smtpPort,
-                blankToNull(smtpUsername),
-                smtpAuthEnabled,
-                smtpStartTlsEnabled,
-                smtpStartTlsRequired
-        );
+    public Map<String, Object> getDiagnostics() {
+        Map<String, Object> diagnostics = new LinkedHashMap<>();
+        diagnostics.put("enabled", enabled);
+        diagnostics.put("provider", emailProvider);
+        diagnostics.put("notificationTo", blankToNull(notificationTo));
+        diagnostics.put("notificationFrom", blankToNull(notificationFrom));
+        diagnostics.put("timeoutMs", notificationTimeoutMs);
+        diagnostics.put("resendApiUrl", resendApiUrl.toString());
+        diagnostics.put("resendApiKeyConfigured", !resendApiKey.isBlank());
+        diagnostics.put("smtpHost", blankToNull(smtpHost));
+        diagnostics.put("smtpPort", smtpPort);
+        diagnostics.put("smtpUsername", blankToNull(smtpUsername));
+        diagnostics.put("smtpAuthEnabled", smtpAuthEnabled);
+        diagnostics.put("smtpStartTlsEnabled", smtpStartTlsEnabled);
+        diagnostics.put("smtpStartTlsRequired", smtpStartTlsRequired);
+        return diagnostics;
     }
 
     @PreDestroy
