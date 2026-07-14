@@ -151,14 +151,16 @@ class BackendApplicationTests {
 
 		org.junit.jupiter.api.Assertions.assertEquals("altairalabs@gmail.com", message.getTo()[0]);
 		org.junit.jupiter.api.Assertions.assertEquals("marta@example.com", message.getReplyTo());
-		org.junit.jupiter.api.Assertions.assertEquals("New Altaira Labs lead: Ruiz Dental Studio", message.getSubject());
+		org.junit.jupiter.api.Assertions.assertEquals("New Altaira Labs contact lead: Ruiz Dental Studio", message.getSubject());
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Name: Marta Ruiz"));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Business: Ruiz Dental Studio"));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Email: marta@example.com"));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Phone: +32 470 44 55 66"));
-		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Industry/context: Service request"));
-		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Service/interest: Booking Systems"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Sector / context: Service request"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Service interest: Booking Systems"));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Created at: "));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Recommended next step:"));
+		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Review this request in the admin dashboard and schedule a discovery call."));
 		org.junit.jupiter.api.Assertions.assertTrue(body.contains("Needs appointment requests and patient follow-up."));
 	}
 

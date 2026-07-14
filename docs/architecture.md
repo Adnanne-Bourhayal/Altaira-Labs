@@ -148,7 +148,7 @@ Out of scope until a future sprint:
 
 ## Current Technical Tradeoffs
 
-- Hibernate `ddl-auto=update` is kept for MVP speed and local development.
+- Hibernate `ddl-auto=none` is used for Render/Neon once the schema exists, so deployment startup does not run automatic schema updates. Use controlled SQL migrations for future schema changes.
 - H2 is used only for automated tests.
 - PostgreSQL remains the real local/deployed database target.
 - Admin auth is simple cookie-based auth, acceptable for MVP/demo, but not a full production identity solution.

@@ -35,6 +35,10 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `SPRING_DATASOURCE_URL` | Local secrets helper file, Render | Neon Console JDBC URL | Sensitive if complete | Use JDBC format. Do not include the password in this value. |
 | `SPRING_DATASOURCE_USERNAME` | Local secrets helper file, Render | Neon Console role/user | Low sensitivity | Current validated user is stored in the local secrets file. |
 | `SPRING_DATASOURCE_PASSWORD` | Local secrets helper file, Render | Neon Console role password | Yes | Rotate in Neon if exposed. Update Render and local secrets after rotation. |
+| `PORT` | Render | Render web service runtime | No | Render normally injects `10000`. The backend uses `server.port=${PORT:8080}`. Local runs can leave it unset. |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | Local backend env, Render | Deployment policy | No | Use `none` on Render once Neon schema exists. Use `update` only for controlled local/dev schema expansion. |
+| `SPRING_JPA_SHOW_SQL` | Local backend env, Render | Deployment policy | No | Use `false` on Render to reduce startup/log noise. |
+| `SPRING_JPA_FORMAT_SQL` | Local backend env, Render | Deployment policy | No | Use `false` on Render to reduce SQL formatting overhead/log noise. |
 | `INTERNAL_API_TOKEN` | Local secrets helper file, Render | Same shared token as frontend server | Yes | Must match Vercel and `.env.local`. |
 | `ALTAIRA_AUTH_SESSION_HOURS` | Local backend env, Render | Chosen session duration | No | Default/recommended demo value: `8`. |
 | `ALTAIRA_DEMO_ADMIN_ENABLED` | Local backend env, Render | Demo/TFG auth setup | No | Use `true` for TFG demo. Disable for serious production after creating a real admin. |
@@ -48,6 +52,9 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `CONTACT_EMAIL_TIMEOUT_MS` | Local backend env, Render | Chosen backend timeout policy | No | Recommended for Resend: `30000`; SMTP fallback can stay lower if needed. |
 | `RESEND_API_KEY` | Local backend env, Render | Resend dashboard | Yes | Required when `CONTACT_EMAIL_PROVIDER=resend`. Prefer a sending-only API key. |
 | `RESEND_API_URL` | Local backend env, Render | Resend API endpoint | No | Optional. Default is `https://api.resend.com/emails`. |
+| `CONTACT_ADMIN_DASHBOARD_URL` | Local backend env, Render | Frontend/admin URL | No | Optional. Used only to add an admin dashboard link in contact notification emails. Supports `{leadId}`. |
+| `CONTACT_BRAND_LOGO_URL` | Local backend env, Render | Public frontend asset URL | No | Optional. Public HTTPS logo URL for the contact notification email. Relative/local paths are ignored by the backend. |
+| `CONTACT_BRAND_HEADER_IMAGE_URL` | Local backend env, Render | Public frontend asset URL | No | Optional. Public HTTPS hero/header image URL for the contact notification email. Relative/local paths are ignored by the backend. |
 | `SPRING_MAIL_HOST` | Local backend env, Render | SMTP provider | No | Example shape: `smtp.gmail.com`, SendGrid, Brevo, Mailgun, etc. |
 | `SPRING_MAIL_PORT` | Local backend env, Render | SMTP provider | No | Usually `587` for STARTTLS. |
 | `SPRING_MAIL_USERNAME` | Local backend env, Render | SMTP provider | Yes | SMTP username or email address. |
@@ -72,6 +79,9 @@ CONTACT_NOTIFICATION_TO=altairalabs@gmail.com
 CONTACT_NOTIFICATION_FROM=onboarding@resend.dev
 CONTACT_EMAIL_TIMEOUT_MS=30000
 RESEND_API_KEY=<Resend sending API key>
+CONTACT_ADMIN_DASHBOARD_URL=https://<frontend-domain>/leads/{leadId}
+CONTACT_BRAND_LOGO_URL=https://<frontend-domain>/brand/logo-white.png
+CONTACT_BRAND_HEADER_IMAGE_URL=https://<frontend-domain>/brand/header_background.png
 ```
 
 SMTP variables can remain documented as a fallback for local development or paid hosting, but they are not the recommended Render Free production path.

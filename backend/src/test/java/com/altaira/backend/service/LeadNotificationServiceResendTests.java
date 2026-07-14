@@ -62,7 +62,7 @@ class LeadNotificationServiceResendTests {
             assertEquals("onboarding@resend.dev", payload.get("from").asText());
             assertEquals(List.of("altairalabs@gmail.com"), objectMapper.convertValue(payload.get("to"), List.class));
             assertEquals("marta@example.com", payload.get("reply_to").asText());
-            assertEquals("New Altaira Labs lead: Ruiz Dental Studio", payload.get("subject").asText());
+            assertEquals("New Altaira Labs contact lead: Ruiz Dental Studio", payload.get("subject").asText());
 
             String emailBody = payload.get("text").asText();
             assertTrue(emailBody.contains("Lead ID: 73fb0d01-fdc8-4264-8421-a5192251401c"));
@@ -70,11 +70,29 @@ class LeadNotificationServiceResendTests {
             assertTrue(emailBody.contains("Business: Ruiz Dental Studio"));
             assertTrue(emailBody.contains("Email: marta@example.com"));
             assertTrue(emailBody.contains("Phone: +32 470 44 55 66"));
-            assertTrue(emailBody.contains("Industry/context: Clinics"));
-            assertTrue(emailBody.contains("Service/interest: Booking Systems"));
+            assertTrue(emailBody.contains("Sector / context: Clinics"));
+            assertTrue(emailBody.contains("Service interest: Booking Systems"));
             assertTrue(emailBody.contains("Status: new"));
             assertTrue(emailBody.contains("Created at: 2026-07-14T10:15:30Z"));
             assertTrue(emailBody.contains("Needs appointment requests and patient follow-up."));
+            assertTrue(emailBody.contains("Recommended next step:"));
+            assertTrue(emailBody.contains("Review this request in the admin dashboard and schedule a discovery call."));
+            assertTrue(emailBody.contains("Admin dashboard: https://altairalabs.vercel.app/leads/73fb0d01-fdc8-4264-8421-a5192251401c"));
+
+            String htmlBody = payload.get("html").asText();
+            assertTrue(htmlBody.contains("Contact inbox"));
+            assertTrue(htmlBody.contains("New contact lead received"));
+            assertTrue(htmlBody.contains("https://altairalabs.vercel.app/brand/logo-white.png"));
+            assertTrue(htmlBody.contains("https://altairalabs.vercel.app/brand/header_background.png"));
+            assertTrue(htmlBody.contains("Lead summary"));
+            assertTrue(htmlBody.contains("Lead ID"));
+            assertTrue(htmlBody.contains("73fb0d01-fdc8-4264-8421-a5192251401c"));
+            assertTrue(htmlBody.contains("Sector / context"));
+            assertTrue(htmlBody.contains("Service interest"));
+            assertTrue(htmlBody.contains("Message / goals"));
+            assertTrue(htmlBody.contains("Recommended next step"));
+            assertTrue(htmlBody.contains("Open lead in dashboard"));
+            assertTrue(htmlBody.contains("https://altairalabs.vercel.app/leads/73fb0d01-fdc8-4264-8421-a5192251401c"));
         } finally {
             service.shutdownExecutor();
             server.stop(0);
@@ -117,6 +135,9 @@ class LeadNotificationServiceResendTests {
                 5000,
                 apiKey,
                 apiUrl,
+                "https://altairalabs.vercel.app/leads/{leadId}",
+                "https://altairalabs.vercel.app/brand/logo-white.png",
+                "https://altairalabs.vercel.app/brand/header_background.png",
                 "smtp.gmail.com",
                 587,
                 "altairalabs@gmail.com",
