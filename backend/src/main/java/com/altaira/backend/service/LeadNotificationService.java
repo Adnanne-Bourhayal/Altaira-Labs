@@ -1,8 +1,9 @@
 package com.altaira.backend.service;
 
+import com.altaira.backend.entity.LeadEntity;
+import com.altaira.backend.dto.diagnostics.EmailDiagnosticsResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.altaira.backend.entity.LeadEntity;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,6 +180,24 @@ public class LeadNotificationService {
             logger.warn("Lead email notification failed for lead {}", lead.getId(), ex.getCause());
             return EmailNotificationResult.notSent("Email notification could not be sent.");
         }
+    }
+
+    public EmailDiagnosticsResponse getDiagnostics() {
+        return new EmailDiagnosticsResponse(
+                enabled,
+                emailProvider,
+                blankToNull(notificationTo),
+                blankToNull(notificationFrom),
+                notificationTimeoutMs,
+                resendApiUrl.toString(),
+                !resendApiKey.isBlank(),
+                blankToNull(smtpHost),
+                smtpPort,
+                blankToNull(smtpUsername),
+                smtpAuthEnabled,
+                smtpStartTlsEnabled,
+                smtpStartTlsRequired
+        );
     }
 
     @PreDestroy
@@ -484,6 +503,10 @@ public class LeadNotificationService {
 
     private String safe(Object value) {
         return value == null ? "" : value.toString();
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private String safeLogValue(String value) {

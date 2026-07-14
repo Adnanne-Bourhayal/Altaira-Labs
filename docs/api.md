@@ -75,6 +75,27 @@ Validation errors are passed through from the backend:
 }
 ```
 
+## Admin Email Diagnostics
+
+Protected backend endpoint:
+
+```text
+GET /api/v1/diagnostics/email
+```
+
+Requires either:
+
+- `X-Internal-API-Token`
+- `X-Admin-Session-Token`
+
+Purpose:
+
+- confirm which email provider the backend is currently using
+- confirm whether Resend API key is configured
+- confirm SMTP fallback settings without exposing passwords or API keys
+
+The response does not include `RESEND_API_KEY` or `SPRING_MAIL_PASSWORD`.
+
 Malformed JSON returns `400`:
 
 ```json

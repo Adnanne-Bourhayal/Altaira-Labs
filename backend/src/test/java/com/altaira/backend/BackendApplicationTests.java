@@ -289,6 +289,31 @@ class BackendApplicationTests {
 	}
 
 	@Test
+	void rejectsEmailDiagnosticsWithoutAdminAccess() throws Exception {
+		mockMvc.perform(get("/api/v1/diagnostics/email"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void returnsSafeEmailDiagnosticsWithInternalToken() throws Exception {
+		mockMvc.perform(get("/api/v1/diagnostics/email")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.enabled").value(true))
+				.andExpect(jsonPath("$.provider").value("smtp"))
+				.andExpect(jsonPath("$.notificationTo").value("altairalabs@gmail.com"))
+				.andExpect(jsonPath("$.timeoutMs").value(250))
+				.andExpect(jsonPath("$.resendApiUrl").value("https://api.resend.com/emails"))
+				.andExpect(jsonPath("$.resendApiKeyConfigured").value(false))
+				.andExpect(jsonPath("$.smtpPort").value(587))
+				.andExpect(jsonPath("$.smtpAuthEnabled").value(true))
+				.andExpect(jsonPath("$.smtpStartTlsEnabled").value(true))
+				.andExpect(jsonPath("$.smtpStartTlsRequired").value(true))
+				.andExpect(jsonPath("$.resendApiKey").doesNotExist())
+				.andExpect(jsonPath("$.smtpPassword").doesNotExist());
+	}
+
+	@Test
 	void updatesLeadStatusWithInternalToken() throws Exception {
 		String leadId = createLead("Mary Jackson", "Engineering Lab", "mary@example.com");
 
