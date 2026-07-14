@@ -50,6 +50,9 @@ public class LeadNotificationService {
     private final long notificationTimeoutMs;
     private final String resendApiKey;
     private final URI resendApiUrl;
+    private final String adminDashboardUrl;
+    private final String brandLogoUrl;
+    private final String brandHeaderImageUrl;
     private final String smtpHost;
     private final int smtpPort;
     private final String smtpUsername;
@@ -67,6 +70,9 @@ public class LeadNotificationService {
             @Value("${altaira.contact.email.timeout-ms:6000}") long notificationTimeoutMs,
             @Value("${altaira.contact.email.resend.api-key:}") String resendApiKey,
             @Value("${altaira.contact.email.resend.api-url:https://api.resend.com/emails}") String resendApiUrl,
+            @Value("${altaira.contact.admin-dashboard-url:}") String adminDashboardUrl,
+            @Value("${altaira.contact.brand-logo-url:}") String brandLogoUrl,
+            @Value("${altaira.contact.brand-header-image-url:}") String brandHeaderImageUrl,
             @Value("${spring.mail.host:}") String smtpHost,
             @Value("${spring.mail.port:587}") int smtpPort,
             @Value("${spring.mail.username:}") String smtpUsername,
@@ -84,6 +90,9 @@ public class LeadNotificationService {
         this.notificationTimeoutMs = Math.max(MIN_TIMEOUT_MS, notificationTimeoutMs);
         this.resendApiKey = resendApiKey == null ? "" : resendApiKey.trim();
         this.resendApiUrl = parseResendApiUrl(resendApiUrl);
+        this.adminDashboardUrl = adminDashboardUrl == null ? "" : adminDashboardUrl.trim();
+        this.brandLogoUrl = cleanImageUrl(brandLogoUrl);
+        this.brandHeaderImageUrl = cleanImageUrl(brandHeaderImageUrl);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(this.notificationTimeoutMs))
                 .build();
@@ -95,11 +104,14 @@ public class LeadNotificationService {
         this.smtpStartTlsRequired = smtpStartTlsRequired;
 
         logger.info(
-                "Lead email notification config: enabled={}, provider={}, resendApiUrl={}, resendApiKeyConfigured={}, smtpHost={}, smtpPort={}, smtpUsername={}, smtpAuthEnabled={}, smtpStartTlsEnabled={}, smtpStartTlsRequired={}, notificationFrom={}, notificationTo={}, timeoutMs={}",
+                "Lead email notification config: enabled={}, provider={}, resendApiUrl={}, resendApiKeyConfigured={}, adminDashboardUrlConfigured={}, brandLogoUrlConfigured={}, brandHeaderImageUrlConfigured={}, smtpHost={}, smtpPort={}, smtpUsername={}, smtpAuthEnabled={}, smtpStartTlsEnabled={}, smtpStartTlsRequired={}, notificationFrom={}, notificationTo={}, timeoutMs={}",
                 enabled,
                 this.emailProvider,
                 safeLogValue(this.resendApiUrl.toString()),
                 !this.resendApiKey.isBlank(),
+                !this.adminDashboardUrl.isBlank(),
+                !this.brandLogoUrl.isBlank(),
+                !this.brandHeaderImageUrl.isBlank(),
                 safeLogValue(smtpHost),
                 smtpPort,
                 safeLogValue(smtpUsername),
@@ -190,6 +202,9 @@ public class LeadNotificationService {
         diagnostics.put("timeoutMs", notificationTimeoutMs);
         diagnostics.put("resendApiUrl", resendApiUrl.toString());
         diagnostics.put("resendApiKeyConfigured", !resendApiKey.isBlank());
+        diagnostics.put("adminDashboardUrlConfigured", !adminDashboardUrl.isBlank());
+        diagnostics.put("brandLogoUrlConfigured", !brandLogoUrl.isBlank());
+        diagnostics.put("brandHeaderImageUrlConfigured", !brandHeaderImageUrl.isBlank());
         diagnostics.put("smtpHost", blankToNull(smtpHost));
         diagnostics.put("smtpPort", smtpPort);
         diagnostics.put("smtpUsername", blankToNull(smtpUsername));
@@ -226,7 +241,7 @@ public class LeadNotificationService {
             }
             message.setTo(notificationTo.trim());
             message.setReplyTo(cleanHeader(lead.getEmail()));
-            message.setSubject("New Altaira Labs lead: " + cleanSubject(lead.getBusinessName()));
+            message.setSubject("New Altaira Labs contact lead: " + cleanSubject(lead.getBusinessName()));
             message.setText(buildBody(lead));
 
             mailSender.send(message);
@@ -344,8 +359,9 @@ public class LeadNotificationService {
             payload.put("reply_to", replyTo);
         }
 
-        payload.put("subject", "New Altaira Labs lead: " + cleanSubject(lead.getBusinessName()));
+        payload.put("subject", "New Altaira Labs contact lead: " + cleanSubject(lead.getBusinessName()));
         payload.put("text", buildBody(lead));
+        payload.put("html", buildHtmlBody(lead));
 
         try {
             return objectMapper.writeValueAsString(payload);
@@ -459,21 +475,29 @@ public class LeadNotificationService {
     }
 
     private String buildBody(LeadEntity lead) {
+        String dashboardUrl = dashboardUrl(lead);
+        String dashboardLine = dashboardUrl.isBlank()
+                ? ""
+                : "\nAdmin dashboard: " + dashboardUrl + "\n";
+
         return """
-                New public lead received.
+                New Altaira Labs contact request
 
                 Lead ID: %s
                 Name: %s
                 Business: %s
                 Email: %s
                 Phone: %s
-                Industry/context: %s
-                Service/interest: %s
-                Status: %s
+                Sector / context: %s
+                Service interest: %s
                 Created at: %s
+                Status: %s
 
-                Message/goals:
+                Message / goals:
                 %s
+
+                Recommended next step:
+                Review this request in the admin dashboard and schedule a discovery call.%s
                 """.formatted(
                 safe(lead.getId()),
                 safe(lead.getFullName()),
@@ -482,10 +506,149 @@ public class LeadNotificationService {
                 safe(lead.getPhone()),
                 safe(lead.getIndustry()),
                 safe(lead.getServiceInterest()),
-                safe(lead.getStatus()),
                 safe(lead.getCreatedAt()),
-                safe(lead.getGoals())
+                safe(lead.getStatus()),
+                safe(lead.getGoals()),
+                dashboardLine
         );
+    }
+
+    private String buildHtmlBody(LeadEntity lead) {
+        String dashboardUrl = dashboardUrl(lead);
+        String dashboardAction = dashboardUrl.isBlank()
+                ? """
+                  <p style="margin: 8px 0 0; color: #cbd5e1;">Review this request in the admin dashboard and schedule a discovery call.</p>
+                  """
+                : """
+                  <p style="margin: 8px 0 18px; color: #cbd5e1;">Review this request in the admin dashboard and schedule a discovery call.</p>
+                  <a href="%s" style="display: inline-block; padding: 13px 18px; background: #2563eb; color: #ffffff; text-decoration: none; font-weight: 700; border-radius: 0;">Open lead in dashboard</a>
+                  """.formatted(escapeHtml(dashboardUrl));
+        String logoMarkup = brandLogoUrl.isBlank()
+                ? """
+                  <div style="font-size: 18px; letter-spacing: 0.18em; font-weight: 700; color: #ffffff;">ALTAIRA LABS</div>
+                  """
+                : """
+                  <img src="%s" width="180" alt="Altaira Labs" style="display: block; width: 180px; max-width: 180px; height: auto; border: 0;">
+                  """.formatted(escapeHtml(brandLogoUrl));
+        String headerImageMarkup = brandHeaderImageUrl.isBlank()
+                ? """
+                  <div style="height: 150px; background: #020617; border-top: 1px solid #1d4ed8; border-bottom: 1px solid #312e81;">
+                    <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="height: 150px;">
+                      <tr>
+                        <td align="center" style="color: #64748b; font-size: 12px; letter-spacing: 0.35em;">CONTACT INBOX</td>
+                      </tr>
+                    </table>
+                  </div>
+                  """
+                : """
+                  <img src="%s" width="720" alt="Altaira Labs workspace" style="display: block; width: 100%%; max-width: 720px; height: 180px; object-fit: cover; border: 0;">
+                  """.formatted(escapeHtml(brandHeaderImageUrl));
+        String leadRows = String.join("",
+                htmlRow("Lead ID", safe(lead.getId())),
+                htmlRow("Name", safe(lead.getFullName())),
+                htmlRow("Business", safe(lead.getBusinessName())),
+                htmlRow("Email", safe(lead.getEmail())),
+                htmlRow("Phone", safe(lead.getPhone())),
+                htmlRow("Sector / context", safe(lead.getIndustry())),
+                htmlRow("Service interest", safe(lead.getServiceInterest())),
+                htmlRow("Created at", safe(lead.getCreatedAt())),
+                htmlRow("Status", safe(lead.getStatus()))
+        );
+
+        return """
+                <!doctype html>
+                <html lang="en">
+                  <body style="margin: 0; padding: 0; background: #e5e7eb; color: #0f172a; font-family: Arial, Helvetica, sans-serif;">
+                    <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background: #e5e7eb; padding: 28px 0;">
+                      <tr>
+                        <td align="center">
+                          <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width: 720px; background: #ffffff; border: 1px solid #cbd5e1;">
+                            <tr>
+                              <td style="background: #020617; color: #ffffff; padding: 22px 28px;">
+                                <table role="presentation" width="100%%" cellspacing="0" cellpadding="0">
+                                  <tr>
+                                    <td align="left" style="vertical-align: middle;">%s</td>
+                                    <td align="right" style="vertical-align: middle;">
+                                      <span style="display: inline-block; border: 1px solid #60a5fa; padding: 7px 10px; color: #bfdbfe; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;">New lead</span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="background: #020617;">%s</td>
+                            </tr>
+                            <tr>
+                              <td style="background: #020617; color: #ffffff; padding: 28px 28px 30px;">
+                                <p style="margin: 0 0 10px; color: #93c5fd; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;">Contact inbox</p>
+                                <h1 style="margin: 0; font-size: 30px; line-height: 1.18; letter-spacing: 0;">New contact lead received</h1>
+                                <p style="margin: 14px 0 0; color: #cbd5e1; font-size: 15px; line-height: 1.6;">A visitor submitted a public contact request. The lead has been stored and is ready for review.</p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 24px 28px;">
+                                <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid #dbe3ef; margin-bottom: 22px;">
+                                  <tr>
+                                    <td style="padding: 16px 18px; background: #f8fafc; border-bottom: 1px solid #dbe3ef;">
+                                      <p style="margin: 0; color: #475569; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;">Lead summary</p>
+                                      <h2 style="margin: 8px 0 0; color: #0f172a; font-size: 22px; line-height: 1.25;">%s</h2>
+                                      <p style="margin: 8px 0 0; color: #475569; font-size: 14px;">%s</p>
+                                    </td>
+                                  </tr>
+                                </table>
+
+                                <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid #dbe3ef;">
+                                  %s
+                                </table>
+
+                                <div style="margin-top: 24px; padding: 18px; border-left: 4px solid #2563eb; background: #f8fafc;">
+                                  <p style="margin: 0 0 8px; color: #475569; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;">Message / goals</p>
+                                  <p style="margin: 0; color: #0f172a; font-size: 15px; line-height: 1.7;">%s</p>
+                                </div>
+
+                                <div style="margin-top: 24px; padding: 20px; background: #020617; border: 1px solid #1d4ed8;">
+                                  <p style="margin: 0; color: #93c5fd; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;">Recommended next step</p>
+                                  %s
+                                </div>
+
+                                <p style="margin: 18px 0 0; color: #64748b; font-size: 12px; line-height: 1.6;">This is an internal Altaira Labs notification generated from the public contact tray.</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """.formatted(
+                logoMarkup,
+                headerImageMarkup,
+                escapeHtml(safe(lead.getBusinessName()).isBlank() ? "Website contact request" : safe(lead.getBusinessName())),
+                escapeHtml(safe(lead.getFullName()).isBlank() ? safe(lead.getEmail()) : safe(lead.getFullName())),
+                leadRows,
+                escapeHtml(safe(lead.getGoals())).replace("\n", "<br>"),
+                dashboardAction
+        );
+    }
+
+    private String htmlRow(String label, String value) {
+        return """
+                <tr>
+                  <td style="width: 180px; padding: 12px 14px; border-bottom: 1px solid #dbe3ef; background: #f8fafc; color: #475569; font-size: 13px; font-weight: 700;">%s</td>
+                  <td style="padding: 12px 14px; border-bottom: 1px solid #dbe3ef; color: #0f172a; font-size: 14px;">%s</td>
+                </tr>
+                """.formatted(escapeHtml(label), escapeHtml(value));
+    }
+
+    private String dashboardUrl(LeadEntity lead) {
+        if (adminDashboardUrl.isBlank()) {
+            return "";
+        }
+
+        String leadId = safe(lead.getId());
+        return adminDashboardUrl
+                .replace("{leadId}", leadId)
+                .replace("{id}", leadId);
     }
 
     private String cleanSubject(String value) {
@@ -498,6 +661,28 @@ public class LeadNotificationService {
 
     private String cleanHeader(String value) {
         return safe(value).replaceAll("[\\r\\n]+", "").trim();
+    }
+
+    private String cleanImageUrl(String value) {
+        String cleaned = safe(value).replaceAll("[\\r\\n\\t]+", "").trim();
+        if (cleaned.startsWith("https://")) {
+            return cleaned;
+        }
+
+        if (!cleaned.isBlank()) {
+            logger.warn("Ignoring contact email image URL because it is not a public HTTPS URL.");
+        }
+
+        return "";
+    }
+
+    private String escapeHtml(String value) {
+        return safe(value)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private String safe(Object value) {

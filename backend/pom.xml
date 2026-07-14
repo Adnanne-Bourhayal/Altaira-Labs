@@ -98,6 +98,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.altaira.backend.BackendApplication</mainClass>
+                    <jvmArguments>-Dspring.classformat.ignore=true</jvmArguments>
+                </configuration>
             </plugin>
 
             <plugin>

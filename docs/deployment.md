@@ -49,11 +49,12 @@ ALTAIRA_DEMO_ADMIN_ENABLED=true
 ALTAIRA_DEMO_ADMIN_USERNAME=admin123
 ALTAIRA_DEMO_ADMIN_PASSWORD=admin123
 ALTAIRA_DEMO_ADMIN_ROLE=admin
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_HIBERNATE_DDL_AUTO=none
 SPRING_JPA_SHOW_SQL=false
+SPRING_JPA_FORMAT_SQL=false
 ```
 
-For the MVP, `ddl-auto=update` is acceptable. Before a production-grade release, replace it with explicit migrations.
+For Render/Neon deployment, keep `ddl-auto=none` after the schema has been created. This avoids running Hibernate schema updates during every cold start and helps Render detect the web port faster. Use controlled SQL migration files for future schema changes.
 
 ## Render Backend Build
 
@@ -68,8 +69,10 @@ cd backend && ./mvnw package -DskipTests
 Start command:
 
 ```bash
-java -jar backend/target/backend-0.0.1-SNAPSHOT.jar
+java -jar target/backend-0.0.1-SNAPSHOT.jar
 ```
+
+The backend reads `server.port=${PORT:8080}`. Render normally provides `PORT=10000`; local runs fall back to `8080`.
 
 If the service root is already `backend/`, use:
 
