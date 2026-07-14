@@ -49,9 +49,9 @@ Success response: `201 Created`
 }
 ```
 
-The lead is persisted before the email notification is attempted. If SMTP is missing or the email provider rejects the
-message, the response can still be `201 Created` with `emailNotificationSent: false`; the lead is still stored and should
-be visible in the admin dashboard.
+The lead is persisted before the email notification is attempted. In production, the recommended provider is Resend over
+HTTPS. If the email provider is missing or rejects the message, the response can still be `201 Created` with
+`emailNotificationSent: false`; the lead is still stored and should be visible in the admin dashboard.
 
 If the Spring Boot lead service is unavailable, the proxy returns:
 
