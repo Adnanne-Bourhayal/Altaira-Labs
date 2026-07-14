@@ -1,76 +1,46 @@
-"use client"
-
-import { ArrowRight, Play } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
 export default function Hero() {
-  const handleViewExamples = () => {
-    document.getElementById("examples")?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const handleGetProposal = () => {
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-  }
-
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/v2_watermarked-10cdfd72-3427-4b83-9013-07e2593a3222-qgEWK6iAdfGsKYX0ifXyluq7pyFhUa.mp4" type="video/mp4" />
-        </video>
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-      </div>
+    <section id="home" className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div
+        className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/brand/header_background.png')" }}
+        aria-hidden="true"
+      />
 
-      {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-6 text-center">
-        <div className="max-w-4xl mx-auto">
-          {/* Small label */}
-          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-5 py-2 mb-8">
-            <span className="text-white/80 text-sm font-medium">Websites, booking systems & automation</span>
-          </div>
-
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-[1.05] tracking-tight">
-            <span className="text-white">Get more clients.</span>
-            <br />
-            <span className="text-gradient">Automatically.</span>
+      <div className="relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-5 pt-20 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-[0_6px_24px_rgba(0,0,0,0.75)] sm:text-5xl lg:whitespace-nowrap lg:text-7xl">
+            From the revolution to the future
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-            We build websites and smart systems that help your business grow 24/7.
+          <p className="mt-5 text-xl font-medium text-slate-200 drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)] sm:text-2xl lg:whitespace-nowrap">
+            Save your money, save your business
+          </p>
+          <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-300 drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
+            Altaira Labs helps small businesses replace manual work with clear digital systems: websites, booking
+            flows, dashboards, automations and client management tools.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={handleGetProposal}
-              className="group relative px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full text-white font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-2 border border-white bg-white px-7 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-slate-200"
             >
-              <span>Get Free Proposal</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              onClick={handleViewExamples}
-              className="group px-8 py-4 bg-transparent border-2 border-white/30 hover:border-white/60 rounded-full text-white font-semibold transition-all duration-300 flex items-center space-x-2 hover:bg-white/5"
+              Free Consult
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/#services"
+              className="inline-flex items-center justify-center border border-white/25 bg-black/30 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
             >
-              <Play className="w-5 h-5" />
-              <span>View Examples</span>
-            </button>
+              View services
+            </Link>
           </div>
         </div>
       </div>
-
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0A] to-transparent z-10" />
     </section>
   )
 }
