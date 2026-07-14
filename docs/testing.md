@@ -145,7 +145,7 @@ Expected:
 - `201 Created`.
 - Response status is `new`.
 - Lead is persisted in PostgreSQL.
-- Response includes `emailNotificationSent`; if it is `false`, the lead is still saved and SMTP needs configuration.
+- Response includes `emailNotificationSent`; if it is `false`, the lead is still saved and the email provider needs configuration.
 
 Login and list leads:
 

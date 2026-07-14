@@ -42,9 +42,12 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `ALTAIRA_DEMO_ADMIN_PASSWORD` | Local backend env, Render | Demo/TFG auth setup | Yes in real production | Current public demo value: `admin123`; change for real deployments. |
 | `ALTAIRA_DEMO_ADMIN_ROLE` | Local backend env, Render | Demo/TFG auth setup | No | Current demo value: `admin`. |
 | `CONTACT_EMAIL_ENABLED` | Local backend env, Render | Chosen email notification setting | No | Use `true` to send contact notifications. |
+| `CONTACT_EMAIL_PROVIDER` | Local backend env, Render | Chosen email provider | No | Use `resend` on Render Free. Default fallback is `smtp`. |
 | `CONTACT_NOTIFICATION_TO` | Local backend env, Render | Business inbox | No | Current target: `altairalabs@gmail.com`. |
-| `CONTACT_NOTIFICATION_FROM` | Local backend env, Render | Verified SMTP sender | Low sensitivity | Usually the same mailbox or a verified sender address. |
-| `CONTACT_EMAIL_TIMEOUT_MS` | Local backend env, Render | Chosen backend timeout policy | No | Recommended: `6000` so the API returns even if SMTP is slow. |
+| `CONTACT_NOTIFICATION_FROM` | Local backend env, Render | Verified sender | Low sensitivity | Current Resend starter value: `onboarding@resend.dev`. Later replace it with a verified Altaira Labs domain sender. |
+| `CONTACT_EMAIL_TIMEOUT_MS` | Local backend env, Render | Chosen backend timeout policy | No | Recommended for Resend: `30000`; SMTP fallback can stay lower if needed. |
+| `RESEND_API_KEY` | Local backend env, Render | Resend dashboard | Yes | Required when `CONTACT_EMAIL_PROVIDER=resend`. Prefer a sending-only API key. |
+| `RESEND_API_URL` | Local backend env, Render | Resend API endpoint | No | Optional. Default is `https://api.resend.com/emails`. |
 | `SPRING_MAIL_HOST` | Local backend env, Render | SMTP provider | No | Example shape: `smtp.gmail.com`, SendGrid, Brevo, Mailgun, etc. |
 | `SPRING_MAIL_PORT` | Local backend env, Render | SMTP provider | No | Usually `587` for STARTTLS. |
 | `SPRING_MAIL_USERNAME` | Local backend env, Render | SMTP provider | Yes | SMTP username or email address. |
@@ -55,6 +58,23 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so a broken SMTP connection does not block the contact form. |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP reads cannot hang the request. |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP writes cannot hang the request. |
+
+## Email Provider Recommendation
+
+Render Free blocks outbound SMTP ports such as `25`, `465` and `587`, so Gmail SMTP can time out even when the Gmail App Password is correct.
+
+For the deployed backend, use Resend over HTTPS:
+
+```text
+CONTACT_EMAIL_ENABLED=true
+CONTACT_EMAIL_PROVIDER=resend
+CONTACT_NOTIFICATION_TO=altairalabs@gmail.com
+CONTACT_NOTIFICATION_FROM=onboarding@resend.dev
+CONTACT_EMAIL_TIMEOUT_MS=30000
+RESEND_API_KEY=<Resend sending API key>
+```
+
+SMTP variables can remain documented as a fallback for local development or paid hosting, but they are not the recommended Render Free production path.
 
 ## Correct Database URL Shapes
 
@@ -86,7 +106,8 @@ Do not use phpMyAdmin. This project uses PostgreSQL, not MySQL.
 | Neon database password | Neon Console -> role/user password or connection details | Render `SPRING_DATASOURCE_PASSWORD`; local `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env`; visual DB client password field |
 | Demo/admin password | Backend auth seed or Render `ALTAIRA_DEMO_ADMIN_PASSWORD` | Stored in DB only as BCrypt `app_users.password_hash`; current TFG demo is `admin123` |
 | Internal API token | You choose/generate one shared token | Render `INTERNAL_API_TOKEN`; Vercel `INTERNAL_API_TOKEN`; local `.env.local`; local `.secrets/neon-render.env` |
-| SMTP password/API key | Email provider dashboard or Gmail app password flow | Render `SPRING_MAIL_PASSWORD`; local backend secrets file if testing email locally |
+| Resend API key | Resend dashboard -> API Keys | Render `RESEND_API_KEY`; local backend secrets file if testing email locally |
+| SMTP password/API key | Email provider dashboard or Gmail app password flow | Render `SPRING_MAIL_PASSWORD`; local backend secrets file only if using SMTP fallback |
 
 ## Rotation Checklist
 
