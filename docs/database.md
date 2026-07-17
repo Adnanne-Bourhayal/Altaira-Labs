@@ -196,7 +196,7 @@ Demo admin seed SQL:
 backend/database/auth-demo-admin-seed.sql
 ```
 
-Demo/local/TFG login:
+Optional legacy demo seed login:
 
 ```text
 username: admin123
@@ -208,8 +208,10 @@ Important security details:
 
 - `app_users.password_hash` stores BCrypt hashes, not plaintext passwords.
 - `app_user_sessions.session_token_hash` stores SHA-256 hashes of session tokens, not raw session tokens.
-- `security_events` records `login_success`, `login_failed`, `user_created`, `logout`, and reserved future events.
-- The demo credential is for local/TFG demonstration, not serious production.
+- `security_events` records login activity, user creation, client invitation creation/acceptance, password-change/user-disable events, and logout.
+- The known demo credential exists only in the optional legacy seed SQL. Do not
+  apply that seed to a serious production database; prefer the disabled-by-default
+  startup seeder with private environment credentials.
 
 ## Visual Database Checks
 

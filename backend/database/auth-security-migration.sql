@@ -46,12 +46,40 @@ CREATE TABLE IF NOT EXISTS public.security_events (
             'login_success',
             'login_failed',
             'user_created',
+            'client_invitation_created',
+            'client_invitation_accepted',
             'password_changed',
             'user_disabled',
             'logout'
         )
     )
 );
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'security_events_type_check'
+          AND conrelid = 'public.security_events'::regclass
+    ) THEN
+        ALTER TABLE public.security_events DROP CONSTRAINT security_events_type_check;
+    END IF;
+END $$;
+
+ALTER TABLE public.security_events
+    ADD CONSTRAINT security_events_type_check CHECK (
+        event_type IN (
+            'login_success',
+            'login_failed',
+            'user_created',
+            'client_invitation_created',
+            'client_invitation_accepted',
+            'password_changed',
+            'user_disabled',
+            'logout'
+        )
+    );
 
 CREATE INDEX IF NOT EXISTS idx_app_users_username_lower ON public.app_users (lower(username));
 CREATE INDEX IF NOT EXISTS idx_app_user_sessions_user_id ON public.app_user_sessions(user_id);

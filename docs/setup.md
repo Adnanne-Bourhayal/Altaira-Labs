@@ -53,6 +53,7 @@ Local development shape:
 ```text
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-web-client-id>
 INTERNAL_API_TOKEN=<same-token-as-backend>
 ```
 
@@ -82,9 +83,10 @@ SPRING_DATASOURCE_USERNAME=<neon-database-user>
 SPRING_DATASOURCE_PASSWORD=<neon-database-password>
 INTERNAL_API_TOKEN=<same-token-as-frontend-server>
 ALTAIRA_DEMO_ADMIN_ENABLED=true
-ALTAIRA_DEMO_ADMIN_USERNAME=admin123
-ALTAIRA_DEMO_ADMIN_PASSWORD=admin123
+ALTAIRA_DEMO_ADMIN_USERNAME=<private-local-admin-username>
+ALTAIRA_DEMO_ADMIN_PASSWORD=<private-strong-local-admin-password>
 ALTAIRA_DEMO_ADMIN_ROLE=admin
+GOOGLE_CLIENT_ID=<same-google-oauth-web-client-id-as-frontend>
 ```
 
 The previous fallback values `SPRING_DATASOURCE_USERNAME=altaira` and `jdbc:postgresql://localhost:5432/altaira` are no longer the default because they fail unless a matching local PostgreSQL role and database exist.
@@ -174,14 +176,14 @@ http://localhost:3000
 Admin login:
 
 ```text
-http://localhost:3000/login
+http://localhost:3000/admin/login
 ```
 
 Local admin credentials:
 
 ```text
-username: admin123
-password: admin123
+username: <ALTAIRA_DEMO_ADMIN_USERNAME>
+password: <ALTAIRA_DEMO_ADMIN_PASSWORD>
 ```
 
 ## Daily Workflow

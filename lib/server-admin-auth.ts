@@ -2,6 +2,11 @@ import { cookies } from "next/headers"
 import { backendUrl } from "@/lib/server-backend-api"
 
 export const ADMIN_SESSION_COOKIE = "altaira_admin_session"
+const ADMIN_ROLES = new Set(["admin", "consultant", "auditor"])
+
+export function isAdminRole(role: unknown) {
+  return typeof role === "string" && ADMIN_ROLES.has(role)
+}
 
 export async function isAdminAuthenticated() {
   const sessionToken = await getAdminSessionToken()
@@ -18,7 +23,12 @@ export async function isAdminAuthenticated() {
       cache: "no-store",
     })
 
-    return response.ok
+    if (!response.ok) {
+      return false
+    }
+
+    const user = await response.json().catch(() => null)
+    return Boolean(user && typeof user === "object" && "role" in user && isAdminRole(user.role))
   } catch {
     return false
   }

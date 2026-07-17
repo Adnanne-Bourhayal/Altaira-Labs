@@ -20,6 +20,180 @@ Expected current result:
 
 Do not run `npx tsc --noEmit` in parallel with `npm run build`, because both commands read/write `.next/types`.
 
+## Public Smoke Script
+
+Run after the frontend and backend are already running:
+
+```bash
+npm run smoke:public
+```
+
+Default targets:
+
+```text
+Frontend: http://localhost:3000
+Backend:  http://localhost:8080
+```
+
+Optional local-only overrides:
+
+```bash
+FRONTEND_BASE_URL=http://localhost:3000 \
+BACKEND_BASE_URL=http://localhost:8080 \
+SMOKE_TIMEOUT_MS=8000 \
+npm run smoke:public
+```
+
+These are command-time variables for local QA. They are not required Render or Vercel environment variables.
+
+The smoke script checks:
+
+- public homepage
+- contact page
+- services pages
+- business sector page
+- calculator
+- blog
+- admin login shell
+- client login/client area shell
+- privacy policy
+- backend health endpoint
+
+Expected:
+
+- all checks return `PASS`
+- if a server is not running, the script fails with the exact failed URL
+
+## Authenticated Client/Admin CRM Smoke Script
+
+Run after the frontend and backend are already running:
+
+```bash
+npm run smoke:auth
+```
+
+Default target:
+
+```text
+Frontend: http://localhost:3000
+```
+
+This script does not require new Render or Vercel variables. The following variables are optional local command-time values:
+
+```bash
+FRONTEND_BASE_URL=http://localhost:3000 \
+SMOKE_TIMEOUT_MS=8000 \
+SMOKE_ADMIN_USERNAME=<local-admin-username> \
+SMOKE_ADMIN_PASSWORD=<local-admin-password> \
+SMOKE_CLIENT_EMAIL=<local-client-email> \
+SMOKE_CLIENT_PASSWORD=<local-client-password> \
+npm run smoke:auth
+```
+
+For admin checks, the script also reads local `.env.local` and can reuse the existing local `ADMIN_EMAIL` and `ADMIN_PASSWORD` values if `SMOKE_ADMIN_USERNAME` and `SMOKE_ADMIN_PASSWORD` are not set. Values are not printed. Keep `.env.local` ignored by Git.
+
+If discovered `.env.local` admin values do not authenticate, the script records that credential check as `SKIP` instead of failing the whole boundary smoke. Pass `SMOKE_ADMIN_USERNAME` and `SMOKE_ADMIN_PASSWORD` explicitly when you want admin login to be a strict pass/fail gate.
+
+If credentials are not provided, the script still checks:
+
+- `/admin/login` loads
+- `/client/login` loads
+- `/login` redirects to `/admin/login`
+- admin `/me` returns `401` without a session
+- client `/me` returns `401` without a session
+- internal clients API returns `401` without an admin session
+- client portal API returns `401` without a client session
+- `/clients` redirects to `/admin/login`
+- `/admin/services` redirects to `/admin/login`
+- `/admin/onboarding/:id` redirects to `/admin/login`
+- `/client/dashboard` redirects to `/client/login`
+- `/onboarding` redirects to `/client/login`
+
+If credentials are provided, it additionally checks:
+
+- admin login creates an admin session cookie
+- admin `/me` works with the session cookie
+- `/clients` loads with the admin session cookie
+- `/admin/services` loads with the admin session cookie
+- internal clients API works with the admin session cookie
+- client login creates a client session cookie
+- client `/me` works with the session cookie
+- `/client/dashboard` loads with the client session cookie
+
+Do not store the smoke credentials in Git. Pass them only in your local terminal or a private secrets file.
+
+## Full Client Portal / Admin CRM E2E Script
+
+Run this after the local frontend and backend are ready and the client portal schema check passes:
+
+```bash
+npm run smoke:client-portal
+```
+
+The script creates a unique demo client and verifies the complete authenticated path through the Next.js proxies:
+
+- admin login, client creation and CRM service assignment
+- all admin onboarding operations reject requests without an admin session
+- explicit rejection of client credentials by the admin login boundary
+- explicit rejection when a client session token is presented under the admin cookie name
+- idempotent onboarding generation and one-use client invitation activation
+- separate `client_user` and read-only `viewer` invitation activation
+- portal locked before critical contract approval and open after approval
+- viewer read access to onboarding, portal and scoped CRM data
+- viewer write rejection for project feedback, links, CRM creation, status, notes and follow-ups
+- project link, feedback, phase/staging update and admin-only configuration snapshot
+- client CRM lead creation, status, notes and follow-up actions
+- admin private/shared CRM notes and follow-up actions
+- client visibility filtering for admin-only records and usernames
+- final client/admin readback from the persisted database
+
+Expected current result:
+
+```text
+Client portal E2E smoke passed: 55/55 checks passed.
+```
+
+The default request timeout is `30000` ms because a cold Next.js route plus a remote Neon query can exceed ten seconds. Override it only for local QA:
+
+```bash
+SMOKE_TIMEOUT_MS=45000 npm run smoke:client-portal
+```
+
+The script creates real demo records in the configured database. It never prints the generated client password, database credentials or API keys.
+
+## Client Portal Schema Check
+
+Run this before testing the Client Portal against a real PostgreSQL/Neon database:
+
+```bash
+npm run check:client-portal-schema
+```
+
+The check is read-only. It verifies that the database configured through `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD` contains the 19 tables required by the private Client Portal, onboarding workspace, service tracks, admin-only configuration snapshots and client CRM.
+
+If those variables are not already exported, the script loads the local secrets file:
+
+```text
+/Volumes/T7/Altaira_Labs/.secrets/neon-render.env
+```
+
+Optional local-only override:
+
+```bash
+ALTAIRA_SECRETS_FILE=/path/to/private/env npm run check:client-portal-schema
+```
+
+This is not a Render or Vercel variable. It is only a local helper for choosing a private env file.
+
+If required tables are missing, the script prints the missing table names and points to the prepared additive SQL, in execution order:
+
+```text
+backend/database/onboarding-core-migration.sql
+backend/database/client-project-config-snapshots-migration.sql
+```
+
+The script does not apply migrations and does not print passwords or connection strings.
+
 ## Backend Checks
 
 Run from `backend/`:
@@ -153,7 +327,7 @@ Login and list leads:
 COOKIE_JAR=/tmp/altaira-cookies.txt
 curl -i -c "$COOKIE_JAR" -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin123","password":"admin123"}'
+  -d '{"username":"<local-admin-username>","password":"<local-admin-password>"}'
 
 curl -i -b "$COOKIE_JAR" http://localhost:3000/api/internal/leads
 ```

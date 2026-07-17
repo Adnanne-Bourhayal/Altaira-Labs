@@ -46,15 +46,47 @@ public class DemoAdminSeeder implements ApplicationRunner {
         }
 
         String normalizedUsername = username.trim().toLowerCase();
+        UserRole configuredRole = UserRole.parse(role);
 
-        if (appUserRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
+        var existingUser = appUserRepository.findByUsernameIgnoreCase(normalizedUsername);
+        if (existingUser.isPresent()) {
+            AppUserEntity user = existingUser.get();
+            boolean changed = false;
+
+            if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+                user.setPasswordHash(passwordEncoder.encode(password));
+                changed = true;
+            }
+
+            if (!configuredRole.value().equals(user.getRole())) {
+                user.setRole(configuredRole.value());
+                changed = true;
+            }
+
+            if (!user.isActive()) {
+                user.setActive(true);
+                changed = true;
+            }
+
+            if (changed) {
+                AppUserEntity savedUser = appUserRepository.save(user);
+                securityEventService.record(
+                        SecurityEventType.PASSWORD_CHANGED,
+                        savedUser,
+                        savedUser.getUsername(),
+                        true,
+                        null,
+                        null,
+                        "Explicitly enabled demo admin configuration reconciled by startup seeder"
+                );
+            }
             return;
         }
 
         AppUserEntity user = new AppUserEntity();
         user.setUsername(normalizedUsername);
         user.setPasswordHash(passwordEncoder.encode(password));
-        user.setRole(UserRole.parse(role).value());
+        user.setRole(configuredRole.value());
         user.setActive(true);
 
         AppUserEntity savedUser = appUserRepository.save(user);

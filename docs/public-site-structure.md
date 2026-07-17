@@ -12,13 +12,18 @@ This document describes the current public website structure after separating th
 | `/blog` | Blog index with SEO-oriented article cards. |
 | `/blog/[slug]` | Static article pages. |
 | `/business/[slug]` | Sector-specific pages for Clinics, Car Dealers, Restaurants and Specialty by Sector. |
+| `/services` | Public services index for the launch service catalogue. |
 | `/services/[slug]` | Public service pages for each offer. |
 
-## Existing Admin Route Kept
+## Admin Service Catalogue
 
-`/services` still exists as the authenticated/admin service catalogue page. Public navigation links directly to `/services/[slug]` pages.
+The authenticated/admin service catalogue lives at:
 
-Middleware protection keeps `/services` protected, while `/services/[slug]` remains public.
+```text
+/admin/services
+```
+
+Middleware protection keeps `/admin/services` protected, while `/services` and `/services/[slug]` remain public.
 
 ## Shared Data
 
@@ -56,8 +61,9 @@ It supports:
 - optional prepared WhatsApp link, hidden by default for a more professional public contact flow
 - light and dark display modes
 
-The public navbar Client Area button points to `/client-area`. This page is visual preparation only; invitation-based
-client registration and private dashboards remain future work.
+The public navbar Client Area button points to `/client/login`. `/client-area` remains as a compatible alias.
+The Client Area now supports password login for invited clients and Google login only for already invited/active
+client emails. Open client registration remains out of scope.
 
 ## Design Direction
 

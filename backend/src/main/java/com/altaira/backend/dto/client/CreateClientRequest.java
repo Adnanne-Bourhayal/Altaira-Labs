@@ -28,6 +28,9 @@ public class CreateClientRequest {
     @Size(max = 20, message = "Client status must be at most 20 characters")
     private String status;
 
+    @Size(max = 40, message = "Sector type must be at most 40 characters")
+    private String sectorType;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -45,4 +48,7 @@ public class CreateClientRequest {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getSectorType() { return sectorType; }
+    public void setSectorType(String sectorType) { this.sectorType = sectorType; }
 }

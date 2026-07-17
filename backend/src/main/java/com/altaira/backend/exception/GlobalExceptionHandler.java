@@ -2,6 +2,8 @@ package com.altaira.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,6 +15,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -42,6 +46,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeError(RuntimeException ex) {
+        logger.error("Unhandled runtime exception", ex);
+
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", Instant.now().toString());
 
@@ -92,6 +98,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericError(Exception ex) {
+        logger.error("Unhandled exception", ex);
+
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", Instant.now().toString());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());

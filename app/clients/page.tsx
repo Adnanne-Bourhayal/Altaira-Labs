@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { AlertCircle, ArrowRight, Building2, Mail, Phone, RefreshCw, Search, UserPlus, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AdminWorkspaceNav } from "@/components/admin/AdminWorkspaceNav"
 
 type Client = {
   id: string
@@ -133,13 +134,8 @@ export default function ClientsPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Link href="/leads" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/80 hover:bg-white/[0.07]">
-              Leads
-            </Link>
-            <Link href="/services" className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/80 hover:bg-white/[0.07]">
-              Services
-            </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <AdminWorkspaceNav active="clients" />
             <button
               onClick={() => fetchClients(true)}
               disabled={refreshing}
