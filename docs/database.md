@@ -190,28 +190,15 @@ Migration SQL:
 backend/database/auth-security-migration.sql
 ```
 
-Demo admin seed SQL:
-
-```text
-backend/database/auth-demo-admin-seed.sql
-```
-
-Optional legacy demo seed login:
-
-```text
-username: admin123
-password: admin123
-role: admin
-```
-
 Important security details:
 
 - `app_users.password_hash` stores BCrypt hashes, not plaintext passwords.
 - `app_user_sessions.session_token_hash` stores SHA-256 hashes of session tokens, not raw session tokens.
 - `security_events` records login activity, user creation, client invitation creation/acceptance, password-change/user-disable events, and logout.
-- The known demo credential exists only in the optional legacy seed SQL. Do not
-  apply that seed to a serious production database; prefer the disabled-by-default
-  startup seeder with private environment credentials.
+- The legacy SQL file with a known demo credential was removed. Use the
+  disabled-by-default startup seeder with private environment credentials.
+- When the seeder is enabled, it rejects missing, known-weak or shorter-than-16
+  character passwords before touching the database.
 
 ## Visual Database Checks
 

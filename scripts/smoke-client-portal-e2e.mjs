@@ -7,14 +7,21 @@ loadLocalEnvFile(".env.local")
 
 const frontendBaseUrl = normalizeBaseUrl(process.env.FRONTEND_BASE_URL || "http://localhost:3000")
 const timeoutMs = Number.parseInt(process.env.SMOKE_TIMEOUT_MS || "30000", 10)
-const adminUsername = process.env.SMOKE_ADMIN_USERNAME || process.env.ALTAIRA_DEMO_ADMIN_USERNAME || "admin123"
-const adminPassword = process.env.SMOKE_ADMIN_PASSWORD || process.env.ALTAIRA_DEMO_ADMIN_PASSWORD || "admin123"
+const adminUsername = process.env.SMOKE_ADMIN_USERNAME || process.env.ALTAIRA_DEMO_ADMIN_USERNAME || ""
+const adminPassword = process.env.SMOKE_ADMIN_PASSWORD || process.env.ALTAIRA_DEMO_ADMIN_PASSWORD || ""
 const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14)
 const demoEmail = `client-e2e-${stamp}@example.com`
 const demoPassword = `DemoPass${stamp}!`
 const viewerEmail = `viewer-e2e-${stamp}@example.com`
 const viewerPassword = `ViewerPass${stamp}!`
 const results = []
+
+if (!adminUsername || !adminPassword) {
+  console.error(
+    "Client portal E2E smoke requires SMOKE_ADMIN_USERNAME and SMOKE_ADMIN_PASSWORD.",
+  )
+  process.exit(2)
+}
 
 await expectAdminOnboardingRoutesProtected()
 const adminCookie = await adminLogin()

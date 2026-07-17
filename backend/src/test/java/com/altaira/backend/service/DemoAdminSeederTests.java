@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -75,5 +76,25 @@ class DemoAdminSeederTests {
         assertThat(existingUser.getRole()).isEqualTo("admin");
         assertThat(existingUser.isActive()).isTrue();
         verify(appUserRepository).save(existingUser);
+    }
+
+    @Test
+    void enabledSeederRejectsKnownWeakPassword() {
+        DemoAdminSeeder seeder = new DemoAdminSeeder(
+                appUserRepository,
+                passwordEncoder,
+                securityEventService,
+                true,
+                "admin123",
+                "admin123",
+                "admin"
+        );
+
+        assertThatThrownBy(() -> seeder.run(null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("at least 16 characters");
+
+        verify(appUserRepository, never()).findByUsernameIgnoreCase(any());
+        verify(appUserRepository, never()).save(any());
     }
 }
