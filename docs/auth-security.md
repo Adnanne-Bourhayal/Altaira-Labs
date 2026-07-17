@@ -67,9 +67,10 @@ Passwords are not stored in plaintext.
 
 The backend uses Spring Security's `BCryptPasswordEncoder` through the `PasswordEncoder` interface. The database stores only `password_hash`, for example a value beginning with `$2`.
 
-The optional legacy demo seed SQL contains a known local-only account and must
-not be applied to a serious production database. Password hashes stored in the
-database use BCrypt rather than plaintext.
+The legacy SQL seed with a known credential has been removed. The
+disabled-by-default startup seeder requires explicit environment credentials
+and rejects missing, known-weak or shorter-than-16 character passwords.
+Password hashes stored in the database use BCrypt rather than plaintext.
 
 ## Sessions
 
@@ -215,13 +216,9 @@ Migration:
 backend/database/auth-security-migration.sql
 ```
 
-Demo admin seed:
-
-```text
-backend/database/auth-demo-admin-seed.sql
-```
-
-Apply both to Neon if the auth tables do not already exist.
+Apply the migration to Neon if the auth tables do not already exist. Create or
+reconcile the controlled admin only through the environment-driven startup
+seeder.
 
 ## Local Variables
 

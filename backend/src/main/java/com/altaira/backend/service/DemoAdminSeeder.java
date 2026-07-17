@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DemoAdminSeeder implements ApplicationRunner {
 
+    private static final int MINIMUM_PASSWORD_LENGTH = 16;
+
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityEventService securityEventService;
@@ -41,9 +43,11 @@ public class DemoAdminSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!enabled || username == null || username.isBlank() || password == null || password.isBlank()) {
+        if (!enabled) {
             return;
         }
+
+        validateConfiguration();
 
         String normalizedUsername = username.trim().toLowerCase();
         UserRole configuredRole = UserRole.parse(role);
@@ -99,5 +103,37 @@ public class DemoAdminSeeder implements ApplicationRunner {
                 null,
                 "Demo/local/TFG admin user created by startup seeder"
         );
+    }
+
+    private void validateConfiguration() {
+        if (username == null || username.isBlank()) {
+            throw new IllegalStateException(
+                    "Demo admin is enabled but ALTAIRA_DEMO_ADMIN_USERNAME is missing"
+            );
+        }
+
+        if (password == null || password.isBlank()) {
+            throw new IllegalStateException(
+                    "Demo admin is enabled but ALTAIRA_DEMO_ADMIN_PASSWORD is missing"
+            );
+        }
+
+        String normalizedUsername = username.trim();
+        String normalizedPassword = password.trim();
+        boolean knownWeakPassword = normalizedPassword.equalsIgnoreCase("admin123")
+                || normalizedPassword.equalsIgnoreCase("password")
+                || normalizedPassword.equalsIgnoreCase("password123")
+                || normalizedPassword.equalsIgnoreCase("changeme")
+                || normalizedPassword.equalsIgnoreCase("altaira");
+
+        if (normalizedPassword.length() < MINIMUM_PASSWORD_LENGTH
+                || normalizedPassword.equalsIgnoreCase(normalizedUsername)
+                || knownWeakPassword) {
+            throw new IllegalStateException(
+                    "Demo admin password must be private, unique and at least "
+                            + MINIMUM_PASSWORD_LENGTH
+                            + " characters"
+            );
+        }
     }
 }

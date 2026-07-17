@@ -473,25 +473,25 @@ class BackendApplicationTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "username": "admin123",
-								  "password": "admin123"
+								  "username": "admin-test",
+								  "password": "AdminTestPassword!2026"
 								}
 								"""))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.sessionToken").exists())
-				.andExpect(jsonPath("$.user.username").value("admin123"))
+				.andExpect(jsonPath("$.user.username").value("admin-test"))
 				.andExpect(jsonPath("$.user.role").value("admin"))
 				.andReturn()
 				.getResponse()
 				.getContentAsString();
 
 		String sessionToken = objectMapper.readTree(response).get("sessionToken").asText();
-		var user = appUserRepository.findByUsernameIgnoreCase("admin123").orElseThrow();
+		var user = appUserRepository.findByUsernameIgnoreCase("admin-test").orElseThrow();
 		var session = appUserSessionRepository.findAll().get(0);
 
-		org.junit.jupiter.api.Assertions.assertNotEquals("admin123", user.getPasswordHash());
+		org.junit.jupiter.api.Assertions.assertNotEquals("AdminTestPassword!2026", user.getPasswordHash());
 		org.junit.jupiter.api.Assertions.assertTrue(user.getPasswordHash().startsWith("$2"));
-		org.junit.jupiter.api.Assertions.assertTrue(passwordEncoder.matches("admin123", user.getPasswordHash()));
+		org.junit.jupiter.api.Assertions.assertTrue(passwordEncoder.matches("AdminTestPassword!2026", user.getPasswordHash()));
 		org.junit.jupiter.api.Assertions.assertNotEquals(sessionToken, session.getSessionTokenHash());
 		org.junit.jupiter.api.Assertions.assertEquals(64, session.getSessionTokenHash().length());
 		org.junit.jupiter.api.Assertions.assertEquals(1, securityEventRepository.countByEventType("login_success"));
@@ -503,7 +503,7 @@ class BackendApplicationTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "username": "admin123",
+								  "username": "admin-test",
 								  "password": "wrong-password"
 								}
 								"""))
@@ -542,7 +542,7 @@ class BackendApplicationTests {
 		mockMvc.perform(get("/api/v1/auth/me")
 						.header("X-Admin-Session-Token", secondSessionToken))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.username").value("admin123"));
+				.andExpect(jsonPath("$.username").value("admin-test"));
 
 		var sessions = appUserSessionRepository.findAll();
 		org.junit.jupiter.api.Assertions.assertEquals(2, sessions.size());
@@ -590,8 +590,8 @@ class BackendApplicationTests {
 					.contentType(MediaType.APPLICATION_JSON)
 					.content("""
 							{
-							  "username": "admin123",
-							  "password": "admin123"
+							  "username": "admin-test",
+							  "password": "AdminTestPassword!2026"
 							}
 							"""))
 				.andExpect(status().isForbidden())
@@ -1753,8 +1753,8 @@ class BackendApplicationTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "username": "admin123",
-								  "password": "admin123"
+								  "username": "admin-test",
+								  "password": "AdminTestPassword!2026"
 								}
 								"""))
 				.andExpect(status().isOk())
