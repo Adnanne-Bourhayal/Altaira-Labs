@@ -40,7 +40,9 @@ The current direction combines:
 - Do not claim guaranteed savings. The calculator must remain a planning estimate.
 - Keep copy specific: lost leads, repeated admin work, messy Excel files, disconnected tools, weak follow-up and poor visibility.
 - Do not promise "50+ clients", "guaranteed 40% growth", "AI-powered everything", "enterprise-grade platform", "official partner" or case studies without real evidence.
-- Keep `/login` available by direct URL but out of the public navigation.
+- Keep `/admin/login` available by direct URL but out of the public navigation.
+- Keep `/login` only as a legacy redirect to `/admin/login`.
+- Keep the visible Client Area CTA pointed at `/client/login`.
 - Keep the public form connected to the real lead flow.
 
 ## Current Public Sections

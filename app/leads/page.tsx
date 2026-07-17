@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { RefreshCw, Search, Users, Mail, Building2, Activity, LogOut, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AdminWorkspaceNav } from "@/components/admin/AdminWorkspaceNav"
 import { LEAD_STATUS_OPTIONS, statusBadgeClass, statusLabel } from "@/lib/lead-status"
 
 type Lead = {
@@ -111,21 +112,8 @@ export default function LeadsPage() {
             </p>
           </div>
 
-          <div className="flex gap-3">
-            <Link
-              href="/clients"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all"
-            >
-              Clients
-            </Link>
-
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/[0.07] hover:border-white/20 transition-all"
-            >
-              Services
-            </Link>
-
+          <div className="flex flex-wrap items-center gap-3">
+            <AdminWorkspaceNav active="leads" />
             <button
               onClick={() => fetchLeads(true)}
               disabled={refreshing}

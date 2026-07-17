@@ -30,6 +30,9 @@ public class ClientEntity {
     @Column(nullable = false)
     private String status;
 
+    @Column(name = "sector_type", nullable = false)
+    private String sectorType = "custom";
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -70,6 +73,9 @@ public class ClientEntity {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getSectorType() { return sectorType; }
+    public void setSectorType(String sectorType) { this.sectorType = sectorType; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

@@ -6,7 +6,9 @@ import java.util.Locale;
 public enum UserRole {
     ADMIN("admin"),
     CONSULTANT("consultant"),
-    AUDITOR("auditor");
+    AUDITOR("auditor"),
+    CLIENT_USER("client_user"),
+    VIEWER("viewer");
 
     private final String value;
 
@@ -20,7 +22,7 @@ public enum UserRole {
 
     public static UserRole parse(String rawValue) {
         if (rawValue == null || rawValue.isBlank()) {
-            return ADMIN;
+            throw new IllegalArgumentException("User role is required");
         }
 
         String normalized = rawValue.trim().toLowerCase(Locale.ROOT);
@@ -29,5 +31,13 @@ public enum UserRole {
                 .filter(role -> role.value.equals(normalized))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user role"));
+    }
+
+    public boolean isAdminRole() {
+        return this == ADMIN || this == CONSULTANT || this == AUDITOR;
+    }
+
+    public boolean isClientRole() {
+        return this == CLIENT_USER || this == VIEWER;
     }
 }

@@ -12,12 +12,13 @@ public class ClientResponse {
     private String phone;
     private UUID sourceLeadId;
     private String status;
+    private String sectorType;
     private Instant createdAt;
     private Instant updatedAt;
 
     public ClientResponse() {}
 
-    public ClientResponse(UUID id, String name, String company, String email, String phone, UUID sourceLeadId, String status, Instant createdAt, Instant updatedAt) {
+    public ClientResponse(UUID id, String name, String company, String email, String phone, UUID sourceLeadId, String status, String sectorType, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.company = company;
@@ -25,6 +26,7 @@ public class ClientResponse {
         this.phone = phone;
         this.sourceLeadId = sourceLeadId;
         this.status = status;
+        this.sectorType = sectorType;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -49,6 +51,9 @@ public class ClientResponse {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getSectorType() { return sectorType; }
+    public void setSectorType(String sectorType) { this.sectorType = sectorType; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

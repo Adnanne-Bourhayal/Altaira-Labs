@@ -40,7 +40,9 @@ The frontend owns:
 Important routes:
 
 - `/`
-- `/login`
+- `/admin/login`
+- `/client/login`
+- `/login` legacy redirect to `/admin/login`
 - `/leads`
 - `/leads/[id]`
 - `/api/leads`

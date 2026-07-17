@@ -275,7 +275,7 @@ export default function LeadDetailPage() {
             Back to leads
           </Link>
           <Link href="/clients" className="text-white/45 hover:text-white">Clients</Link>
-          <Link href="/services" className="text-white/45 hover:text-white">Services</Link>
+          <Link href="/admin/services" className="text-white/45 hover:text-white">Services</Link>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">

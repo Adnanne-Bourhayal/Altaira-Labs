@@ -66,7 +66,7 @@ Unavailable backend behavior:
 
 ## Admin Lead Management Flow
 
-1. Admin signs in at `/login`.
+1. Admin signs in at `/admin/login`.
 2. Successful login creates the `altaira_admin_session` HTTP-only cookie.
 3. Middleware allows access to `/leads`.
 4. The lead dashboard calls `GET /api/internal/leads`.

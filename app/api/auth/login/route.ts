@@ -1,6 +1,6 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
-import { ADMIN_SESSION_COOKIE } from "@/lib/server-admin-auth"
+import { ADMIN_SESSION_COOKIE, isAdminRole } from "@/lib/server-admin-auth"
 import { backendServiceUnavailableResponse, backendUrl, invalidJsonResponse, readJson } from "@/lib/server-backend-api"
 
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const loginName = username || email
 
   try {
-    const response = await fetch(backendUrl("/api/v1/auth/login"), {
+    const response = await fetch(backendUrl("/api/v1/auth/admin/login"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,6 +38,21 @@ export async function POST(request: Request) {
       return NextResponse.json(data, { status: response.status })
     }
 
+    const user = data.user
+    const role = user && typeof user === "object" && "role" in user ? user.role : undefined
+
+    if (!isAdminRole(role)) {
+      await fetch(backendUrl("/api/v1/auth/logout"), {
+        method: "POST",
+        headers: {
+          "X-Admin-Session-Token": data.sessionToken,
+        },
+        cache: "no-store",
+      }).catch(() => undefined)
+
+      return NextResponse.json({ error: "Admin role required" }, { status: 403 })
+    }
+
     const maxAge = typeof data.expiresAt === "string"
       ? Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000))
       : 60 * 60 * 8
@@ -45,14 +60,14 @@ export async function POST(request: Request) {
     const cookieStore = await cookies()
     cookieStore.set(ADMIN_SESSION_COOKIE, data.sessionToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge,
     })
     cookieStore.set("altaira_admin_auth", "", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 0,
@@ -60,7 +75,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      user: data.user,
+      user,
+    }, {
+      headers: {
+        "Cache-Control": "no-store",
+      },
     })
   } catch {
     return backendServiceUnavailableResponse("Auth service")

@@ -20,18 +20,22 @@ export async function POST() {
 
   cookieStore.set(ADMIN_SESSION_COOKIE, "", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 0,
   })
   cookieStore.set("altaira_admin_auth", "", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 0,
   })
 
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true }, {
+    headers: {
+      "Cache-Control": "no-store",
+    },
+  })
 }

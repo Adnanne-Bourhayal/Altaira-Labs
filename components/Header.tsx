@@ -91,7 +91,7 @@ export default function Header() {
             <Link href="/contact" className="ml-2 border border-blue-400 bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:from-blue-500 hover:to-violet-500">
               Contact
             </Link>
-            <Link href="/client-area" className="border border-violet-300/35 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500/15">
+            <Link href="/client/login" className="border border-violet-300/35 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500/15">
               Client Area
             </Link>
           </div>
@@ -171,7 +171,7 @@ export default function Header() {
                 <Link href="/contact" onClick={closeMenu} className="border border-white bg-white px-5 py-3 text-center text-sm font-semibold text-black">
                   Contact
                 </Link>
-                <Link href="/client-area" onClick={closeMenu} className="border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white">
+                <Link href="/client/login" onClick={closeMenu} className="border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white">
                   Client Area
                 </Link>
               </div>

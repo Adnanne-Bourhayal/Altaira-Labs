@@ -5,6 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 @Service
 public class InternalApiTokenService {
 
@@ -21,6 +24,13 @@ public class InternalApiTokenService {
     }
 
     public boolean isValidToken(String providedToken) {
-        return providedToken != null && !providedToken.isBlank() && providedToken.equals(internalApiToken);
+        if (providedToken == null || providedToken.isBlank() || internalApiToken == null || internalApiToken.isBlank()) {
+            return false;
+        }
+
+        return MessageDigest.isEqual(
+                providedToken.getBytes(StandardCharsets.UTF_8),
+                internalApiToken.getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

@@ -111,6 +111,14 @@ These routes require the `altaira_admin_session` HTTP-only cookie.
 
 ### Login
 
+Admin UI route:
+
+```text
+/admin/login
+```
+
+Legacy `/login` redirects to `/admin/login`.
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -120,8 +128,8 @@ Body:
 
 ```json
 {
-  "username": "admin123",
-  "password": "admin123"
+  "username": "<configured-admin-username>",
+  "password": "<configured-admin-password>"
 }
 ```
 
@@ -131,13 +139,21 @@ Success:
 {
   "success": true,
   "user": {
-    "username": "admin123",
+    "username": "<configured-admin-username>",
     "role": "admin"
   }
 }
 ```
 
 Malformed JSON or a non-object request body returns `400`.
+
+The Next.js proxy forwards this request to the role-specific backend endpoint:
+
+```http
+POST /api/v1/auth/admin/login
+```
+
+Only `admin`, `consultant` and `auditor` can receive an admin session. Client roles return `403` and no admin cookie is created.
 
 ### Logout
 
@@ -150,6 +166,483 @@ Success:
 ```json
 { "success": true }
 ```
+
+## Client Frontend API
+
+These routes use the separate `altaira_client_session` HTTP-only cookie.
+
+### Password Login
+
+Client UI route:
+
+```text
+/client/login
+```
+
+```http
+POST /api/client/auth/login
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "email": "client@example.com",
+  "password": "client-password"
+}
+```
+
+The backend accepts only `client_user` or `viewer` roles for this route.
+
+The Next.js proxy forwards password credentials to:
+
+```http
+POST /api/v1/auth/client/login
+```
+
+The role check happens before the backend revokes or creates a session.
+
+### Google Login
+
+```http
+POST /api/client/auth/google
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "credential": "<google-id-token-from-google-identity-services>"
+}
+```
+
+The Next.js route forwards the credential to Spring Boot:
+
+```http
+POST /api/v1/auth/client/google
+```
+
+The backend verifies the Google credential, checks the token audience against `GOOGLE_CLIENT_ID`,
+requires a verified email, and then allows login only when that email already belongs to an active
+invited client user with active client workspace access.
+
+Google login requires:
+
+```text
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-web-client-id>
+GOOGLE_CLIENT_ID=<same-google-oauth-web-client-id>
+```
+
+### Client Portal Project Tracks
+
+The Client Area reads active service modules and project tracks through:
+
+```http
+GET /api/client/portal
+```
+
+The Next.js route forwards to:
+
+```http
+GET /api/v1/client-portal/me
+```
+
+Project feedback:
+
+```http
+PATCH /api/client/portal/projects/{projectId}/feedback
+Content-Type: application/json
+```
+
+```json
+{
+  "feedback": "Please add appointment buffers and separate first visits from follow-up appointments."
+}
+```
+
+Project file upload:
+
+```http
+POST /api/client/portal/projects/{projectId}/assets
+Content-Type: multipart/form-data
+```
+
+Fields:
+
+```text
+files=<one or more files>
+assetType=booking_rules | crm_import | workflow_map | dashboard_metrics | website_copy | general
+notes=<optional client notes>
+```
+
+Project external link:
+
+```http
+POST /api/client/portal/projects/{projectId}/links
+Content-Type: application/json
+```
+
+```json
+{
+  "url": "https://example.com/clinic-opening-hours",
+  "label": "Clinic opening hours",
+  "assetType": "booking_rules",
+  "notes": "Opening hours and appointment buffer rules for the booking track."
+}
+```
+
+Links are stored as project material records with `externalUrl`; they are not downloadable files.
+
+## Admin Client CRM API
+
+The admin client detail page can inspect and lightly manage client-owned CRM leads without using a client session.
+
+Admin UI routes:
+
+```text
+/clients/{clientId}
+/clients/{clientId}/crm
+```
+
+The first route keeps a compact client summary. The second route is the dedicated admin CRM workspace with a wider lead list, detail panel, notes and timeline.
+
+Frontend proxy:
+
+```http
+GET /api/internal/clients/{clientId}/crm-leads
+```
+
+Backend endpoint:
+
+```http
+GET /api/v1/client-crm/admin/clients/{clientId}/leads
+```
+
+Required auth:
+
+```text
+X-Internal-API-Token
+or
+X-Admin-Session-Token
+```
+
+The response is a list of client CRM leads with status, priority, source, sector fields, follow-up actions and notes.
+Admin CRM responses include the full operational record, including admin-only follow-up actions, admin notes and admin timeline entries.
+Each lead also includes an `events` array used as a compact operational timeline. Current event types are:
+
+- `lead_created`
+- `status_changed`
+- `note_added`
+- `follow_up_created`
+- `follow_up_status_changed`
+
+The dedicated admin CRM page labels notes, follow-up actions and timeline events as `Client-visible` or `Admin-only` so admin users know what the client can see in `/client/dashboard`.
+
+Admin status update:
+
+```http
+PATCH /api/internal/clients/{clientId}/crm-leads/{leadId}/status
+Content-Type: application/json
+```
+
+Backend equivalent:
+
+```http
+PATCH /api/v1/client-crm/admin/clients/{clientId}/leads/{leadId}/status
+```
+
+Body:
+
+```json
+{ "status": "proposal_sent" }
+```
+
+Admin note:
+
+```http
+POST /api/internal/clients/{clientId}/crm-leads/{leadId}/notes
+Content-Type: application/json
+```
+
+Backend equivalent:
+
+```http
+POST /api/v1/client-crm/admin/clients/{clientId}/leads/{leadId}/notes
+```
+
+Body:
+
+```json
+{
+  "content": "Admin reviewed the enquiry and prepared a proposal follow-up.",
+  "visibleToClient": false
+}
+```
+
+Both admin write operations are scoped by `clientId` and `leadId`, so a lead cannot be updated through the wrong client route.
+
+`visibleToClient` is optional and defaults to `false` for admin notes. When set to `true`, the note is returned by client CRM endpoints with the admin username removed. The matching admin timeline event remains admin-only.
+
+Admin follow-up action:
+
+```http
+POST /api/internal/clients/{clientId}/crm-leads/{leadId}/follow-up-actions
+Content-Type: application/json
+```
+
+Backend equivalent:
+
+```http
+POST /api/v1/client-crm/admin/clients/{clientId}/leads/{leadId}/follow-up-actions
+```
+
+Body:
+
+```json
+{
+  "title": "Internal pricing review",
+  "description": "Check margin before sending the final quote.",
+  "visibleToClient": false
+}
+```
+
+Admin follow-up status update:
+
+```http
+PATCH /api/internal/clients/{clientId}/crm-leads/{leadId}/follow-up-actions/{actionId}/status
+Content-Type: application/json
+```
+
+Backend equivalent:
+
+```http
+PATCH /api/v1/client-crm/admin/clients/{clientId}/leads/{leadId}/follow-up-actions/{actionId}/status
+```
+
+Body:
+
+```json
+{ "status": "done" }
+```
+
+Allowed follow-up action statuses:
+
+- `open`
+- `done`
+- `cancelled`
+
+Admin-created follow-up actions are private by default. When `visibleToClient` is `true`, the action appears in the client CRM lead response without exposing an admin username. The matching admin timeline event remains admin-only.
+
+### Client Session
+
+```http
+GET /api/client/auth/me
+Cookie: altaira_client_session=<http-only-session-cookie>
+```
+
+Returns the current client workspace context or `401` if the client session is missing/invalid.
+
+### Client CRM Leads
+
+These routes use the `altaira_client_session` HTTP-only cookie and proxy to Spring Boot client CRM endpoints.
+
+Client CRM responses are scoped for the private client workspace. Client users can see their own CRM leads, their own follow-up actions, admin follow-up actions explicitly marked as client-visible, client/system notes, admin notes explicitly marked as client-visible and client/system timeline activity. Admin-only follow-up actions, admin-only notes and admin-only timeline events remain available through admin CRM endpoints, but are not returned by client routes.
+
+List leads:
+
+```http
+GET /api/client/crm/leads
+Cookie: altaira_client_session=<http-only-session-cookie>
+```
+
+Get one lead:
+
+```http
+GET /api/client/crm/leads/{leadId}
+Cookie: altaira_client_session=<http-only-session-cookie>
+```
+
+Create lead:
+
+```http
+POST /api/client/crm/leads
+Cookie: altaira_client_session=<http-only-session-cookie>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "fullName": "Private Event Lead",
+  "email": "event-lead@example.com",
+  "phone": "+32 470 22 33 44",
+  "source": "web_form",
+  "priority": "urgent",
+  "sectorFields": {
+    "event_type": "Birthday dinner",
+    "guest_count": "18"
+  },
+  "initialNote": "Asked for a Saturday evening private table."
+}
+```
+
+Update status:
+
+```http
+PATCH /api/client/crm/leads/{leadId}/status
+Cookie: altaira_client_session=<http-only-session-cookie>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{ "status": "appointment_scheduled" }
+```
+
+Add note:
+
+```http
+POST /api/client/crm/leads/{leadId}/notes
+Cookie: altaira_client_session=<http-only-session-cookie>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{ "content": "Confirmed interest and sent menu options." }
+```
+
+Add follow-up action:
+
+```http
+POST /api/client/crm/leads/{leadId}/follow-up-actions
+Cookie: altaira_client_session=<http-only-session-cookie>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "title": "Call guest to confirm proposal preference",
+  "description": "Ask whether they prefer terrace or private dining room."
+}
+```
+
+Update follow-up action status:
+
+```http
+PATCH /api/client/crm/leads/{leadId}/follow-up-actions/{actionId}/status
+Cookie: altaira_client_session=<http-only-session-cookie>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{ "status": "done" }
+```
+
+The response is the updated client CRM lead. Client responses keep the latest lead status, include client-visible follow-up actions and explicitly shared admin notes, and intentionally hide admin-only follow-up actions, admin-only notes and admin-only timeline entries.
+
+Allowed statuses:
+
+- `new_lead`
+- `contacted`
+- `appointment_scheduled`
+- `proposal_sent`
+- `won`
+- `lost`
+
+Allowed priorities:
+
+- `low`
+- `normal`
+- `high`
+- `urgent`
+
+Access is client-scoped. The backend returns `423 Locked` while the service contract is not approved and `403` if the client does not have an active CRM module.
+
+Backend equivalents:
+
+```http
+GET /api/v1/client-crm/client/leads
+POST /api/v1/client-crm/client/leads
+PATCH /api/v1/client-crm/client/leads/{leadId}/status
+POST /api/v1/client-crm/client/leads/{leadId}/notes
+```
+
+### Client CRM Webhook Intake
+
+Admin-only token management:
+
+```http
+GET /api/internal/clients/{clientId}/crm-webhooks
+POST /api/internal/clients/{clientId}/crm-webhooks
+PATCH /api/internal/clients/{clientId}/crm-webhooks/{tokenId}/revoke
+Cookie: altaira_admin_session=<http-only-session-cookie>
+```
+
+Backend equivalents:
+
+```http
+GET /api/v1/client-crm/admin/clients/{clientId}/webhook-tokens
+POST /api/v1/client-crm/admin/clients/{clientId}/webhook-tokens
+PATCH /api/v1/client-crm/admin/clients/{clientId}/webhook-tokens/{tokenId}/revoke
+```
+
+Token creation body:
+
+```json
+{ "label": "Website form" }
+```
+
+The full `apiKey` is returned only on creation. Later list responses expose only `tokenPrefix`, status and usage metadata.
+
+Public lead intake endpoint:
+
+```http
+POST /api/v1/client-crm/webhooks/leads
+X-Altaira-Webhook-Key: <one-time-copied-client-crm-api-key>
+Content-Type: application/json
+```
+
+The request body uses the same shape as client CRM lead creation:
+
+```json
+{
+  "fullName": "Dental Implant Lead",
+  "email": "implant-lead@example.com",
+  "phone": "+32 470 55 66 77",
+  "source": "clinic_website",
+  "priority": "urgent",
+  "sectorFields": {
+    "treatment_interest": "Dental implants",
+    "preferred_day": "Thursday"
+  },
+  "initialNote": "Asked for a first consultation from the clinic website."
+}
+```
+
+Security behavior:
+
+- raw API keys are never stored, only SHA-256 hashes
+- the token must be active
+- revoked tokens return `401`
+- the client must have a non-cancelled CRM service assignment
+- public webhook intake does not require a client browser session
+- if `priority=urgent`, the backend sends a Resend email alert to the client owner email stored in `clients.email`
+- alert email failure never blocks lead persistence; the lead is still saved and the failure is logged without exposing `RESEND_API_KEY`
+- webhook-created leads are stored in `client_crm_leads`, not in Altaira's public `leads` inbox
+
+## Admin Data API
+
+These routes require the `altaira_admin_session` HTTP-only cookie.
 
 ### List Leads
 

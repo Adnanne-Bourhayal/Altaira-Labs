@@ -7,6 +7,7 @@ import com.altaira.backend.entity.LeadEntity;
 import com.altaira.backend.exception.LeadNotFoundException;
 import com.altaira.backend.exception.ResourceNotFoundException;
 import com.altaira.backend.model.ClientStatus;
+import com.altaira.backend.model.SectorType;
 import com.altaira.backend.repository.ClientRepository;
 import com.altaira.backend.repository.LeadRepository;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,7 @@ public class ClientManagementService {
         entity.setPhone(trimOptional(request.getPhone()));
         entity.setSourceLead(sourceLead);
         entity.setStatus(ClientStatus.parse(request.getStatus()).value());
+        entity.setSectorType(SectorType.parse(request.getSectorType()).value());
 
         return map(clientRepository.save(entity));
     }
@@ -68,6 +70,7 @@ public class ClientManagementService {
         entity.setPhone(trimOptional(lead.getPhone()));
         entity.setSourceLead(lead);
         entity.setStatus(ClientStatus.ACTIVE.value());
+        entity.setSectorType(inferSectorFromLead(lead));
 
         return map(clientRepository.save(entity));
     }
@@ -99,9 +102,30 @@ public class ClientManagementService {
                 entity.getPhone(),
                 sourceLeadId,
                 entity.getStatus(),
+                entity.getSectorType(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private String inferSectorFromLead(LeadEntity lead) {
+        String combined = ((lead.getIndustry() == null ? "" : lead.getIndustry()) + " " +
+                (lead.getServiceInterest() == null ? "" : lead.getServiceInterest()) + " " +
+                (lead.getGoals() == null ? "" : lead.getGoals())).toLowerCase(Locale.ROOT);
+
+        if (combined.contains("clinic") || combined.contains("dental") || combined.contains("patient") || combined.contains("clinica")) {
+            return SectorType.CLINICS.value();
+        }
+
+        if (combined.contains("restaurant") || combined.contains("reservation") || combined.contains("restaurante") || combined.contains("menu")) {
+            return SectorType.RESTAURANTS.value();
+        }
+
+        if (combined.contains("car") || combined.contains("dealer") || combined.contains("vehicle") || combined.contains("concesionario")) {
+            return SectorType.CAR_DEALERS.value();
+        }
+
+        return SectorType.CUSTOM.value();
     }
 
     private String trimRequired(String value) {

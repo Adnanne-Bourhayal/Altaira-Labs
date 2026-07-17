@@ -6,6 +6,7 @@ import com.altaira.backend.dto.auth.LoginResponse;
 import com.altaira.backend.entity.AppUserEntity;
 import com.altaira.backend.entity.AppUserSessionEntity;
 import com.altaira.backend.model.SecurityEventType;
+import com.altaira.backend.model.UserRole;
 import com.altaira.backend.repository.AppUserRepository;
 import com.altaira.backend.repository.AppUserSessionRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.function.Predicate;
 
 @Service
 @Transactional
@@ -50,6 +52,24 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request, String ipAddress, String userAgent) {
+        return loginForAudience(request, ipAddress, userAgent, role -> true, null);
+    }
+
+    public LoginResponse loginAdmin(LoginRequest request, String ipAddress, String userAgent) {
+        return loginForAudience(request, ipAddress, userAgent, UserRole::isAdminRole, "Admin role required");
+    }
+
+    public LoginResponse loginClient(LoginRequest request, String ipAddress, String userAgent) {
+        return loginForAudience(request, ipAddress, userAgent, UserRole::isClientRole, "Client role required");
+    }
+
+    private LoginResponse loginForAudience(
+            LoginRequest request,
+            String ipAddress,
+            String userAgent,
+            Predicate<UserRole> allowedRole,
+            String roleError
+    ) {
         String username = normalizeUsername(request.getUsername());
         String password = request.getPassword() == null ? "" : request.getPassword();
 
@@ -69,8 +89,31 @@ public class AuthService {
         }
 
         AppUserEntity entity = user.get();
+
+        if (!allowedRole.test(UserRole.parse(entity.getRole()))) {
+            securityEventService.record(
+                    SecurityEventType.LOGIN_FAILED,
+                    entity,
+                    username,
+                    false,
+                    ipAddress,
+                    userAgent,
+                    "Role is not allowed for the requested login audience"
+            );
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, roleError);
+        }
+
+        return createSessionForUser(entity, ipAddress, userAgent, "Session created");
+    }
+
+    public LoginResponse createSessionForUser(AppUserEntity entity, String ipAddress, String userAgent, String metadata) {
+        return createSessionForUser(entity, ipAddress, userAgent, metadata, true);
+    }
+
+    public LoginResponse createSessionForUser(AppUserEntity entity, String ipAddress, String userAgent, String metadata, boolean linkSecurityEventToUser) {
         Instant now = Instant.now();
         entity.setLastLoginAt(now);
+        revokeExistingSessions(entity, now);
 
         String sessionToken = createSessionToken();
         Instant expiresAt = now.plus(Math.max(sessionHours, 1), ChronoUnit.HOURS);
@@ -83,12 +126,12 @@ public class AuthService {
 
         securityEventService.record(
                 SecurityEventType.LOGIN_SUCCESS,
-                entity,
+                linkSecurityEventToUser ? entity : null,
                 entity.getUsername(),
                 true,
                 ipAddress,
                 userAgent,
-                "Session created"
+                metadata == null || metadata.isBlank() ? "Session created" : metadata
         );
 
         return new LoginResponse(sessionToken, expiresAt, mapUser(entity));
@@ -97,6 +140,10 @@ public class AuthService {
     public AuthUserResponse getCurrentUser(String sessionToken) {
         AppUserSessionEntity session = findUsableSession(sessionToken);
         return mapUser(session.getUser());
+    }
+
+    public AppUserEntity getCurrentUserEntity(String sessionToken) {
+        return findUsableSession(sessionToken).getUser();
     }
 
     public void logout(String sessionToken, String ipAddress, String userAgent) {
@@ -144,6 +191,15 @@ public class AuthService {
                 user.isActive(),
                 user.getLastLoginAt()
         );
+    }
+
+    private void revokeExistingSessions(AppUserEntity user, Instant now) {
+        appUserSessionRepository.findAllByUserAndRevokedAtIsNull(user)
+                .forEach(session -> {
+                    if (session.getRevokedAt() == null && session.getExpiresAt().isAfter(now)) {
+                        session.setRevokedAt(now);
+                    }
+                });
     }
 
     public String hashToken(String sessionToken) {
