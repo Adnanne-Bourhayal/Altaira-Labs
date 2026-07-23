@@ -19,7 +19,7 @@ export default function AdminLoginPanel() {
     fetch("/api/auth/me", { cache: "no-store" })
       .then((response) => {
         if (active && response.ok) {
-          router.replace("/leads")
+          router.replace("/admin")
         }
       })
       .catch(() => undefined)
@@ -49,7 +49,7 @@ export default function AdminLoginPanel() {
         throw new Error(data?.error || "Invalid credentials")
       }
 
-      router.replace("/leads")
+      router.replace("/admin")
       router.refresh()
     } catch (err) {
       console.error(err)

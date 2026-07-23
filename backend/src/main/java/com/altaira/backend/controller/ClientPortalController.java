@@ -1,5 +1,7 @@
 package com.altaira.backend.controller;
 
+import com.altaira.backend.dto.clientportal.AdminActionItemResponse;
+import com.altaira.backend.dto.clientportal.AdminClientProjectSummaryResponse;
 import com.altaira.backend.dto.clientportal.ClientPortalResponse;
 import com.altaira.backend.dto.clientportal.ClientProjectAssetResponse;
 import com.altaira.backend.dto.clientportal.ClientProjectConfigSnapshotResponse;
@@ -109,6 +111,24 @@ public class ClientPortalController {
     ) {
         adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return clientPortalService.getPortalForAdmin(clientId);
+    }
+
+    @GetMapping("/admin/projects")
+    public List<AdminClientProjectSummaryResponse> listProjectsAsAdmin(
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
+        return clientPortalService.listProjectsAsAdmin();
+    }
+
+    @GetMapping("/admin/actions")
+    public List<AdminActionItemResponse> listActionItemsAsAdmin(
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
+        return clientPortalService.listActionItemsAsAdmin();
     }
 
     @PatchMapping("/admin/projects/{projectId}")

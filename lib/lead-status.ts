@@ -1,9 +1,12 @@
-export type LeadStatus = "new" | "contacted" | "closed"
+export type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "lost" | "closed"
 
 export const LEAD_STATUS_OPTIONS: Array<{ value: LeadStatus; label: string }> = [
   { value: "new", label: "New" },
   { value: "contacted", label: "Contacted" },
-  { value: "closed", label: "Closed" },
+  { value: "qualified", label: "Qualified" },
+  { value: "converted", label: "Converted" },
+  { value: "lost", label: "Lost" },
+  { value: "closed", label: "Archived" },
 ]
 
 export function isLeadStatus(value: string): value is LeadStatus {
@@ -16,13 +19,8 @@ export function statusLabel(value: string) {
 }
 
 export function statusBadgeClass(value: string) {
-  if (value === "contacted") {
-    return "bg-amber-500/15 text-amber-300 border-amber-500/25"
-  }
-
-  if (value === "closed") {
-    return "bg-emerald-500/15 text-emerald-300 border-emerald-500/25"
-  }
-
-  return "bg-blue-500/15 text-blue-300 border-blue-500/25"
+  if (value === "converted") return "border-emerald-700/30 bg-emerald-950/20 text-emerald-300"
+  if (value === "lost" || value === "closed") return "border-white/10 bg-white/[0.03] text-white/45"
+  if (value === "qualified") return "border-[#0f62fe]/40 bg-[#0f62fe]/10 text-blue-200"
+  return "border-white/10 bg-white/[0.03] text-white/70"
 }

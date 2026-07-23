@@ -1,0 +1,420 @@
+{
+  "schemaVersion" : 1,
+  "scenarioId" : "DEMO-RESTAURANT",
+  "slug" : "tapas-bistro",
+  "name" : "Tapas Bistro Demo",
+  "sector" : "Restaurants",
+  "expectedTracks" : [ "WEB", "BOOKING", "AUTOMATION" ],
+  "plan" : {
+    "id" : "fixture-plan-tapas-bistro",
+    "leadId" : "fixture-lead-tapas-bistro",
+    "assessmentId" : "fixture-assessment-tapas-bistro",
+    "route" : "COMPOSITE",
+    "automationLevel" : "A2",
+    "automationScope" : "partial",
+    "status" : "draft",
+    "dryRun" : true,
+    "executionAllowed" : false,
+    "normalizedRequirements" : {
+      "requires_auth" : true,
+      "requires_automation" : true,
+      "requires_backend" : true,
+      "requires_booking" : true,
+      "requires_calendar" : true,
+      "requires_cms" : true,
+      "requires_crm" : false,
+      "requires_dashboard" : false,
+      "requires_data_migration" : false,
+      "requires_database" : true,
+      "requires_external_integrations" : true,
+      "requires_file_storage" : false,
+      "requires_frontend" : true,
+      "requires_payments" : false,
+      "requires_realtime" : false,
+      "requires_static_site" : false,
+      "requires_training" : false
+    },
+    "decisionReason" : "WEB: Managed content editing is required without a custom application backend. BOOKING: Standard appointments, resources and policies fit a managed booking platform. AUTOMATION: The requested trigger and action fit a managed workflow or existing Altaira capability.",
+    "costEstimate" : "Dry-run only. Provider plans, subscriptions and usage costs require admin approval.",
+    "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses.", "Provider dependency and availability limits must be accepted.", "Opening hours, service duration, resource availability and location rules require validation.", "Calendar conflict, staff availability, OAuth and external calendar consent need testing.", "Cancellation, customer communication, refund and payment rules require owner approval.", "Complex implementations risk double booking or overbooking and require access-control review.", "Privacy controls are required when appointment data can identify a person.", "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ],
+    "tools" : [ {
+      "id" : "fixture-tool-tapas-bistro-0",
+      "key" : "CMS",
+      "displayName" : "Content management system",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Editors need managed structured content."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-1",
+      "key" : "RENDER",
+      "displayName" : "Render",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom backend is required."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-2",
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-3",
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-4",
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No protected application area is required."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-5",
+      "key" : "BOOKING_SAAS",
+      "displayName" : "Booking SaaS",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Managed appointment and capacity workflow."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-6",
+      "key" : "CALENDAR",
+      "displayName" : "Calendar integration",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Calendar-backed availability for the recommended booking service."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-7",
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-8",
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking does not require owned source."
+    }, {
+      "id" : "fixture-tool-tapas-bistro-9",
+      "key" : "VERCEL",
+      "displayName" : "Vercel",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking supplies the booking surface."
+    } ],
+    "items" : [ {
+      "id" : "fixture-item-tapas-bistro-0",
+      "providerKey" : "CMS",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Tapas Bistro Demo web",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed content editing is required without a custom application backend."
+    }, {
+      "id" : "fixture-item-tapas-bistro-1",
+      "providerKey" : "BOOKING_SAAS",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Tapas Bistro Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed appointment and capacity workflow."
+    }, {
+      "id" : "fixture-item-tapas-bistro-2",
+      "providerKey" : "CALENDAR",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Tapas Bistro Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Calendar-backed availability for the recommended booking service."
+    }, {
+      "id" : "fixture-item-tapas-bistro-3",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Tapas Bistro Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    }, {
+      "id" : "fixture-item-tapas-bistro-4",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Tapas Bistro Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    } ],
+    "manualSteps" : [ {
+      "id" : "fixture-manual-tapas-bistro-0",
+      "providerKey" : "DISCOVERY_APPROVAL",
+      "title" : "Approve the composed solution",
+      "reason" : "The admin must confirm scope before provisioning.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-tapas-bistro-1",
+      "providerKey" : "CONTENT_APPROVAL",
+      "title" : "Approve web content",
+      "reason" : "The business must approve public content.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-tapas-bistro-2",
+      "providerKey" : "BOOKING_RULES",
+      "title" : "Approve booking rules",
+      "reason" : "Opening hours and capacity require approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-tapas-bistro-3",
+      "providerKey" : "OAUTH_CONSENT",
+      "title" : "Authorize calendar",
+      "reason" : "Calendar ownership requires consent.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-tapas-bistro-4",
+      "providerKey" : "PRIVACY",
+      "title" : "Review booking privacy",
+      "reason" : "Appointment data needs privacy review.",
+      "required" : true,
+      "status" : "pending"
+    } ],
+    "externalResources" : [ {
+      "id" : "fixture-resource-tapas-bistro-3",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-tapas-bistro:RESEND:TRACK_RESOURCE:3"
+    }, {
+      "id" : "fixture-resource-tapas-bistro-4",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-tapas-bistro:RESEND:TRACK_RESOURCE:4"
+    } ],
+    "tracks" : [ {
+      "track" : "WEB",
+      "route" : "PROVISION_WEB_CMS",
+      "ruleId" : "WEB-WEB_CMS",
+      "matchedSignals" : [ "form=general", "route=PROVISION_WEB_CMS", "cms=true" ],
+      "reason" : "Managed content editing is required without a custom application backend.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "CMS",
+        "displayName" : "Content management system",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Editors need managed structured content."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom backend is required."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom database is required."
+      }, {
+        "key" : "STRIPE",
+        "displayName" : "Stripe",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom payment flow is required."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No protected application area is required."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "CONTENT_APPROVAL",
+        "title" : "Approve web content",
+        "reason" : "The business must approve public content.",
+        "required" : true
+      } ],
+      "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses." ]
+    }, {
+      "track" : "BOOKING",
+      "route" : "PROVISION_BOOKING_SAAS",
+      "ruleId" : "BOOKING-SAAS-STANDARD",
+      "matchedSignals" : [ "bookingType=bookings", "resources=", "deposit=false" ],
+      "reason" : "Standard appointments, resources and policies fit a managed booking platform.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "BOOKING_SAAS",
+        "displayName" : "Booking SaaS",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Managed appointment and capacity workflow."
+      }, {
+        "key" : "CALENDAR",
+        "displayName" : "Calendar integration",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Calendar-backed availability for the recommended booking service."
+      }, {
+        "key" : "RESEND",
+        "displayName" : "Resend",
+        "selectionState" : "selected",
+        "automationLevel" : "A1",
+        "required" : true,
+        "reason" : "Booking confirmations and reminders."
+      }, {
+        "key" : "GITHUB",
+        "displayName" : "GitHub",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require owned source."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require a new backend."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require a new database."
+      }, {
+        "key" : "VERCEL",
+        "displayName" : "Vercel",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking supplies the booking surface."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "BOOKING_RULES",
+        "title" : "Approve booking rules",
+        "reason" : "Opening hours and capacity require approval.",
+        "required" : true
+      }, {
+        "providerKey" : "OAUTH_CONSENT",
+        "title" : "Authorize calendar",
+        "reason" : "Calendar ownership requires consent.",
+        "required" : true
+      }, {
+        "providerKey" : "PRIVACY",
+        "title" : "Review booking privacy",
+        "reason" : "Appointment data needs privacy review.",
+        "required" : true
+      } ],
+      "risks" : [ "Provider dependency and availability limits must be accepted.", "Opening hours, service duration, resource availability and location rules require validation.", "Calendar conflict, staff availability, OAuth and external calendar consent need testing.", "Cancellation, customer communication, refund and payment rules require owner approval.", "Complex implementations risk double booking or overbooking and require access-control review.", "Privacy controls are required when appointment data can identify a person." ]
+    }, {
+      "track" : "AUTOMATION",
+      "route" : "PROVISION_AUTOMATION_MANAGED",
+      "ruleId" : "AUTOMATION-MANAGED-STANDARD",
+      "matchedSignals" : [ "trigger=bookings", "channels=", "volume=0" ],
+      "reason" : "The requested trigger and action fit a managed workflow or existing Altaira capability.",
+      "confidence" : 0.8,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "RESEND",
+        "displayName" : "Resend",
+        "selectionState" : "selected",
+        "automationLevel" : "A1",
+        "required" : true,
+        "reason" : "Booking confirmations and reminders."
+      } ],
+      "manualSteps" : [ ],
+      "risks" : [ "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ]
+    } ],
+    "sharedResources" : [ {
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No protected application area is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "CALENDAR",
+      "displayName" : "Calendar integration",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [BOOKING]",
+      "usedByTracks" : [ "BOOKING" ]
+    }, {
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Shared once across tracks: [BOOKING, AUTOMATION]",
+      "usedByTracks" : [ "BOOKING", "AUTOMATION" ]
+    }, {
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking does not require owned source.",
+      "usedByTracks" : [ ]
+    } ],
+    "createdAt" : "2026-07-21T10:00:00Z",
+    "updatedAt" : "2026-07-21T10:00:00Z"
+  }
+}

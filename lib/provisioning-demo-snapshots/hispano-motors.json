@@ -1,0 +1,409 @@
+{
+  "schemaVersion" : 1,
+  "scenarioId" : "DEMO-DEALER",
+  "slug" : "hispano-motors",
+  "name" : "Hispano Motors Demo",
+  "sector" : "Car Dealers",
+  "expectedTracks" : [ "WEB", "CRM", "AUTOMATION" ],
+  "plan" : {
+    "id" : "fixture-plan-hispano-motors",
+    "leadId" : "fixture-lead-hispano-motors",
+    "assessmentId" : "fixture-assessment-hispano-motors",
+    "route" : "COMPOSITE",
+    "automationLevel" : "A2",
+    "automationScope" : "partial",
+    "status" : "draft",
+    "dryRun" : true,
+    "executionAllowed" : false,
+    "normalizedRequirements" : {
+      "requires_auth" : true,
+      "requires_automation" : true,
+      "requires_backend" : true,
+      "requires_booking" : false,
+      "requires_calendar" : false,
+      "requires_cms" : true,
+      "requires_crm" : true,
+      "requires_dashboard" : false,
+      "requires_data_migration" : false,
+      "requires_database" : true,
+      "requires_external_integrations" : true,
+      "requires_file_storage" : false,
+      "requires_frontend" : true,
+      "requires_payments" : false,
+      "requires_realtime" : false,
+      "requires_static_site" : false,
+      "requires_training" : true
+    },
+    "decisionReason" : "WEB: Managed content editing is required without a custom application backend. CRM: The required lead workflow fits the existing tenant-scoped Altaira CRM. AUTOMATION: The requested trigger and action fit a managed workflow or existing Altaira capability.",
+    "costEstimate" : "Dry-run only. Provider plans, subscriptions and usage costs require admin approval.",
+    "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses.", "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked.", "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ],
+    "tools" : [ {
+      "id" : "fixture-tool-hispano-motors-0",
+      "key" : "CMS",
+      "displayName" : "Content management system",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Editors need managed structured content."
+    }, {
+      "id" : "fixture-tool-hispano-motors-1",
+      "key" : "RENDER",
+      "displayName" : "Render",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom backend is required."
+    }, {
+      "id" : "fixture-tool-hispano-motors-2",
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required."
+    }, {
+      "id" : "fixture-tool-hispano-motors-3",
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required."
+    }, {
+      "id" : "fixture-tool-hispano-motors-4",
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Tenant-scoped CRM access."
+    }, {
+      "id" : "fixture-tool-hispano-motors-5",
+      "key" : "ALTAIRA",
+      "displayName" : "Altaira Workspace",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Lead status source."
+    }, {
+      "id" : "fixture-tool-hispano-motors-6",
+      "key" : "AUTOMATION_PLATFORM",
+      "displayName" : "Automation platform",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Cross-step lead follow-up."
+    }, {
+      "id" : "fixture-tool-hispano-motors-7",
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Lead follow-up notifications."
+    } ],
+    "items" : [ {
+      "id" : "fixture-item-hispano-motors-0",
+      "providerKey" : "CMS",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo web",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed content editing is required without a custom application backend."
+    }, {
+      "id" : "fixture-item-hispano-motors-1",
+      "providerKey" : "ALTAIRA",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Existing private CRM workspace."
+    }, {
+      "id" : "fixture-item-hispano-motors-2",
+      "providerKey" : "AUTH",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Tenant-scoped CRM access."
+    }, {
+      "id" : "fixture-item-hispano-motors-3",
+      "providerKey" : "ALTAIRA",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Lead status source."
+    }, {
+      "id" : "fixture-item-hispano-motors-4",
+      "providerKey" : "AUTOMATION_PLATFORM",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Cross-step lead follow-up."
+    }, {
+      "id" : "fixture-item-hispano-motors-5",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Hispano Motors Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Lead follow-up notifications."
+    } ],
+    "manualSteps" : [ {
+      "id" : "fixture-manual-hispano-motors-0",
+      "providerKey" : "DISCOVERY_APPROVAL",
+      "title" : "Approve the composed solution",
+      "reason" : "The admin must confirm scope before provisioning.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-1",
+      "providerKey" : "CONTENT_APPROVAL",
+      "title" : "Approve web content",
+      "reason" : "The business must approve public content.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-2",
+      "providerKey" : "INVENTORY_MAPPING",
+      "title" : "Map inventory content",
+      "reason" : "Vehicle inventory ownership must be agreed.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-3",
+      "providerKey" : "PRIVACY",
+      "title" : "Review CRM privacy",
+      "reason" : "Lead data needs lawful access boundaries.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-4",
+      "providerKey" : "FIELDS",
+      "title" : "Approve fields and pipeline",
+      "reason" : "Operational terminology needs owner approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-5",
+      "providerKey" : "TRAINING",
+      "title" : "Schedule CRM training",
+      "reason" : "Adoption remains human-led.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-6",
+      "providerKey" : "AUTOMATION_APPROVAL",
+      "title" : "Approve CRM automation",
+      "reason" : "Automated messages require approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-hispano-motors-7",
+      "providerKey" : "FIELD_MAPPING",
+      "title" : "Approve lead field mapping",
+      "reason" : "Dealer lead fields require review.",
+      "required" : true,
+      "status" : "pending"
+    } ],
+    "externalResources" : [ {
+      "id" : "fixture-resource-hispano-motors-5",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-hispano-motors:RESEND:TRACK_RESOURCE:5"
+    } ],
+    "tracks" : [ {
+      "track" : "WEB",
+      "route" : "PROVISION_WEB_CMS",
+      "ruleId" : "WEB-WEB_CMS",
+      "matchedSignals" : [ "form=general", "route=PROVISION_WEB_CMS", "cms=true" ],
+      "reason" : "Managed content editing is required without a custom application backend.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "CMS",
+        "displayName" : "Content management system",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Editors need managed structured content."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom backend is required."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom database is required."
+      }, {
+        "key" : "STRIPE",
+        "displayName" : "Stripe",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom payment flow is required."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No protected application area is required."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "CONTENT_APPROVAL",
+        "title" : "Approve web content",
+        "reason" : "The business must approve public content.",
+        "required" : true
+      }, {
+        "providerKey" : "INVENTORY_MAPPING",
+        "title" : "Map inventory content",
+        "reason" : "Vehicle inventory ownership must be agreed.",
+        "required" : true
+      } ],
+      "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses." ]
+    }, {
+      "track" : "CRM",
+      "route" : "PROVISION_CRM_ALTAIRA",
+      "ruleId" : "CRM-ALTAIRA-STANDARD",
+      "matchedSignals" : [ "leadProcess=spreadsheet", "migration=false", "automation=true" ],
+      "reason" : "The required lead workflow fits the existing tenant-scoped Altaira CRM.",
+      "confidence" : 0.84,
+      "requiresManualDecision" : false,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "ALTAIRA",
+        "displayName" : "Altaira Workspace",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Existing private CRM workspace."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Tenant-scoped CRM access."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "PRIVACY",
+        "title" : "Review CRM privacy",
+        "reason" : "Lead data needs lawful access boundaries.",
+        "required" : true
+      }, {
+        "providerKey" : "FIELDS",
+        "title" : "Approve fields and pipeline",
+        "reason" : "Operational terminology needs owner approval.",
+        "required" : true
+      }, {
+        "providerKey" : "TRAINING",
+        "title" : "Schedule CRM training",
+        "reason" : "Adoption remains human-led.",
+        "required" : true
+      }, {
+        "providerKey" : "AUTOMATION_APPROVAL",
+        "title" : "Approve CRM automation",
+        "reason" : "Automated messages require approval.",
+        "required" : true
+      }, {
+        "providerKey" : "FIELD_MAPPING",
+        "title" : "Approve lead field mapping",
+        "reason" : "Dealer lead fields require review.",
+        "required" : true
+      } ],
+      "risks" : [ "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked." ]
+    }, {
+      "track" : "AUTOMATION",
+      "route" : "PROVISION_AUTOMATION_MANAGED",
+      "ruleId" : "AUTOMATION-MANAGED-STANDARD",
+      "matchedSignals" : [ "trigger=lead_management", "channels=", "volume=0" ],
+      "reason" : "The requested trigger and action fit a managed workflow or existing Altaira capability.",
+      "confidence" : 0.8,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "ALTAIRA",
+        "displayName" : "Altaira Workspace",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Lead status source."
+      }, {
+        "key" : "AUTOMATION_PLATFORM",
+        "displayName" : "Automation platform",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Cross-step lead follow-up."
+      }, {
+        "key" : "RESEND",
+        "displayName" : "Resend",
+        "selectionState" : "selected",
+        "automationLevel" : "A1",
+        "required" : true,
+        "reason" : "Lead follow-up notifications."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "FIELD_MAPPING",
+        "title" : "Approve automation fields",
+        "reason" : "Lead fields need mapping.",
+        "required" : true
+      } ],
+      "risks" : [ "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ]
+    } ],
+    "sharedResources" : [ {
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [CRM]",
+      "usedByTracks" : [ "CRM" ]
+    }, {
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Shared once across tracks: [AUTOMATION]",
+      "usedByTracks" : [ "AUTOMATION" ]
+    } ],
+    "createdAt" : "2026-07-21T10:00:00Z",
+    "updatedAt" : "2026-07-21T10:00:00Z"
+  }
+}

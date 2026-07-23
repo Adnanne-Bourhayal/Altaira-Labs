@@ -10,11 +10,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class ServiceCatalogService {
+
+    private static final Map<String, String> SERVICE_NAME_BY_MODULE_KEY = Map.of(
+            "web_seo", "Website Development",
+            "booking", "Booking Systems",
+            "crm", "CRM / Business Systems",
+            "automation", "Automation Workflows",
+            "dashboard", "Internal Dashboards"
+    );
 
     private final ServiceRepository serviceRepository;
 
@@ -59,6 +68,23 @@ public class ServiceCatalogService {
     ServiceEntity findServiceEntity(UUID id) {
         return serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", id));
+    }
+
+    public ServiceEntity findServiceForModuleKey(String moduleKey) {
+        String serviceName = SERVICE_NAME_BY_MODULE_KEY.get(moduleKey);
+        if (serviceName == null) {
+            throw new IllegalArgumentException("Unsupported launch service key");
+        }
+
+        ServiceEntity service = serviceRepository.findByNameIgnoreCase(serviceName)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Required service catalogue entry is missing: " + serviceName
+                ));
+
+        if (!service.isActive()) {
+            throw new IllegalStateException("Required service catalogue entry is inactive: " + serviceName);
+        }
+        return service;
     }
 
     ServiceResponse map(ServiceEntity entity) {

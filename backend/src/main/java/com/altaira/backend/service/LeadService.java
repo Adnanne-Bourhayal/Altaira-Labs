@@ -1,6 +1,7 @@
 package com.altaira.backend.service;
 
 import com.altaira.backend.dto.lead.CreateLeadRequest;
+import com.altaira.backend.dto.lead.CreateAdminLeadIntakeRequest;
 import com.altaira.backend.dto.lead.LeadResponse;
 import com.altaira.backend.entity.LeadEntity;
 import com.altaira.backend.exception.LeadNotFoundException;
@@ -25,24 +26,33 @@ public class LeadService {
     }
 
     public LeadResponse createLead(CreateLeadRequest request) {
-        LeadEntity entity = new LeadEntity();
-        entity.setFullName(trimRequired(request.getFullName()));
-        entity.setBusinessName(trimRequired(request.getBusinessName()));
-        entity.setEmail(trimRequired(request.getEmail()).toLowerCase(Locale.ROOT));
-        entity.setPhone(trimOptional(request.getPhone()));
-        entity.setIndustry(trimOptional(request.getIndustry()));
-        entity.setServiceInterest(trimOptional(request.getServiceInterest()));
-        entity.setGoals(trimOptional(request.getGoals()));
-        entity.setStatus(LeadStatus.NEW.value());
-        entity.setCreatedAt(Instant.now());
-
-        LeadEntity saved = leadRepository.save(entity);
+        LeadEntity saved = saveLead(
+                request.getFullName(),
+                request.getBusinessName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getIndustry(),
+                request.getServiceInterest(),
+                request.getGoals()
+        );
         EmailNotificationResult notificationResult = leadNotificationService.sendLeadCreatedNotification(saved);
 
         LeadResponse response = map(saved);
         response.setEmailNotificationSent(notificationResult.sent());
         response.setEmailNotificationMessage(notificationResult.message());
         return response;
+    }
+
+    public LeadResponse createAdminLead(CreateAdminLeadIntakeRequest request, String formKey) {
+        return map(saveLead(
+                request.getFullName(),
+                request.getBusinessName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getIndustry(),
+                formKey,
+                request.getGoals()
+        ));
     }
 
     public List<LeadResponse> getAllLeads() {
@@ -70,6 +80,28 @@ public class LeadService {
         LeadEntity updated = leadRepository.save(entity);
 
         return map(updated);
+    }
+
+    private LeadEntity saveLead(
+            String fullName,
+            String businessName,
+            String email,
+            String phone,
+            String industry,
+            String serviceInterest,
+            String goals
+    ) {
+        LeadEntity entity = new LeadEntity();
+        entity.setFullName(trimRequired(fullName));
+        entity.setBusinessName(trimRequired(businessName));
+        entity.setEmail(trimRequired(email).toLowerCase(Locale.ROOT));
+        entity.setPhone(trimOptional(phone));
+        entity.setIndustry(trimOptional(industry));
+        entity.setServiceInterest(trimOptional(serviceInterest));
+        entity.setGoals(trimOptional(goals));
+        entity.setStatus(LeadStatus.NEW.value());
+        entity.setCreatedAt(Instant.now());
+        return leadRepository.save(entity);
     }
 
     private String trimRequired(String value) {

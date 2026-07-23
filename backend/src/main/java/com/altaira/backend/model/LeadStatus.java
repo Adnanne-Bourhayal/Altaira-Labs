@@ -8,6 +8,9 @@ import java.util.Locale;
 public enum LeadStatus {
     NEW("new"),
     CONTACTED("contacted"),
+    QUALIFIED("qualified"),
+    CONVERTED("converted"),
+    LOST("lost"),
     CLOSED("closed");
 
     private final String value;

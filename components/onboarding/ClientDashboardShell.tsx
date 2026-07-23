@@ -931,6 +931,20 @@ export default function ClientDashboardShell() {
           </div>
 
           <nav className="mt-10 grid gap-2" aria-label="Client modules">
+            <Link
+              href="/client/dashboard"
+              className="flex items-center gap-3 border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-left text-sm text-white transition hover:bg-blue-500/15"
+            >
+              <LayoutDashboard className="h-4 w-4 text-blue-200" />
+              <span className="flex-1">Overview</span>
+            </Link>
+            <Link
+              href="/client/tasks"
+              className="flex items-center gap-3 border border-white/10 bg-white/[0.02] px-4 py-3 text-left text-sm text-white/55 transition hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-white"
+            >
+              <ListTodo className="h-4 w-4 text-blue-200" />
+              <span className="flex-1">Tasks</span>
+            </Link>
             {portal.modules.map((module) => {
               const Icon = moduleIcons[module.moduleKey]
               return (

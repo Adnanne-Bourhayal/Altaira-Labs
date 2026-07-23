@@ -11,6 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ClientServiceRepository extends JpaRepository<ClientServiceEntity, UUID> {
+    @EntityGraph(attributePaths = {"client", "service"})
+    List<ClientServiceEntity> findAllByOrderByUpdatedAtDesc();
+
     @EntityGraph(attributePaths = "service")
     List<ClientServiceEntity> findAllByClientOrderByCreatedAtDesc(ClientEntity client);
 

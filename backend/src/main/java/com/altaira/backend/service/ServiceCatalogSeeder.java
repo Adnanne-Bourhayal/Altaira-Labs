@@ -2,6 +2,7 @@ package com.altaira.backend.service;
 
 import com.altaira.backend.entity.ServiceEntity;
 import com.altaira.backend.repository.ServiceRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(
+        name = "altaira.service-catalog.seed.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class ServiceCatalogSeeder {
 
     private final ServiceRepository serviceRepository;
