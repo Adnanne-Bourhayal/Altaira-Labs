@@ -89,6 +89,13 @@
             <version>2.25.60</version>
         </dependency>
 
+        <!-- Stripe Checkout test mode and signed webhook verification -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>31.4.0</version>
+        </dependency>
+
         <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

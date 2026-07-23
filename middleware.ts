@@ -8,7 +8,8 @@ export function middleware(request: NextRequest) {
     pathname === "/onboarding" ||
     pathname.startsWith("/client/dashboard") ||
     pathname.startsWith("/client/workspace") ||
-    pathname.startsWith("/client/crm")
+    pathname.startsWith("/client/crm") ||
+    pathname.startsWith("/client/tasks")
   const authCookie = request.cookies.get("altaira_admin_session")?.value
   const clientAuthCookie = request.cookies.get("altaira_client_session")?.value
 
@@ -29,5 +30,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/leads/:path*", "/clients/:path*", "/services", "/admin/:path*", "/client/login", "/client-area", "/login", "/onboarding", "/client/dashboard/:path*", "/client/workspace/:path*", "/client/crm/:path*"],
+  matcher: ["/leads/:path*", "/clients/:path*", "/services", "/admin/:path*", "/client/login", "/client-area", "/login", "/onboarding", "/client/dashboard/:path*", "/client/workspace/:path*", "/client/crm/:path*", "/client/tasks/:path*"],
 }

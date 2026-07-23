@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "W01", "service": "Web", "name": "Static local business website", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "informative", "contentManagement": "no", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_static_site"], "route": "PROVISION_WEB_STATIC", "includedTools": ["GITHUB", "VERCEL"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH", "CMS"], "automationLevel": "A3", "manualSteps": ["DOMAIN", "SEARCH_CONSOLE"], "riskKeywords": ["domain ownership"]},
+      "missingFormFields": ["budget_band", "maintenance_owner"]
+    },
+    {
+      "id": "W02", "service": "Web", "name": "Clinic trust website", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "replace", "solutionShape": "informative", "contentManagement": "no", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "coreOffer": "Clinic services", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_static_site"], "route": "PROVISION_WEB_STATIC", "includedTools": ["GITHUB", "VERCEL"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH", "CMS"], "automationLevel": "A2", "manualSteps": ["DOMAIN", "CONTENT_APPROVAL", "PRIVACY"], "riskKeywords": ["privacy", "health claims"]},
+      "missingFormFields": ["sector", "sensitive_data", "regulated_content"]
+    },
+    {
+      "id": "W03", "service": "Web", "name": "Premium dealer showcase", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "replace", "solutionShape": "informative", "contentManagement": "no", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "coreOffer": "Vehicle showcase", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_static_site"], "route": "PROVISION_WEB_STATIC", "includedTools": ["FIGMA", "GITHUB", "VERCEL"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH", "CMS"], "automationLevel": "A2", "manualSteps": ["DESIGN_APPROVAL", "DOMAIN", "MEDIA_RIGHTS"], "riskKeywords": ["media", "domain"]},
+      "missingFormFields": ["visual_tier", "media_volume", "image_rights"]
+    },
+    {
+      "id": "W04", "service": "Web", "name": "Editable restaurant website", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "informative", "contentManagement": "yes", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "coreOffer": "Menu and local presence", "contentReady": "no"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_cms"], "route": "PROVISION_WEB_CMS", "includedTools": ["CMS"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH"], "automationLevel": "A2", "manualSteps": ["CMS_ACCOUNT", "CONTENT_APPROVAL", "DOMAIN"], "riskKeywords": ["provider dependency", "content readiness"]},
+      "missingFormFields": ["cms_ownership_preference", "editor_count", "maintenance_owner"]
+    },
+    {
+      "id": "W05", "service": "Web", "name": "Editorial service website", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "improve", "solutionShape": "informative", "contentManagement": "yes", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "requiredPages": "Services, blog, contact", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_cms"], "route": "PROVISION_WEB_CMS", "includedTools": ["CMS"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH"], "automationLevel": "A2", "manualSteps": ["CMS_ACCOUNT", "EDITORIAL_WORKFLOW", "DOMAIN"], "riskKeywords": ["maintenance", "provider dependency"]},
+      "missingFormFields": ["publishing_frequency", "approval_workflow", "cms_ownership_preference"]
+    },
+    {
+      "id": "W06", "service": "Web", "name": "Multilingual Benelux website", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "informative", "contentManagement": "yes", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "none", "targetLocations": "Belgium and Benelux", "contentReady": "no"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_cms"], "route": "PROVISION_WEB_CMS", "includedTools": ["CMS", "I18N"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH"], "automationLevel": "A2", "manualSteps": ["TRANSLATION_APPROVAL", "CMS_ACCOUNT", "DOMAIN"], "riskKeywords": ["translation", "content consistency"]},
+      "missingFormFields": ["languages", "translation_owner", "localized_seo"]
+    },
+    {
+      "id": "W07", "service": "Web", "name": "Lead form without custom database", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "informative", "contentManagement": "no", "authentication": "no", "dataPersistence": "no", "payments": "no", "externalIntegrations": "standard", "coreOffer": "Request a consultation", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_static_site", "requires_external_integrations"], "route": "PROVISION_WEB_STATIC", "includedTools": ["GITHUB", "RESEND", "VERCEL"], "excludedTools": ["RENDER", "NEON", "STRIPE", "AUTH", "CMS"], "automationLevel": "A2", "manualSteps": ["FORM_DESTINATION", "PRIVACY", "DOMAIN"], "riskKeywords": ["lead delivery", "spam", "consent"]},
+      "missingFormFields": ["form_destination", "retention_policy", "spam_protection"]
+    },
+    {
+      "id": "W08", "service": "Web", "name": "Private clinic portal", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "custom_app", "contentManagement": "no", "authentication": "yes", "dataPersistence": "yes", "payments": "no", "externalIntegrations": "none", "coreOffer": "Private client area", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth"], "route": "PROVISION_WEB_CUSTOM", "includedTools": ["AUTH", "GITHUB", "NEON", "RENDER", "VERCEL"], "excludedTools": ["STRIPE", "CMS"], "automationLevel": "A3", "manualSteps": ["SECURITY", "SECRETS", "DOMAIN", "PRIVACY"], "riskKeywords": ["sensitive data", "tenant isolation", "authentication"]},
+      "missingFormFields": ["sensitive_data", "role_model", "retention_policy", "availability_target"]
+    },
+    {
+      "id": "W09", "service": "Web", "name": "Persistent vehicle inventory", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "replace", "solutionShape": "custom_app", "contentManagement": "no", "authentication": "no", "dataPersistence": "yes", "payments": "no", "externalIntegrations": "none", "coreOffer": "Vehicle inventory", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database"], "route": "PROVISION_WEB_CUSTOM", "includedTools": ["DRIVE", "GITHUB", "JIRA", "NEON", "RENDER", "VERCEL"], "excludedTools": ["STRIPE", "AUTH", "CMS"], "automationLevel": "A3", "manualSteps": ["SECURITY", "SECRETS", "DOMAIN", "INVENTORY_MAPPING"], "riskKeywords": ["inventory consistency", "media storage", "provider quotas"]},
+      "missingFormFields": ["inventory_source", "inventory_volume", "media_volume", "update_frequency"]
+    },
+    {
+      "id": "W10", "service": "Web", "name": "Custom business application", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "custom_app", "contentManagement": "no", "authentication": "no", "dataPersistence": "yes", "payments": "no", "externalIntegrations": "none", "coreOffer": "Custom operational workflow", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database"], "route": "PROVISION_WEB_CUSTOM", "includedTools": ["DRIVE", "GITHUB", "JIRA", "NEON", "RENDER", "VERCEL"], "excludedTools": ["STRIPE", "AUTH", "CMS"], "automationLevel": "A3", "manualSteps": ["SECURITY", "SECRETS", "DOMAIN"], "riskKeywords": ["security and tenancy", "provider quotas", "missing secrets"]},
+      "missingFormFields": ["availability_target", "support_model"]
+    },
+    {
+      "id": "W11", "service": "Web", "name": "Simple ecommerce platform", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "none", "solutionShape": "ecommerce", "contentManagement": "yes", "authentication": "no", "dataPersistence": "no", "payments": "yes", "externalIntegrations": "standard", "coreOffer": "Small product catalogue", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_cms", "requires_payments", "requires_external_integrations"], "route": "PROVISION_ECOMMERCE_PLATFORM", "includedTools": ["ECOMMERCE_PLATFORM"], "excludedTools": ["RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["COMMERCE_ACCOUNT", "PAYMENT_KYC", "CATALOG_IMPORT", "DOMAIN"], "riskKeywords": ["provider dependency", "payments", "tax"]},
+      "missingFormFields": ["product_count", "shipping_regions", "tax_model", "platform_preference"]
+    },
+    {
+      "id": "W12", "service": "Web", "name": "Advanced custom ecommerce", "demo": false, "formKey": "web_seo",
+      "responses": {"websiteState": "replace", "solutionShape": "ecommerce", "contentManagement": "no", "authentication": "yes", "dataPersistence": "yes", "payments": "yes", "externalIntegrations": "custom", "coreOffer": "Custom stock and checkout rules", "contentReady": "yes"},
+      "recommendedServices": ["web_seo"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_payments", "requires_external_integrations"], "route": "PROVISION_ECOMMERCE_CUSTOM", "includedTools": ["AUTH", "GITHUB", "NEON", "RENDER", "STRIPE", "VERCEL"], "excludedTools": [], "automationLevel": "A3", "manualSteps": ["SECURITY", "SECRETS", "PAYMENT_KYC", "COMMERCE_RULES", "DOMAIN"], "riskKeywords": ["payments", "stock", "security"]},
+      "missingFormFields": ["product_count", "stock_rules", "shipping_regions", "refund_policy", "availability_target"]
+    },
+
+    {
+      "id": "B01", "service": "Booking", "name": "Single-calendar basic booking", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Appointments", "currentBookingProcess": "calls_messages", "openingHours": "Weekdays", "resources": "One professional", "slotDuration": "60 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "BOOKING_RULES"], "riskKeywords": ["provider dependency", "availability"]},
+      "missingFormFields": ["resource_count", "location_count", "provider_preference"]
+    },
+    {
+      "id": "B02", "service": "Booking", "name": "Solo clinic appointments", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Clinic appointments", "currentBookingProcess": "calendar", "openingHours": "Monday to Friday", "resources": "One clinician", "slotDuration": "30 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS", "CALENDAR", "RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "CALENDAR", "PRIVACY"], "riskKeywords": ["privacy", "calendar conflict"]},
+      "missingFormFields": ["sector", "sensitive_data", "reminder_channels"]
+    },
+    {
+      "id": "B03", "service": "Booking", "name": "Multi-staff clinic booking", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Appointments", "currentBookingProcess": "calendar", "openingHours": "Shift based", "resources": "Four professionals", "slotDuration": "30 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS", "CALENDAR", "RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "CALENDAR", "RESOURCE_MAPPING"], "riskKeywords": ["calendar conflict", "staff availability"]},
+      "missingFormFields": ["resource_count", "staff_calendars", "cross_resource_rules"]
+    },
+    {
+      "id": "B04", "service": "Booking", "name": "Variable service durations", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Multiple appointment types", "currentBookingProcess": "calls_messages", "openingHours": "Weekdays", "resources": "Advisors and service bays", "slotDuration": "30, 60 or 90 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "SERVICE_CATALOG", "RESOURCE_MAPPING"], "riskKeywords": ["service duration", "resource availability"]},
+      "missingFormFields": ["service_catalog", "duration_per_service", "resource_eligibility"]
+    },
+    {
+      "id": "B05", "service": "Booking", "name": "Multi-location booking", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Appointments by location", "currentBookingProcess": "calls_messages", "openingHours": "Different by location", "resources": "Two locations and six resources", "slotDuration": "30 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "LOCATION_MAPPING", "RESOURCE_MAPPING"], "riskKeywords": ["location", "availability"]},
+      "missingFormFields": ["location_count", "location_timezones", "cross_location_rules"]
+    },
+    {
+      "id": "B06", "service": "Booking", "name": "Booking with deposit", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Tables or treatments", "currentBookingProcess": "calls_messages", "openingHours": "Daily", "resources": "Capacity by slot", "slotDuration": "90 minutes", "depositRequired": "yes"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth", "requires_payments"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS", "RESEND", "STRIPE"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "PAYMENT_KYC", "REFUND_POLICY"], "riskKeywords": ["refund", "payment", "provider dependency"]},
+      "missingFormFields": ["deposit_amount", "refund_policy", "payment_provider"]
+    },
+    {
+      "id": "B07", "service": "Booking", "name": "Standard cancellation workflow", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Restaurant tables", "currentBookingProcess": "calls_messages", "openingHours": "Lunch and dinner", "resources": "Tables by capacity", "slotDuration": "120 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS", "RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "CANCELLATION_POLICY", "TEMPLATE_APPROVAL"], "riskKeywords": ["cancellation", "customer communication"]},
+      "missingFormFields": ["cancellation_policy", "reschedule_policy", "reminder_channels"]
+    },
+    {
+      "id": "B08", "service": "Booking", "name": "Google Calendar synchronization", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Appointments", "currentBookingProcess": "existing_tool", "openingHours": "Weekdays", "resources": "Three calendars", "slotDuration": "45 minutes", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_auth", "requires_external_integrations"], "route": "PROVISION_BOOKING_SAAS", "includedTools": ["BOOKING_SAAS", "CALENDAR"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["BOOKING_ACCOUNT", "CALENDAR", "OAUTH_CONSENT"], "riskKeywords": ["calendar conflict", "oauth"]},
+      "missingFormFields": ["calendar_provider", "sync_direction", "conflict_policy"]
+    },
+    {
+      "id": "B09", "service": "Booking", "name": "Complex resource and capacity engine", "demo": false, "formKey": "booking",
+      "responses": {"bookingType": "Resource and capacity booking", "currentBookingProcess": "calls_messages", "openingHours": "Multiple shifts", "resources": "Dependent rooms, staff and capacity", "slotDuration": "Variable", "depositRequired": "no"},
+      "recommendedServices": ["booking"],
+      "expected": {"requirements": ["requires_booking", "requires_calendar", "requires_frontend", "requires_backend", "requires_database", "requires_auth"], "route": "PROVISION_BOOKING_CUSTOM", "includedTools": ["AUTH", "CALENDAR", "DRIVE", "GITHUB", "JIRA", "NEON", "RENDER", "RESEND", "VERCEL"], "excludedTools": ["STRIPE"], "automationLevel": "A3", "manualSteps": ["BOOKING_RULES", "CALENDAR", "SECRETS", "TESTING"], "riskKeywords": ["double booking", "external calendar", "access-control"]},
+      "missingFormFields": ["resource_dependencies", "concurrency_requirement", "capacity_rules"]
+    },
+
+    {
+      "id": "C01", "service": "CRM", "name": "Basic lead CRM", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "messages_email", "leadSources": "Website and phone", "pipelineStages": "New, contacted, won, lost", "requiredFields": "Name, contact, interest", "monthlyVolume": "25", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A3", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING"], "riskKeywords": ["CRM permissions", "training"]},
+      "missingFormFields": ["crm_ownership_preference", "user_count"]
+    },
+    {
+      "id": "C02", "service": "CRM", "name": "Dealer sales pipeline", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "spreadsheet", "leadSources": "Website, marketplace and phone", "pipelineStages": "New, qualified, visit, proposal, won, lost", "requiredFields": "Vehicle, budget, financing", "monthlyVolume": "60", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A3", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING"], "riskKeywords": ["CRM permissions", "training"]},
+      "missingFormFields": ["pipeline_ownership", "assignment_rules"]
+    },
+    {
+      "id": "C03", "service": "CRM", "name": "Clinic contact CRM", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "messages_email", "leadSources": "Website and referrals", "pipelineStages": "New, contacted, appointment", "requiredFields": "Contact and service interest only", "monthlyVolume": "30", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A3", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING", "SENSITIVE_DATA_REVIEW"], "riskKeywords": ["privacy", "sensitive data", "CRM permissions"]},
+      "missingFormFields": ["sector", "sensitive_data", "prohibited_fields", "retention_policy"]
+    },
+    {
+      "id": "C04", "service": "CRM", "name": "CRM connected to web forms", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "messages_email", "leadSources": "Multiple website forms", "pipelineStages": "New, qualified, proposal, won", "requiredFields": "Source, campaign, interest", "monthlyVolume": "100", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training", "requires_external_integrations"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON", "WEBHOOK"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A2", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING", "FORM_MAPPING"], "riskKeywords": ["duplicates", "spam", "field mapping"]},
+      "missingFormFields": ["form_endpoints", "field_mapping", "spam_protection", "deduplication_key"]
+    },
+    {
+      "id": "C05", "service": "CRM", "name": "CRM contact import", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "spreadsheet", "leadSources": "Historical spreadsheet", "pipelineStages": "New, active, inactive", "requiredFields": "Name, email, phone, status", "monthlyVolume": "80", "importRequired": "yes"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training", "requires_data_migration", "requires_file_storage"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A2", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING", "MIGRATION"], "riskKeywords": ["duplicates", "invalid records", "CRM permissions"]},
+      "missingFormFields": ["record_count", "source_format", "data_quality", "lawful_basis_confirmation"]
+    },
+    {
+      "id": "C06", "service": "CRM", "name": "CRM with operational tasks", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "spreadsheet", "leadSources": "Email and phone", "pipelineStages": "New, follow-up, proposal, won", "requiredFields": "Owner, next action, deadline", "monthlyVolume": "40", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON", "TASKS"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A3", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING", "TASK_OWNERSHIP"], "riskKeywords": ["task ownership", "permissions"]},
+      "missingFormFields": ["task_management_required", "assignment_rules", "reminder_policy"]
+    },
+    {
+      "id": "C07", "service": "CRM", "name": "CRM with follow-up automation", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "messages_email", "leadSources": "Website", "pipelineStages": "New, proposal, follow-up, won", "requiredFields": "Email, status, last contact", "monthlyVolume": "120", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training", "requires_automation", "requires_external_integrations"], "route": "COMPOSITE[PROVISION_CRM_ALTAIRA,PROVISION_AUTOMATION_MANAGED]", "includedTools": ["ALTAIRA", "AUTH", "AUTOMATION_PLATFORM", "DRIVE", "JIRA", "NEON", "RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A2", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING", "AUTOMATION_APPROVAL"], "riskKeywords": ["duplicate messages", "rate limits", "permissions"]},
+      "missingFormFields": ["automation_required", "follow_up_rules", "channel_consent", "approval_workflow"]
+    },
+    {
+      "id": "C08", "service": "CRM", "name": "External CRM configuration", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "existing_crm", "leadSources": "Existing CRM", "pipelineStages": "Existing stages", "requiredFields": "Existing schema", "monthlyVolume": "200", "importRequired": "yes"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_training", "requires_external_integrations", "requires_data_migration", "requires_file_storage"], "route": "PROVISION_CRM_EXTERNAL", "includedTools": ["DRIVE", "EXTERNAL_CRM"], "excludedTools": ["ALTAIRA", "GITHUB", "VERCEL", "RENDER", "NEON", "STRIPE"], "automationLevel": "A2", "manualSteps": ["CRM_ACCOUNT", "OAUTH_CONSENT", "MIGRATION", "TRAINING"], "riskKeywords": ["license", "api limits", "migration"]},
+      "missingFormFields": ["crm_provider", "keep_or_replace", "license_owner", "api_access"]
+    },
+    {
+      "id": "C09", "service": "CRM", "name": "Explicit Altaira CRM choice", "demo": false, "formKey": "crm",
+      "responses": {"currentLeadProcess": "messages_email", "leadSources": "Website", "pipelineStages": "New, contacted, won, lost", "requiredFields": "Name, contact, service", "monthlyVolume": "50", "importRequired": "no"},
+      "recommendedServices": ["crm"],
+      "expected": {"requirements": ["requires_crm", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_training"], "route": "PROVISION_CRM_ALTAIRA", "includedTools": ["ALTAIRA", "AUTH", "DRIVE", "JIRA", "NEON"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "STRIPE"], "automationLevel": "A3", "manualSteps": ["PRIVACY", "FIELDS", "TRAINING"], "riskKeywords": ["CRM permissions", "training"]},
+      "missingFormFields": ["crm_ownership_preference"]
+    },
+
+    {
+      "id": "A01", "service": "Automation", "name": "Simple automatic email", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Manual confirmation email", "trigger": "New form submission", "expectedAction": "Send confirmation", "channels": "Email", "monthlyVolume": "30", "failureHandling": "Alert admin"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A3", "manualSteps": ["SENDER_VERIFICATION", "TEMPLATE_APPROVAL"], "riskKeywords": ["delivery", "rate limit"]},
+      "missingFormFields": ["channel_type", "sender_owner", "template_language"]
+    },
+    {
+      "id": "A02", "service": "Automation", "name": "Form to CRM automation", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Copy form leads into CRM", "trigger": "Website form", "expectedAction": "Create CRM lead", "channels": "Form and CRM", "monthlyVolume": "100", "failureHandling": "Queue and alert"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_crm", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["ALTAIRA", "AUTOMATION_PLATFORM"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["FIELD_MAPPING", "CREDENTIAL_CONNECTION", "TESTING"], "riskKeywords": ["duplicates", "field mapping", "api limits"]},
+      "missingFormFields": ["source_system", "destination_system", "field_mapping", "deduplication_key"]
+    },
+    {
+      "id": "A03", "service": "Automation", "name": "Calendar reminder automation", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Manual appointment reminders", "trigger": "Upcoming calendar event", "expectedAction": "Send reminder", "channels": "Google Calendar and email", "monthlyVolume": "150", "failureHandling": "Alert admin"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_calendar", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["AUTOMATION_PLATFORM", "CALENDAR", "RESEND"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["OAUTH_CONSENT", "TEMPLATE_APPROVAL", "TESTING"], "riskKeywords": ["consent", "timezone", "duplicate reminder"]},
+      "missingFormFields": ["calendar_provider", "reminder_offset", "timezone", "channel_consent"]
+    },
+    {
+      "id": "A04", "service": "Automation", "name": "Payment event email", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Manual payment confirmation", "trigger": "Successful payment", "expectedAction": "Send receipt and notify team", "channels": "Stripe and email", "monthlyVolume": "50", "failureHandling": "Retry and alert"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_payments", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["AUTOMATION_PLATFORM", "RESEND", "STRIPE"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["PAYMENT_KYC", "WEBHOOK_SETUP", "TEMPLATE_APPROVAL"], "riskKeywords": ["duplicate event", "payment", "signature verification"]},
+      "missingFormFields": ["source_system", "event_type", "financial_criticality", "retry_policy"]
+    },
+    {
+      "id": "A05", "service": "Automation", "name": "Lead to internal task", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Create follow-up task manually", "trigger": "Qualified lead", "expectedAction": "Create Altaira task", "channels": "Altaira CRM", "monthlyVolume": "40", "failureHandling": "Show failed item to admin"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_crm"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["ALTAIRA"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON", "AUTOMATION_PLATFORM"], "automationLevel": "A3", "manualSteps": ["TASK_TEMPLATE", "OWNERSHIP_RULES"], "riskKeywords": ["duplicate task", "ownership"]},
+      "missingFormFields": ["internal_or_external", "task_template", "assignment_rules"]
+    },
+    {
+      "id": "A06", "service": "Automation", "name": "Cross-application workflow", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Move data between applications", "trigger": "New record", "expectedAction": "Transform and sync data", "channels": "Two external applications", "monthlyVolume": "500", "failureHandling": "Retry then manual queue"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["AUTOMATION_PLATFORM"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["CREDENTIAL_CONNECTION", "FIELD_MAPPING", "TESTING"], "riskKeywords": ["api limits", "data mapping", "provider dependency"]},
+      "missingFormFields": ["source_system", "destination_system", "api_availability", "data_mapping"]
+    },
+    {
+      "id": "A07", "service": "Automation", "name": "Human approval workflow", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Review before sending", "trigger": "Draft generated", "expectedAction": "Request approval then send", "channels": "Altaira and email", "monthlyVolume": "80", "failureHandling": "Keep item blocked"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_MANAGED", "includedTools": ["ALTAIRA", "AUTOMATION_PLATFORM"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["APPROVAL_RULES", "ROLE_MAPPING", "TESTING"], "riskKeywords": ["unauthorized execution", "approval", "permissions"]},
+      "missingFormFields": ["approval_workflow", "approver_roles", "timeout_policy"]
+    },
+    {
+      "id": "A08", "service": "Automation", "name": "Critical retryable background process", "demo": false, "formKey": "automation",
+      "responses": {"currentProcess": "Critical system synchronization", "trigger": "Signed webhook", "expectedAction": "Process reliably with retries", "channels": "External API", "monthlyVolume": "10000", "failureHandling": "Retry, compensate and alert"},
+      "recommendedServices": ["automation"],
+      "expected": {"requirements": ["requires_automation", "requires_backend", "requires_database", "requires_external_integrations"], "route": "PROVISION_AUTOMATION_CUSTOM", "includedTools": ["NEON", "QUEUE", "RENDER"], "excludedTools": ["GITHUB", "VERCEL"], "automationLevel": "A3", "manualSteps": ["ARCHITECTURE_REVIEW", "SECRETS", "OBSERVABILITY", "LOAD_TESTING"], "riskKeywords": ["retry", "data loss", "availability"]},
+      "missingFormFields": ["criticality", "retry_policy", "idempotency_key", "availability_target", "throughput"]
+    },
+
+    {
+      "id": "D01", "service": "Dashboard", "name": "Simple internal reporting", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Weekly operations", "kpis": "Bookings and sales", "dataSources": "Spreadsheet", "updateFrequency": "weekly", "users": "Owner", "currentReporting": "spreadsheets"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_external_integrations", "requires_data_migration"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["KPI_APPROVAL", "DATA_CLEANING", "BI_ACCOUNT"], "riskKeywords": ["data quality", "metric definition"]},
+      "missingFormFields": ["preferred_bi_tool", "data_owner", "budget_band"]
+    },
+    {
+      "id": "D02", "service": "Dashboard", "name": "Client-facing sales dashboard", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Sales follow-up", "kpis": "Pipeline and conversion", "dataSources": "CRM", "updateFrequency": "daily", "users": "Owner and sales team", "currentReporting": "none"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_auth", "requires_external_integrations"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["AUTH", "BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["KPI_APPROVAL", "ROLE_MAPPING", "EMBED_REVIEW"], "riskKeywords": ["access control", "tenant leakage", "license"]},
+      "missingFormFields": ["viewer_type", "embed_required", "row_level_security", "user_count"]
+    },
+    {
+      "id": "D03", "service": "Dashboard", "name": "Aggregated KPI dashboard", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Management overview", "kpis": "Revenue, leads and workload", "dataSources": "CRM and spreadsheet", "updateFrequency": "daily", "users": "Management", "currentReporting": "manual_reports"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_external_integrations", "requires_data_migration"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["KPI_APPROVAL", "SOURCE_MAPPING", "BI_ACCOUNT"], "riskKeywords": ["metric definition", "data quality", "source consistency"]},
+      "missingFormFields": ["join_keys", "metric_definitions", "history_range"]
+    },
+    {
+      "id": "D04", "service": "Dashboard", "name": "Clinic dashboard on existing PostgreSQL", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Capacity and appointment trends", "kpis": "Utilization and no-shows", "dataSources": "Existing PostgreSQL", "updateFrequency": "daily", "users": "Clinic manager", "currentReporting": "none"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_auth", "requires_external_integrations"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["AUTH", "BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["READ_ONLY_ACCESS", "PRIVACY", "KPI_APPROVAL"], "riskKeywords": ["sensitive data", "read-only", "access control"]},
+      "missingFormFields": ["existing_database", "sensitive_data", "read_only_role", "retention_policy"]
+    },
+    {
+      "id": "D05", "service": "Dashboard", "name": "Search and analytics dashboard", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Marketing priorities", "kpis": "Traffic, enquiries and search visibility", "dataSources": "Google Analytics and Search Console", "updateFrequency": "daily", "users": "Owner and marketing", "currentReporting": "none"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_external_integrations"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["GOOGLE_OAUTH", "KPI_APPROVAL", "BI_ACCOUNT"], "riskKeywords": ["oauth", "quota", "metric definition"]},
+      "missingFormFields": ["google_properties", "oauth_owner", "preferred_bi_tool"]
+    },
+    {
+      "id": "D06", "service": "Dashboard", "name": "Realtime operational dashboard", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Live operations", "kpis": "Queue and resource state", "dataSources": "Operational API", "updateFrequency": "realtime", "users": "Operations team", "currentReporting": "none"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_realtime", "requires_external_integrations"], "route": "PROVISION_DASHBOARD_CUSTOM", "includedTools": ["AUTH", "GITHUB", "NEON", "REALTIME", "RENDER", "VERCEL"], "excludedTools": ["STRIPE", "CMS"], "automationLevel": "A3", "manualSteps": ["ARCHITECTURE_REVIEW", "SECRETS", "LOAD_TESTING", "OBSERVABILITY"], "riskKeywords": ["latency", "availability", "load"]},
+      "missingFormFields": ["latency_target", "concurrent_users", "availability_target", "realtime_transport"]
+    },
+    {
+      "id": "D07", "service": "Dashboard", "name": "Exportable management report", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Monthly review", "kpis": "Financial and operational summary", "dataSources": "Spreadsheet and CRM", "updateFrequency": "monthly", "users": "Owner", "currentReporting": "manual_reports"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_external_integrations", "requires_data_migration"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["KPI_APPROVAL", "EXPORT_FORMAT", "BI_ACCOUNT"], "riskKeywords": ["exported data", "data quality"]},
+      "missingFormFields": ["export_required", "export_format", "recipient_policy"]
+    },
+    {
+      "id": "D08", "service": "Dashboard", "name": "Role-restricted dashboard", "demo": false, "formKey": "dashboard",
+      "responses": {"decisions": "Department performance", "kpis": "Role-specific metrics", "dataSources": "CRM and finance", "updateFrequency": "daily", "users": "Owner, finance and operations", "currentReporting": "none"},
+      "recommendedServices": ["dashboard"],
+      "expected": {"requirements": ["requires_dashboard", "requires_auth", "requires_external_integrations"], "route": "PROVISION_DASHBOARD_BI", "includedTools": ["AUTH", "BI"], "excludedTools": ["GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["ROLE_MAPPING", "RLS_REVIEW", "KPI_APPROVAL"], "riskKeywords": ["tenant leakage", "permissions", "financial data"]},
+      "missingFormFields": ["role_model", "row_level_security", "financial_data", "user_count"]
+    },
+
+    {
+      "id": "DEMO-CLINIC", "service": "Demo", "name": "Iberia Dental Demo", "demo": true, "formKey": "general",
+      "responses": {"primaryGoal": "bookings", "onlinePresence": "outdated", "bookingProcess": "calls_messages", "leadProcess": "messages_email", "repetitiveWork": "high", "reporting": "manual"},
+      "recommendedServices": ["web_seo", "booking", "crm", "automation", "dashboard"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_cms", "requires_booking", "requires_calendar", "requires_crm", "requires_training", "requires_automation", "requires_dashboard", "requires_external_integrations"], "route": "COMPOSITE[PROVISION_WEB_CMS,PROVISION_BOOKING_SAAS,PROVISION_CRM_ALTAIRA,PROVISION_AUTOMATION_MANAGED,PROVISION_DASHBOARD_BI]", "includedTools": ["ALTAIRA", "AUTH", "BI", "BOOKING_SAAS", "CALENDAR", "CMS", "RESEND"], "excludedTools": ["STRIPE", "GITHUB", "VERCEL", "RENDER"], "automationLevel": "A2", "manualSteps": ["DISCOVERY_APPROVAL", "PRIVACY", "OAUTH_CONSENT", "CONTENT_APPROVAL"], "riskKeywords": ["sensitive data", "tenant isolation", "calendar conflict"]},
+      "missingFormFields": ["sector", "languages", "sensitive_data", "service_selection_confirmation", "budget_band"]
+    },
+    {
+      "id": "DEMO-DEALER", "service": "Demo", "name": "Hispano Motors Demo", "demo": true, "formKey": "general",
+      "responses": {"primaryGoal": "lead_management", "onlinePresence": "outdated", "bookingProcess": "not_applicable", "leadProcess": "spreadsheet", "repetitiveWork": "high", "reporting": "manual"},
+      "recommendedServices": ["web_seo", "crm", "automation"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_cms", "requires_crm", "requires_training", "requires_automation", "requires_external_integrations"], "route": "COMPOSITE[PROVISION_WEB_CMS,PROVISION_CRM_ALTAIRA,PROVISION_AUTOMATION_MANAGED]", "includedTools": ["ALTAIRA", "AUTH", "AUTOMATION_PLATFORM", "CMS", "RESEND"], "excludedTools": ["STRIPE", "BOOKING_SAAS"], "automationLevel": "A2", "manualSteps": ["DISCOVERY_APPROVAL", "INVENTORY_MAPPING", "FIELD_MAPPING", "CONTENT_APPROVAL"], "riskKeywords": ["inventory consistency", "duplicate leads", "image rights"]},
+      "missingFormFields": ["sector", "inventory_source", "media_volume", "automation_scope", "budget_band"]
+    },
+    {
+      "id": "DEMO-RESTAURANT", "service": "Demo", "name": "Tapas Bistro Demo", "demo": true, "formKey": "general",
+      "responses": {"primaryGoal": "bookings", "onlinePresence": "basic", "bookingProcess": "calls_messages", "leadProcess": "messages_email", "repetitiveWork": "medium", "reporting": "none"},
+      "recommendedServices": ["web_seo", "booking", "automation"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_cms", "requires_booking", "requires_calendar", "requires_automation", "requires_external_integrations"], "route": "COMPOSITE[PROVISION_WEB_CMS,PROVISION_BOOKING_SAAS,PROVISION_AUTOMATION_MANAGED]", "includedTools": ["BOOKING_SAAS", "CALENDAR", "CMS", "RESEND"], "excludedTools": ["STRIPE", "GITHUB", "VERCEL", "RENDER", "NEON"], "automationLevel": "A2", "manualSteps": ["DISCOVERY_APPROVAL", "BOOKING_RULES", "OAUTH_CONSENT", "CONTENT_APPROVAL"], "riskKeywords": ["overbooking", "opening hours", "provider dependency"]},
+      "missingFormFields": ["sector", "languages", "resource_complexity", "cancellation_policy", "local_seo"]
+    },
+    {
+      "id": "DEMO-SPECIALTY", "service": "Demo", "name": "Asesoría Hispana Demo", "demo": true, "formKey": "general",
+      "responses": {"primaryGoal": "automation", "onlinePresence": "working", "bookingProcess": "not_applicable", "leadProcess": "spreadsheet", "repetitiveWork": "high", "reporting": "manual"},
+      "recommendedServices": ["crm", "automation", "dashboard"],
+      "expected": {"requirements": ["requires_frontend", "requires_backend", "requires_database", "requires_auth", "requires_crm", "requires_training", "requires_automation", "requires_file_storage", "requires_dashboard", "requires_external_integrations"], "route": "COMPOSITE[PROVISION_CRM_ALTAIRA,PROVISION_AUTOMATION_MANAGED,PROVISION_DASHBOARD_BI]", "includedTools": ["ALTAIRA", "AUTH", "AUTOMATION_PLATFORM", "BI", "DRIVE"], "excludedTools": ["STRIPE", "BOOKING_SAAS"], "automationLevel": "A2", "manualSteps": ["DISCOVERY_APPROVAL", "DOCUMENT_PERMISSIONS", "RETENTION_POLICY", "AUTOMATION_APPROVAL"], "riskKeywords": ["confidential documents", "shared links", "unauthorized automation"]},
+      "missingFormFields": ["sector", "document_sensitivity", "approval_workflow", "retention_policy", "drive_ownership"]
+    }
+  ]
+}

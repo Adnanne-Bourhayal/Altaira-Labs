@@ -109,6 +109,134 @@ Malformed JSON returns `400`:
 
 These routes require the `altaira_admin_session` HTTP-only cookie.
 
+### Lead Intake and Conversion
+
+Admin UI routes:
+
+```text
+/leads
+/leads/new
+/leads/{leadId}
+```
+
+The Next.js internal routes proxy to protected Spring Boot endpoints and forward the
+admin session:
+
+```http
+POST /api/internal/leads/admin-intake
+GET  /api/internal/leads/{leadId}/assessments
+PUT  /api/internal/leads/{leadId}/assessments/{formKey}
+POST /api/internal/leads/{leadId}/convert
+```
+
+Backend endpoints:
+
+```http
+POST /api/v1/leads/admin-intake
+GET  /api/v1/leads/{leadId}/assessments
+PUT  /api/v1/leads/{leadId}/assessments/{formKey}
+POST /api/v1/leads/{leadId}/convert
+```
+
+The legacy direct-conversion endpoint accepts at least one launch service and explicit confirmation:
+
+```json
+{
+  "serviceKeys": ["booking", "crm"],
+  "confirmed": true,
+  "notes": "Approved after discovery"
+}
+```
+
+Supported service keys are `web_seo`, `booking`, `crm`, `automation` and
+`dashboard`. Direct conversion is disabled by default through
+`ALTAIRA_LEGACY_DIRECT_CONVERSION_ENABLED=false`. The normal flow is the
+payment-gated commercial process below; it creates or reuses the client, service
+assignments, private workspace and one project track per selected service only
+after payment confirmation.
+
+The assessment table is introduced by
+`backend/database/lead-intake-conversion-migration.sql`. No new environment
+variables are required.
+
+### Commercial Approval, Payment and Activation
+
+These frontend proxy routes require the `altaira_admin_session` HTTP-only cookie:
+
+```http
+GET  /api/internal/provisioning-plans/{planId}/commercial-flow
+POST /api/internal/provisioning-plans/{planId}/payments/checkout
+POST /api/internal/provisioning-plans/{planId}/payments/mock-confirm
+POST /api/internal/provisioning-plans/{planId}/commercial-flow/retry
+```
+
+Backend equivalents require `X-Internal-API-Token` or `X-Admin-Session-Token`:
+
+```http
+GET  /api/v1/provisioning-plans/{planId}/commercial-flow
+POST /api/v1/provisioning-plans/{planId}/payments/checkout
+POST /api/v1/provisioning-plans/{planId}/payments/mock-confirm
+POST /api/v1/provisioning-plans/{planId}/commercial-flow/retry
+```
+
+Checkout body:
+
+```json
+{
+  "amountMinor": 150000,
+  "currency": "EUR",
+  "description": "Approved Altaira Labs implementation scope"
+}
+```
+
+Rules enforced by the backend:
+
+- the provisioning plan must be `approved`; otherwise checkout returns `409`
+- `amountMinor` must be between `100` and `100000000`
+- currency is a three-letter code
+- creating checkout does not create a client or workspace
+- activation occurs only after a verified payment confirmation
+- activation and provisioning are idempotent
+- retries do not create another payment
+- provider work remains `dryRun=true` or `blocked` until separately enabled
+
+Stripe sends payment confirmation directly to the public backend endpoint:
+
+```http
+POST /api/v1/payments/stripe/webhook
+Stripe-Signature: <stripe-signature>
+Content-Type: application/json
+```
+
+The webhook does not use an admin session. Its trust boundary is the Stripe
+signature verified with `STRIPE_WEBHOOK_SECRET`. An invalid signature returns
+`400`. Replaying an already recorded Stripe event returns success without creating
+another client, workspace or payment event.
+
+`POST .../payments/mock-confirm` is available only when
+`STRIPE_MOCK_CONFIRMATION_ENABLED=true`; keep it disabled in production. Stripe
+live secret keys are rejected by the current test-mode configuration.
+
+Required production configuration for a later authorized deployment:
+
+```text
+STRIPE_CHECKOUT_ENABLED=true
+STRIPE_CHECKOUT_MODE=test
+STRIPE_SECRET_KEY=<Stripe test secret key>
+STRIPE_WEBHOOK_SECRET=<Stripe test webhook signing secret>
+STRIPE_SUCCESS_URL=https://<frontend>/payment/success
+STRIPE_CANCEL_URL=https://<frontend>/payment/cancel
+STRIPE_MOCK_CONFIRMATION_ENABLED=false
+COMMERCIAL_EMAIL_ENABLED=true
+COMMERCIAL_NOTIFICATION_FROM=<verified Resend sender>
+RESEND_API_KEY=<secret>
+```
+
+The supporting tables are introduced by
+`backend/database/commercial-payment-provisioning-migration.sql`. Applying that
+migration or enabling Stripe is a separate production operation and is not done by
+the application at request time.
+
 ### Login
 
 Admin UI route:

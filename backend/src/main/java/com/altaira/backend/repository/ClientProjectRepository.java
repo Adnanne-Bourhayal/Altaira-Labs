@@ -18,5 +18,8 @@ public interface ClientProjectRepository extends JpaRepository<ClientProjectEnti
     @EntityGraph(attributePaths = {"clientService", "clientService.service"})
     List<ClientProjectEntity> findAllByClientOrderByCreatedAtAsc(ClientEntity client);
 
+    @EntityGraph(attributePaths = {"client", "clientService", "clientService.service"})
+    List<ClientProjectEntity> findAllByOrderByUpdatedAtDesc();
+
     Optional<ClientProjectEntity> findByClientAndClientServiceAndProjectKey(ClientEntity client, ClientServiceEntity clientService, String projectKey);
 }

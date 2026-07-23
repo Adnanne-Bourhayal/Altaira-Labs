@@ -6,6 +6,8 @@
 -- Additional additive schema files:
 -- - core-expansion-migration.sql
 -- - auth-security-migration.sql
+-- - lead-intake-conversion-migration.sql
+-- - provisioning-engine-migration.sql
 -- Runtime note: Spring Boot/Hibernate can maintain this table during MVP using ddl-auto=update.
 -- Future hardening: replace ddl-auto with explicit migrations before production-grade release.
 
@@ -25,6 +27,6 @@ CREATE TABLE IF NOT EXISTS public.leads (
 );
 
 -- The backend currently enforces allowed status values in application code:
--- new, contacted, closed.
+-- new, contacted, qualified, converted, lost, closed.
 --
 -- Do not apply destructive ALTER statements to Neon without an approved migration plan.

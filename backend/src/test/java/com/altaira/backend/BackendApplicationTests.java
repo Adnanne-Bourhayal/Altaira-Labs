@@ -18,6 +18,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.altaira.backend.entity.AppUserEntity;
+import com.altaira.backend.entity.ClientEntity;
+import com.altaira.backend.entity.ClientProjectAssetEntity;
 import com.altaira.backend.entity.ClientUserAccessEntity;
 import com.altaira.backend.repository.AppUserRepository;
 import com.altaira.backend.repository.AppUserSessionRepository;
@@ -34,12 +36,19 @@ import com.altaira.backend.repository.ClientServiceRepository;
 import com.altaira.backend.repository.ClientUserAccessRepository;
 import com.altaira.backend.repository.ClientWorkspaceRepository;
 import com.altaira.backend.repository.InternalNoteRepository;
+import com.altaira.backend.repository.LeadAssessmentRepository;
 import com.altaira.backend.repository.LeadRepository;
 import com.altaira.backend.repository.OnboardingAuditLogRepository;
 import com.altaira.backend.repository.OnboardingFileRepository;
 import com.altaira.backend.repository.OnboardingTaskRepository;
+import com.altaira.backend.repository.ProvisioningExternalResourceRepository;
+import com.altaira.backend.repository.ProvisioningManualStepRepository;
+import com.altaira.backend.repository.ProvisioningPlanItemRepository;
+import com.altaira.backend.repository.ProvisioningPlanRepository;
+import com.altaira.backend.repository.ProvisioningSelectedToolRepository;
 import com.altaira.backend.repository.SecurityEventRepository;
 import com.altaira.backend.repository.ServiceRepository;
+import com.altaira.backend.repository.WorkspaceTaskRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.mock.web.MockMultipartFile;
 import org.mockito.ArgumentCaptor;
@@ -51,12 +60,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -98,6 +109,24 @@ class BackendApplicationTests {
 
 	@Autowired
 	private LeadRepository leadRepository;
+
+	@Autowired
+	private LeadAssessmentRepository leadAssessmentRepository;
+
+	@Autowired
+	private ProvisioningPlanRepository provisioningPlanRepository;
+
+	@Autowired
+	private ProvisioningPlanItemRepository provisioningPlanItemRepository;
+
+	@Autowired
+	private ProvisioningSelectedToolRepository provisioningSelectedToolRepository;
+
+	@Autowired
+	private ProvisioningManualStepRepository provisioningManualStepRepository;
+
+	@Autowired
+	private ProvisioningExternalResourceRepository provisioningExternalResourceRepository;
 
 	@Autowired
 	private AppUserRepository appUserRepository;
@@ -148,6 +177,9 @@ class BackendApplicationTests {
 	private ClientWorkspaceRepository clientWorkspaceRepository;
 
 	@Autowired
+	private WorkspaceTaskRepository workspaceTaskRepository;
+
+	@Autowired
 	private OnboardingTaskRepository onboardingTaskRepository;
 
 	@Autowired
@@ -177,6 +209,7 @@ class BackendApplicationTests {
 		onboardingAuditLogRepository.deleteAll();
 		onboardingFileRepository.deleteAll();
 		onboardingTaskRepository.deleteAll();
+		workspaceTaskRepository.deleteAll();
 		clientWorkspaceRepository.deleteAll();
 		clientCrmLeadEventRepository.deleteAll();
 		clientCrmFollowUpActionRepository.deleteAll();
@@ -190,6 +223,12 @@ class BackendApplicationTests {
 		internalNoteRepository.deleteAll();
 		clientServiceRepository.deleteAll();
 		clientRepository.deleteAll();
+		provisioningExternalResourceRepository.deleteAll();
+		provisioningPlanItemRepository.deleteAll();
+		provisioningManualStepRepository.deleteAll();
+		provisioningSelectedToolRepository.deleteAll();
+		provisioningPlanRepository.deleteAll();
+		leadAssessmentRepository.deleteAll();
 		leadRepository.deleteAll();
 	}
 
@@ -220,6 +259,370 @@ class BackendApplicationTests {
 				.andExpect(jsonPath("$.phone").value("+32 470 11 22 33"))
 				.andExpect(jsonPath("$.serviceInterest").value("Workflow Automation"))
 				.andExpect(jsonPath("$.status").value("new"));
+	}
+
+	@Test
+	void createsAdminLeadIntakeWithDeterministicRecommendation() throws Exception {
+		mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Paco Martin",
+								  "businessName": "Restaurante Central",
+								  "email": "paco@example.com",
+								  "phone": "+32 470 00 00 00",
+								  "industry": "Restaurant",
+								  "goals": "Organise reservations and reduce manual follow-up",
+								  "formKey": "general",
+								  "responses": {
+								    "primaryGoal": "bookings",
+								    "bookingProcess": "calls_messages",
+								    "leadProcess": "messages_email",
+								    "repetitiveWork": "medium",
+								    "reporting": "manual"
+								  }
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.lead.status").value("new"))
+				.andExpect(jsonPath("$.assessment.formKey").value("general"))
+				.andExpect(jsonPath("$.assessment.status").value("submitted"))
+				.andExpect(jsonPath("$.assessment.recommendedServiceKeys[0]").value("booking"))
+				.andExpect(jsonPath("$.assessment.recommendedServiceKeys.length()").value(2));
+	}
+
+	@Test
+	void createsAndValidatesSchemaV2AdminIntake() throws Exception {
+		mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Sophie Martin",
+								  "businessName": "Martin Clinic",
+								  "email": "sophie-v2@example.com",
+								  "industry": "Clinic",
+								  "formKey": "general",
+								  "schemaVersion": 2,
+								  "responses": {
+								    "primaryGoal": "bookings",
+								    "onlinePresence": "outdated",
+								    "bookingProcess": "calls_messages",
+								    "leadProcess": "spreadsheet",
+								    "repetitiveWork": "high",
+								    "reporting": "manual",
+								    "budgetBand": "5000_10000",
+								    "targetTimeline": "1_3_months",
+								    "commercialStage": "ready_for_proposal",
+								    "sensitiveData": "yes"
+								  }
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.assessment.schemaVersion").value(2))
+				.andExpect(jsonPath("$.assessment.responses.budgetBand").value("5000_10000"));
+
+		mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Incomplete Intake",
+								  "businessName": "Incomplete Business",
+								  "email": "incomplete-v2@example.com",
+								  "formKey": "general",
+								  "schemaVersion": 2,
+								  "responses": { "primaryGoal": "bookings" }
+								}
+								"""))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void generatesIdempotentStaticWebsiteProvisioningDryRun() throws Exception {
+		String intakeJson = mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Elena Jacobs",
+								  "businessName": "Jacobs Local Services",
+								  "email": "elena@example.com",
+								  "industry": "Specialty by Sector",
+								  "goals": "Launch an informative website",
+								  "formKey": "web_seo",
+								  "responses": {
+								    "solutionShape": "informative",
+								    "websiteState": "none",
+								    "contentManagement": "no",
+								    "authentication": "no",
+								    "dataPersistence": "no",
+								    "payments": "no",
+								    "externalIntegrations": "none"
+								  }
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode intake = objectMapper.readTree(intakeJson);
+		String leadId = intake.path("lead").path("id").asText();
+		String assessmentId = intake.path("assessment").path("id").asText();
+		String body = "{\"assessmentId\":\"" + assessmentId + "\"}";
+
+		String firstPlan = mockMvc.perform(post("/api/v1/leads/{id}/provisioning-plans/dry-run", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.route").value("PROVISION_WEB_STATIC"))
+				.andExpect(jsonPath("$.automationLevel").value("A3"))
+				.andExpect(jsonPath("$.automationScope").value("partial"))
+				.andExpect(jsonPath("$.dryRun").value(true))
+				.andExpect(jsonPath("$.executionAllowed").value(false))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_static_site").value(true))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_database").value(false))
+				.andExpect(jsonPath("$.status").value("draft"))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode first = objectMapper.readTree(firstPlan);
+		org.junit.jupiter.api.Assertions.assertEquals(1, first.path("tracks").size());
+		org.junit.jupiter.api.Assertions.assertEquals("WEB", first.path("tracks").get(0).path("track").asText());
+		org.junit.jupiter.api.Assertions.assertEquals(
+				"PROVISION_WEB_STATIC",
+				first.path("tracks").get(0).path("route").asText()
+		);
+		org.junit.jupiter.api.Assertions.assertFalse(
+				first.path("tracks").get(0).path("requiresManualDecision").asBoolean()
+		);
+		org.junit.jupiter.api.Assertions.assertTrue(
+				first.path("tracks").get(0).path("confidence").asDouble() > 0
+		);
+		org.junit.jupiter.api.Assertions.assertTrue(
+				first.path("tracks").get(0).path("matchedSignals").size() > 0
+		);
+		org.junit.jupiter.api.Assertions.assertTrue(first.path("sharedResources").isArray());
+		assertToolState(first, "GITHUB", "selected");
+		assertToolState(first, "VERCEL", "selected");
+		assertToolState(first, "RENDER", "excluded");
+		assertToolState(first, "NEON", "excluded");
+		assertToolState(first, "STRIPE", "excluded");
+		assertToolState(first, "AUTH", "excluded");
+		assertToolState(first, "CMS", "excluded");
+		org.junit.jupiter.api.Assertions.assertTrue(first.path("manualSteps").size() >= 1);
+		org.junit.jupiter.api.Assertions.assertEquals(2, first.path("externalResources").size());
+
+		String secondPlan = mockMvc.perform(post("/api/v1/leads/{id}/provisioning-plans/dry-run", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(body))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		org.junit.jupiter.api.Assertions.assertEquals(
+				first.path("id").asText(),
+				objectMapper.readTree(secondPlan).path("id").asText()
+		);
+
+		mockMvc.perform(get("/api/v1/leads/{id}/provisioning-plans", leadId)
+					.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].tracks[0].track").value("WEB"))
+				.andExpect(jsonPath("$[0].tracks[0].route").value("PROVISION_WEB_STATIC"))
+				.andExpect(jsonPath("$[0].tracks[0].ruleId").isNotEmpty())
+				.andExpect(jsonPath("$[0].sharedResources").isArray())
+				.andExpect(jsonPath("$[0].executionAllowed").value(false));
+		org.junit.jupiter.api.Assertions.assertEquals(1, provisioningPlanRepository.count());
+	}
+
+	@Test
+	void generatesCustomApplicationProvisioningDryRunWithoutExecutingProviders() throws Exception {
+		String intakeJson = mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Marc De Smet",
+								  "businessName": "De Smet Operations",
+								  "email": "marc@example.com",
+								  "industry": "Car Dealer",
+								  "goals": "Build a private application",
+								  "formKey": "web_seo",
+								  "responses": {
+								    "solutionShape": "custom_app",
+								    "contentManagement": "no",
+								    "authentication": "yes",
+								    "dataPersistence": "yes",
+								    "payments": "no",
+								    "externalIntegrations": "standard"
+								  }
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode intake = objectMapper.readTree(intakeJson);
+		String leadId = intake.path("lead").path("id").asText();
+		String assessmentId = intake.path("assessment").path("id").asText();
+
+		String planJson = mockMvc.perform(post("/api/v1/leads/{id}/provisioning-plans/dry-run", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"assessmentId\":\"" + assessmentId + "\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.route").value("PROVISION_WEB_CUSTOM"))
+				.andExpect(jsonPath("$.automationLevel").value("A3"))
+				.andExpect(jsonPath("$.automationScope").value("partial"))
+				.andExpect(jsonPath("$.executionAllowed").value(false))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_database").value(true))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_backend").value(true))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_auth").value(true))
+				.andExpect(jsonPath("$.normalizedRequirements.requires_static_site").value(false))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		JsonNode plan = objectMapper.readTree(planJson);
+		for (String key : List.of("GITHUB", "VERCEL", "RENDER", "NEON", "JIRA", "DRIVE", "AUTH")) {
+			assertToolState(plan, key, "selected");
+		}
+		assertToolState(plan, "STRIPE", "excluded");
+		org.junit.jupiter.api.Assertions.assertEquals(6, plan.path("externalResources").size());
+		org.junit.jupiter.api.Assertions.assertTrue(
+				plan.path("externalResources").findValuesAsText("status").stream()
+						.allMatch("placeholder"::equals)
+		);
+	}
+
+	@Test
+	void generatesSectorAlignedClinicCrmAndRestaurantBookingPlans() throws Exception {
+		JsonNode clinicIntake = createAdminIntake("""
+				{
+				  "fullName": "Sophie Lambert",
+				  "businessName": "Lambert Psychology",
+				  "email": "sophie@example.com",
+				  "industry": "Clinic",
+				  "goals": "Organise patient enquiries and follow-up",
+				  "formKey": "crm",
+				  "responses": {
+				    "currentLeadProcess": "spreadsheet",
+				    "leadSources": "Website and referrals",
+				    "requiredFields": "Treatment interest and preferred appointment time",
+				    "importRequired": "yes"
+				  }
+				}
+				""");
+		JsonNode clinicPlan = generateProvisioningDryRun(clinicIntake);
+		org.junit.jupiter.api.Assertions.assertEquals("PROVISION_CRM_ALTAIRA", clinicPlan.path("route").asText());
+		org.junit.jupiter.api.Assertions.assertTrue(
+				clinicPlan.path("normalizedRequirements").path("requires_crm").asBoolean()
+		);
+		org.junit.jupiter.api.Assertions.assertTrue(
+				clinicPlan.path("normalizedRequirements").path("requires_data_migration").asBoolean()
+		);
+
+		JsonNode restaurantIntake = createAdminIntake("""
+				{
+				  "fullName": "Paco Martin",
+				  "businessName": "Restaurant Central",
+				  "email": "paco@example.com",
+				  "industry": "Restaurant",
+				  "goals": "Control tables, capacity and deposits",
+				  "formKey": "booking",
+				  "responses": {
+				    "bookingType": "Tables",
+				    "currentBookingProcess": "calls_messages",
+				    "openingHours": "Tuesday to Sunday",
+				    "resources": "Dining room and terrace",
+				    "slotDuration": "120 minutes",
+				    "depositRequired": "yes"
+				  }
+				}
+				""");
+		JsonNode restaurantPlan = generateProvisioningDryRun(restaurantIntake);
+		org.junit.jupiter.api.Assertions.assertEquals(
+				"PROVISION_BOOKING_SAAS",
+				restaurantPlan.path("route").asText()
+		);
+		org.junit.jupiter.api.Assertions.assertTrue(
+				restaurantPlan.path("normalizedRequirements").path("requires_booking").asBoolean()
+		);
+		assertToolState(restaurantPlan, "STRIPE", "selected");
+		assertToolState(restaurantPlan, "RESEND", "selected");
+	}
+
+	@Test
+	void convertsLeadIdempotentlyIntoOneClientWorkspace() throws Exception {
+		String intakeJson = mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "fullName": "Nora Dupont",
+								  "businessName": "Nora Clinic",
+								  "email": "nora@example.com",
+								  "industry": "Clinic",
+								  "goals": "Create a booking and CRM workspace",
+								  "formKey": "booking",
+								  "responses": {
+								    "bookingProcess": "calls_messages",
+								    "appointmentTypes": "Dental consultation"
+								  }
+								}
+								"""))
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String leadId = objectMapper.readTree(intakeJson).path("lead").path("id").asText();
+		String conversionRequest = """
+				{
+				  "serviceKeys": ["booking", "crm", "booking"],
+				  "confirmed": true,
+				  "notes": "Approved after discovery"
+				}
+				""";
+
+		String firstConversion = mockMvc.perform(post("/api/v1/leads/{id}/convert", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(conversionRequest))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.lead.status").value("converted"))
+				.andExpect(jsonPath("$.clientCreated").value(true))
+				.andExpect(jsonPath("$.workspaceReady").value(true))
+				.andExpect(jsonPath("$.serviceAssignments.length()").value(2))
+				.andExpect(jsonPath("$.projects.length()").value(2))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String clientId = objectMapper.readTree(firstConversion).path("client").path("id").asText();
+
+		mockMvc.perform(post("/api/v1/leads/{id}/convert", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(conversionRequest))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.client.id").value(clientId))
+				.andExpect(jsonPath("$.clientCreated").value(false))
+				.andExpect(jsonPath("$.serviceAssignments.length()").value(2))
+				.andExpect(jsonPath("$.projects.length()").value(2));
+
+		org.junit.jupiter.api.Assertions.assertEquals(1, clientRepository.count());
+		org.junit.jupiter.api.Assertions.assertEquals(2, clientServiceRepository.count());
+		org.junit.jupiter.api.Assertions.assertEquals(2, clientProjectRepository.count());
+		org.junit.jupiter.api.Assertions.assertEquals(1, clientWorkspaceRepository.count());
 	}
 
 	@Test
@@ -850,6 +1253,367 @@ class BackendApplicationTests {
 				.andExpect(status().isOk());
 
 		org.junit.jupiter.api.Assertions.assertEquals(4, clientProjectRepository.count());
+	}
+
+	@Test
+	void adminProjectOverviewReturnsOperationalProjectsAndExcludesTechnicalFixtures() throws Exception {
+		String operationalClientId = createClientWithSector(
+				"Aster Practice Manager",
+				"Aster Dental Brussels",
+				"owner@asterdental.be",
+				"clinics"
+		);
+		assignServiceToClient(operationalClientId, "Booking Systems", "Booking implementation.");
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/clients/" + operationalClientId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		String fixtureClientId = createClientWithSector(
+				"E2E Client 20260717",
+				"Altaira E2E Company 20260717",
+				"project-fixture@example.com",
+				"custom"
+		);
+		assignServiceToClient(fixtureClientId, "CRM / Business Systems", "Technical fixture.");
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/clients/" + fixtureClientId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/projects")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].clientId").value(operationalClientId))
+				.andExpect(jsonPath("$[0].clientCompany").value("Aster Dental Brussels"))
+				.andExpect(jsonPath("$[0].serviceName").value("Booking Systems"))
+				.andExpect(jsonPath("$[0].projectKey").value("booking"))
+				.andExpect(jsonPath("$[0].currentPhase").value("requirements"))
+				.andExpect(jsonPath("$[0].reviewPending").value(false));
+	}
+
+	@Test
+	void adminActionQueueReturnsOnlyOperationalWorkWaitingForReview() throws Exception {
+		String operationalClientId = createClientWithSector(
+				"Aster Practice Manager",
+				"Aster Dental Brussels",
+				"operations@asterdental.be",
+				"clinics"
+		);
+		assignServiceToClient(operationalClientId, "Booking Systems", "Booking implementation.");
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/clients/" + operationalClientId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/v1/onboarding/admin/clients/" + operationalClientId + "/generate")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		ClientEntity operationalClient = clientRepository.findById(UUID.fromString(operationalClientId)).orElseThrow();
+		var submittedTask = onboardingTaskRepository
+				.findAllByClientOrderBySortOrderAscCreatedAtAsc(operationalClient)
+				.get(0);
+		submittedTask.setStatus("submitted");
+		submittedTask.setSubmittedAt(Instant.parse("2026-07-17T08:00:00Z"));
+		onboardingTaskRepository.save(submittedTask);
+
+		var project = clientProjectRepository.findAllByClientOrderByCreatedAtAsc(operationalClient).get(0);
+		project.setLatestClientFeedback("Please review the booking flow.");
+		project.setRevisionPendingAt(Instant.parse("2026-07-17T09:00:00Z"));
+		clientProjectRepository.save(project);
+
+		ClientProjectAssetEntity asset = new ClientProjectAssetEntity();
+		asset.setProject(project);
+		asset.setClient(operationalClient);
+		asset.setAssetType("booking_rules");
+		asset.setOriginalFilename("opening-hours.pdf");
+		asset.setStoredFilename("opening-hours.pdf");
+		asset.setStorageKey("tests/action-queue/" + UUID.randomUUID());
+		asset.setContentType("application/pdf");
+		asset.setSizeBytes(128);
+		asset.setStatus("uploaded");
+		clientProjectAssetRepository.save(asset);
+
+		String fixtureClientId = createClientWithSector(
+				"E2E Review Client",
+				"Altaira E2E Review Company",
+				"action-queue@example.com",
+				"custom"
+		);
+		mockMvc.perform(post("/api/v1/onboarding/admin/clients/" + fixtureClientId + "/generate")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		ClientEntity fixtureClient = clientRepository.findById(UUID.fromString(fixtureClientId)).orElseThrow();
+		var fixtureTask = onboardingTaskRepository
+				.findAllByClientOrderBySortOrderAscCreatedAtAsc(fixtureClient)
+				.get(0);
+		fixtureTask.setStatus("submitted");
+		fixtureTask.setSubmittedAt(Instant.parse("2026-07-17T07:00:00Z"));
+		onboardingTaskRepository.save(fixtureTask);
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/actions")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(3)))
+				.andExpect(jsonPath("$[*].clientId", org.hamcrest.Matchers.everyItem(
+						org.hamcrest.Matchers.is(operationalClientId)
+				)))
+				.andExpect(jsonPath("$[?(@.actionType == 'onboarding_review')]").exists())
+				.andExpect(jsonPath("$[?(@.actionType == 'resource_review')]").exists())
+				.andExpect(jsonPath("$[?(@.actionType == 'feedback_review')]").exists());
+	}
+
+	@Test
+	void workspaceTasksAreFilteredForAdminAndIsolatedPerClient() throws Exception {
+		String operationalClientId = createClientWithSector(
+				"Aster Practice Manager",
+				"Aster Dental Brussels",
+				"workspace-tasks@asterdental.be",
+				"clinics"
+		);
+		assignServiceToClient(operationalClientId, "Booking Systems", "Booking task scope.");
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/clients/" + operationalClientId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		ClientEntity operationalClient = clientRepository
+				.findById(UUID.fromString(operationalClientId))
+				.orElseThrow();
+		var operationalClientService = clientServiceRepository
+				.findAllByClientOrderByCreatedAtDesc(operationalClient)
+				.get(0);
+		var operationalProject = clientProjectRepository
+				.findAllByClientOrderByCreatedAtAsc(operationalClient)
+				.get(0);
+
+		String clientTaskBody = mockMvc.perform(post("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "clientId": "%s",
+								  "clientServiceId": "%s",
+								  "projectId": "%s",
+								  "title": "Confirm appointment cancellation policy",
+								  "description": "Review the final cancellation window before booking configuration.",
+								  "priority": "high",
+								  "ownerRole": "client",
+								  "visibility": "client_visible",
+								  "dueAt": "2026-07-24T10:00:00Z"
+								}
+								""".formatted(
+								operationalClientId,
+								operationalClientService.getId(),
+								operationalProject.getId()
+						)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.clientId").value(operationalClientId))
+				.andExpect(jsonPath("$.serviceKey").value("booking"))
+				.andExpect(jsonPath("$.projectId").value(operationalProject.getId().toString()))
+				.andExpect(jsonPath("$.status").value("not_started"))
+				.andExpect(jsonPath("$.priority").value("high"))
+				.andExpect(jsonPath("$.ownerRole").value("client"))
+				.andExpect(jsonPath("$.visibility").value("client_visible"))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String clientTaskId = objectMapper.readTree(clientTaskBody).get("id").asText();
+
+		String adminTaskBody = mockMvc.perform(post("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "clientId": "%s",
+								  "clientServiceId": "%s",
+								  "projectId": "%s",
+								  "title": "Validate booking capacity model",
+								  "ownerRole": "admin",
+								  "visibility": "admin_only"
+								}
+								""".formatted(
+								operationalClientId,
+								operationalClientService.getId(),
+								operationalProject.getId()
+						)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.visibility").value("admin_only"))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String adminTaskId = objectMapper.readTree(adminTaskBody).get("id").asText();
+
+		String fixtureClientId = createClientWithSector(
+				"E2E Workspace Task Client",
+				"Altaira E2E Workspace Tasks",
+				"workspace-task-fixture@example.com",
+				"custom"
+		);
+
+		mockMvc.perform(post("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "clientId": "%s",
+								  "title": "Technical fixture task"
+								}
+								""".formatted(fixtureClientId)))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(2)))
+				.andExpect(jsonPath("$[*].clientId", org.hamcrest.Matchers.everyItem(
+						org.hamcrest.Matchers.is(operationalClientId)
+				)));
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/admin/clients/" + operationalClientId + "/preview")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].id").value(clientTaskId))
+				.andExpect(jsonPath("$[0].visibility").value("client_visible"));
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/admin/clients/" + operationalClientId + "/preview"))
+				.andExpect(status().isUnauthorized());
+
+		createClientUserAccess(operationalClientId, "aster-task-client", "client-task-pass-123");
+		String operationalSession = loginAndReturnSessionToken("aster-task-client", "client-task-pass-123");
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/client/me")
+						.header("X-Client-Session-Token", operationalSession))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].id").value(clientTaskId))
+				.andExpect(jsonPath("$[0].visibility").value("client_visible"));
+
+		mockMvc.perform(patch("/api/v1/workspace-tasks/client/" + clientTaskId + "/status")
+						.header("X-Client-Session-Token", operationalSession)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "status": "submitted"
+								}
+								"""))
+				.andExpect(status().isForbidden());
+
+		mockMvc.perform(patch("/api/v1/workspace-tasks/client/" + adminTaskId + "/status")
+						.header("X-Client-Session-Token", operationalSession)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "status": "submitted"
+								}
+								"""))
+				.andExpect(status().isForbidden());
+
+		String secondClientId = createClientWithSector(
+				"Second Client Manager",
+				"Second Client Workspace",
+				"second-workspace@example.com",
+				"custom"
+		);
+		createClientUserAccess(secondClientId, "second-task-client", "client-task-pass-456");
+		String secondSession = loginAndReturnSessionToken("second-task-client", "client-task-pass-456");
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/client/me")
+						.header("X-Client-Session-Token", secondSession))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(0)));
+
+		mockMvc.perform(patch("/api/v1/workspace-tasks/client/" + clientTaskId + "/status")
+						.header("X-Client-Session-Token", secondSession)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "status": "in_progress"
+								}
+								"""))
+				.andExpect(status().isForbidden());
+
+		mockMvc.perform(delete("/api/v1/workspace-tasks/admin/" + adminTaskId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].id").value(clientTaskId));
+	}
+
+	@Test
+	void adminClientSummariesUsePersistedServicesProjectsAndTasks() throws Exception {
+		String clientId = createClientWithSector(
+				"Marie Lambert",
+				"Lambert Dental",
+				"marie@lambert-dental.be",
+				"clinics"
+		);
+		assignServiceToClient(clientId, "Booking Systems", "Booking implementation.");
+
+		mockMvc.perform(get("/api/v1/client-portal/admin/clients/" + clientId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk());
+
+		ClientEntity client = clientRepository.findById(UUID.fromString(clientId)).orElseThrow();
+		var assignment = clientServiceRepository.findAllByClientOrderByCreatedAtDesc(client).get(0);
+		var project = clientProjectRepository.findAllByClientOrderByCreatedAtAsc(client).get(0);
+
+		mockMvc.perform(post("/api/v1/workspace-tasks/admin")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "clientId": "%s",
+								  "clientServiceId": "%s",
+								  "projectId": "%s",
+								  "title": "Confirm clinic appointment rules",
+								  "ownerRole": "client",
+								  "visibility": "client_visible",
+								  "dueAt": "2026-07-25T10:00:00Z"
+								}
+								""".formatted(clientId, assignment.getId(), project.getId())))
+				.andExpect(status().isCreated());
+
+		createClientWithSector(
+				"E2E Summary Fixture",
+				"Altaira E2E Summary",
+				"e2e-summary@example.com",
+				"custom"
+		);
+
+		mockMvc.perform(get("/api/v1/clients/admin-summaries")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].id").value(clientId))
+				.andExpect(jsonPath("$[0].company").value("Lambert Dental"))
+				.andExpect(jsonPath("$[0].activeServices[0]").value("Booking Systems"))
+				.andExpect(jsonPath("$[0].projectCount").value(1))
+				.andExpect(jsonPath("$[0].openTaskCount").value(1))
+				.andExpect(jsonPath("$[0].nextAction").value("Confirm clinic appointment rules"))
+				.andExpect(jsonPath("$[0].nextActionOwnerRole").value("client"))
+				.andExpect(jsonPath("$[0].overallState").value("in_progress"))
+				.andExpect(jsonPath("$[0].lastActivityAt").exists());
+
+		mockMvc.perform(get("/api/v1/clients/" + clientId + "/admin-summary")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(clientId))
+				.andExpect(jsonPath("$.sectorType").value("clinics"))
+				.andExpect(jsonPath("$.nextActionDueAt").value("2026-07-25T10:00:00Z"));
+
+		mockMvc.perform(get("/api/v1/clients/admin-summaries"))
+				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -1812,6 +2576,44 @@ class BackendApplicationTests {
 								}
 								""".formatted(serviceId, notes)))
 				.andExpect(status().isCreated());
+	}
+
+	private JsonNode createAdminIntake(String body) throws Exception {
+		String response = mockMvc.perform(post("/api/v1/leads/admin-intake")
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(body))
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		return objectMapper.readTree(response);
+	}
+
+	private JsonNode generateProvisioningDryRun(JsonNode intake) throws Exception {
+		String leadId = intake.path("lead").path("id").asText();
+		String assessmentId = intake.path("assessment").path("id").asText();
+		String response = mockMvc.perform(post("/api/v1/leads/{id}/provisioning-plans/dry-run", leadId)
+						.header("X-Internal-API-Token", INTERNAL_TOKEN)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"assessmentId\":\"" + assessmentId + "\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.dryRun").value(true))
+				.andExpect(jsonPath("$.executionAllowed").value(false))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		return objectMapper.readTree(response);
+	}
+
+	private void assertToolState(JsonNode plan, String toolKey, String expectedState) {
+		for (JsonNode tool : plan.path("tools")) {
+			if (toolKey.equals(tool.path("key").asText())) {
+				org.junit.jupiter.api.Assertions.assertEquals(expectedState, tool.path("selectionState").asText());
+				return;
+			}
+		}
+		throw new AssertionError("Provisioning tool not found: " + toolKey);
 	}
 
 	private boolean projectsContainKey(JsonNode projects, String projectKey) {

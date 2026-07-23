@@ -1,5 +1,6 @@
 package com.altaira.backend.controller;
 
+import com.altaira.backend.dto.client.AdminClientSummaryResponse;
 import com.altaira.backend.dto.client.ClientResponse;
 import com.altaira.backend.dto.client.CreateClientRequest;
 import com.altaira.backend.dto.clientinvitation.ClientInvitationResponse;
@@ -63,6 +64,25 @@ public class ClientController {
     ) {
         adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
         return clientManagementService.getAllClients();
+    }
+
+    @GetMapping("/admin-summaries")
+    public List<AdminClientSummaryResponse> getAdminClientSummaries(
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
+        return clientManagementService.getAdminClientSummaries();
+    }
+
+    @GetMapping("/{id}/admin-summary")
+    public AdminClientSummaryResponse getAdminClientSummary(
+            @PathVariable UUID id,
+            @RequestHeader(name = "X-Internal-API-Token", required = false) String internalApiToken,
+            @RequestHeader(name = "X-Admin-Session-Token", required = false) String adminSessionToken
+    ) {
+        adminAccessService.requireAdminAccess(internalApiToken, adminSessionToken);
+        return clientManagementService.getAdminClientSummary(id);
     }
 
     @GetMapping("/{id}")

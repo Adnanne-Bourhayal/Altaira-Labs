@@ -1,5 +1,7 @@
 package com.altaira.backend.service;
 
+import com.altaira.backend.dto.clientportal.AdminActionItemResponse;
+import com.altaira.backend.dto.clientportal.AdminClientProjectSummaryResponse;
 import com.altaira.backend.dto.clientportal.ClientPortalModuleResponse;
 import com.altaira.backend.dto.clientportal.ClientPortalResponse;
 import com.altaira.backend.dto.clientportal.ClientProjectAssetResponse;
@@ -16,6 +18,7 @@ import com.altaira.backend.entity.ClientProjectAssetEntity;
 import com.altaira.backend.entity.ClientProjectConfigSnapshotEntity;
 import com.altaira.backend.entity.ClientProjectEntity;
 import com.altaira.backend.entity.ClientServiceEntity;
+import com.altaira.backend.entity.OnboardingTaskEntity;
 import com.altaira.backend.exception.ResourceNotFoundException;
 import com.altaira.backend.model.ClientServiceStatus;
 import com.altaira.backend.model.ProjectPhase;
@@ -23,6 +26,7 @@ import com.altaira.backend.repository.ClientProjectAssetRepository;
 import com.altaira.backend.repository.ClientProjectConfigSnapshotRepository;
 import com.altaira.backend.repository.ClientProjectRepository;
 import com.altaira.backend.repository.ClientServiceRepository;
+import com.altaira.backend.repository.OnboardingTaskRepository;
 import com.altaira.backend.security.ClientAccessContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +43,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,6 +71,7 @@ public class ClientPortalService {
     private final ClientProjectRepository clientProjectRepository;
     private final ClientProjectAssetRepository clientProjectAssetRepository;
     private final ClientProjectConfigSnapshotRepository clientProjectConfigSnapshotRepository;
+    private final OnboardingTaskRepository onboardingTaskRepository;
     private final OnboardingFileStorageService onboardingFileStorageService;
     private final ObjectMapper objectMapper;
 
@@ -77,6 +83,7 @@ public class ClientPortalService {
             ClientProjectRepository clientProjectRepository,
             ClientProjectAssetRepository clientProjectAssetRepository,
             ClientProjectConfigSnapshotRepository clientProjectConfigSnapshotRepository,
+            OnboardingTaskRepository onboardingTaskRepository,
             OnboardingFileStorageService onboardingFileStorageService,
             ObjectMapper objectMapper
     ) {
@@ -87,6 +94,7 @@ public class ClientPortalService {
         this.clientProjectRepository = clientProjectRepository;
         this.clientProjectAssetRepository = clientProjectAssetRepository;
         this.clientProjectConfigSnapshotRepository = clientProjectConfigSnapshotRepository;
+        this.onboardingTaskRepository = onboardingTaskRepository;
         this.onboardingFileStorageService = onboardingFileStorageService;
         this.objectMapper = objectMapper;
     }
@@ -108,6 +116,50 @@ public class ClientPortalService {
         OnboardingDashboardResponse onboarding = onboardingService.getAdminDashboard(clientId);
         ClientEntity client = clientManagementService.findClientEntity(clientId);
         return buildPortal(client, onboarding);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminClientProjectSummaryResponse> listProjectsAsAdmin() {
+        return clientProjectRepository.findAllByOrderByUpdatedAtDesc()
+                .stream()
+                .filter(project -> !isTechnicalFixture(project.getClient()))
+                .map(this::mapAdminProjectSummary)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminActionItemResponse> listActionItemsAsAdmin() {
+        List<AdminActionItemResponse> actions = new ArrayList<>();
+
+        onboardingTaskRepository.findAllByStatusOrderBySubmittedAtAsc("submitted")
+                .stream()
+                .filter(task -> !isTechnicalFixture(task.getClient()))
+                .map(this::mapOnboardingAction)
+                .forEach(actions::add);
+
+        clientProjectAssetRepository.findAllByStatusOrderByUploadedAtAsc("uploaded")
+                .stream()
+                .filter(asset -> !isTechnicalFixture(asset.getClient()))
+                .map(this::mapResourceAction)
+                .forEach(actions::add);
+
+        clientProjectRepository.findAllByOrderByUpdatedAtDesc()
+                .stream()
+                .filter(project -> project.getRevisionPendingAt() != null)
+                .filter(project -> !isTechnicalFixture(project.getClient()))
+                .map(this::mapFeedbackAction)
+                .forEach(actions::add);
+
+        return actions.stream()
+                .sorted(
+                        Comparator.comparing(AdminActionItemResponse::critical)
+                                .reversed()
+                                .thenComparing(
+                                        AdminActionItemResponse::actionAt,
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                )
+                )
+                .toList();
     }
 
     public ClientProjectResponse updateProjectAsAdmin(UUID projectId, UpdateClientProjectRequest request) {
@@ -461,6 +513,111 @@ public class ClientPortalService {
                 project.getCreatedAt(),
                 project.getUpdatedAt()
         );
+    }
+
+    private AdminClientProjectSummaryResponse mapAdminProjectSummary(ClientProjectEntity project) {
+        ClientEntity client = project.getClient();
+        ClientServiceEntity assignment = project.getClientService();
+
+        return new AdminClientProjectSummaryResponse(
+                project.getId(),
+                client.getId(),
+                client.getName(),
+                client.getCompany(),
+                client.getStatus(),
+                assignment == null ? null : assignment.getId(),
+                assignment == null || assignment.getService() == null
+                        ? null
+                        : assignment.getService().getName(),
+                project.getProjectKey(),
+                project.getName(),
+                project.getCurrentPhase(),
+                project.getRevisionPendingAt() != null,
+                project.getRevisionPendingAt(),
+                project.getUpdatedAt()
+        );
+    }
+
+    private AdminActionItemResponse mapOnboardingAction(OnboardingTaskEntity task) {
+        ClientServiceEntity assignment = task.getClientService();
+
+        return new AdminActionItemResponse(
+                task.getId(),
+                "onboarding_review",
+                task.getTitle(),
+                task.getClient().getId(),
+                task.getClient().getName(),
+                task.getClient().getCompany(),
+                null,
+                null,
+                task.getServiceKey(),
+                assignment == null || assignment.getService() == null
+                        ? null
+                        : assignment.getService().getName(),
+                task.isCritical(),
+                task.getSubmittedAt()
+        );
+    }
+
+    private AdminActionItemResponse mapResourceAction(ClientProjectAssetEntity asset) {
+        ClientProjectEntity project = asset.getProject();
+        ClientServiceEntity assignment = project.getClientService();
+
+        return new AdminActionItemResponse(
+                asset.getId(),
+                "resource_review",
+                "Review " + asset.getOriginalFilename(),
+                asset.getClient().getId(),
+                asset.getClient().getName(),
+                asset.getClient().getCompany(),
+                project.getId(),
+                project.getName(),
+                project.getProjectKey(),
+                assignment == null || assignment.getService() == null
+                        ? null
+                        : assignment.getService().getName(),
+                false,
+                asset.getUploadedAt()
+        );
+    }
+
+    private AdminActionItemResponse mapFeedbackAction(ClientProjectEntity project) {
+        ClientServiceEntity assignment = project.getClientService();
+
+        return new AdminActionItemResponse(
+                project.getId(),
+                "feedback_review",
+                "Review client feedback",
+                project.getClient().getId(),
+                project.getClient().getName(),
+                project.getClient().getCompany(),
+                project.getId(),
+                project.getName(),
+                project.getProjectKey(),
+                assignment == null || assignment.getService() == null
+                        ? null
+                        : assignment.getService().getName(),
+                false,
+                project.getRevisionPendingAt()
+        );
+    }
+
+    private boolean isTechnicalFixture(ClientEntity client) {
+        String name = normalizeForFixtureCheck(client.getName());
+        String company = normalizeForFixtureCheck(client.getCompany());
+        String email = normalizeForFixtureCheck(client.getEmail());
+
+        return name.startsWith("e2e ") ||
+                name.equals("e2e") ||
+                company.startsWith("e2e ") ||
+                company.startsWith("altaira e2e") ||
+                email.endsWith("@example.com") ||
+                email.endsWith("@example.test") ||
+                email.endsWith(".test");
+    }
+
+    private String normalizeForFixtureCheck(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private ClientProjectEntity findProject(UUID projectId) {
