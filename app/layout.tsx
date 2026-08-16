@@ -1,31 +1,29 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-  variable: "--font-inter",
-})
-
 export const metadata: Metadata = {
-  title: "Altaira Labs - Get More Clients. Automatically.",
+  title: "Altaira Labs | Digital systems for local SMEs",
   description:
-    "We build websites and smart systems that help your business grow 24/7. Websites, booking systems & automation for local businesses.",
-  keywords: "web design, booking system, automation, business website, digital agency, Belgium, Spain",
+    "Altaira Labs helps small businesses replace manual work with clear digital systems: websites, booking flows, dashboards, automations and client management tools.",
+  keywords:
+    "technology consulting for SMEs, small business automation, booking systems, management dashboards, CRM lead management, professional websites, workflow automation, Belgium SMEs, Benelux digital systems, local business software",
   authors: [{ name: "Altaira Labs" }],
   openGraph: {
-    title: "Altaira Labs - Get More Clients. Automatically.",
-    description: "Websites, booking systems & automation for local businesses",
+    title: "Altaira Labs | Digital systems for local SMEs",
+    description:
+      "Practical technology systems for SMEs that want more control, less manual work and a clearer way to manage clients, services and daily operations.",
     type: "website",
   },
-    generator: 'v0.app'
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 }
 
 export const viewport: Viewport = {
-  themeColor: "#050810",
+  themeColor: "#f8fafc",
   width: "device-width",
   initialScale: 1,
 }
@@ -36,12 +34,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
       <body className="font-sans antialiased">
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

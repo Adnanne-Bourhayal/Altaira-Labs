@@ -1,11 +1,19 @@
 {
-  "name": "my-v0-project",
+  "name": "altaira-os-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "next build",
+    "clean:appledouble": "find . -name '._*' -not -path './node_modules/*' -not -path './.git/*' -delete",
+    "clean:next": "rm -rf .next",
+    "check:client-portal-schema": "bash scripts/check-client-portal-schema.sh",
     "dev": "next dev",
+    "predev": "npm run clean:appledouble && npm run clean:next",
     "lint": "eslint .",
+    "smoke:auth": "node scripts/smoke-auth-crm.mjs",
+    "smoke:client-portal": "node scripts/smoke-client-portal-e2e.mjs",
+    "smoke:public": "node scripts/smoke-public.mjs",
+    "smoke:security": "node scripts/smoke-security.mjs",
     "start": "next start"
   },
   "dependencies": {
@@ -47,9 +55,8 @@
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "15.5.10",
+    "next": "15.5.20",
     "next-themes": "^0.4.6",
-    "nuxt": "latest",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
@@ -60,15 +67,20 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
-    "vue-router": "latest",
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "postcss": "^8.5",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "15.5.20",
+    "postcss": "8.5.16",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "8.5.16"
   }
 }

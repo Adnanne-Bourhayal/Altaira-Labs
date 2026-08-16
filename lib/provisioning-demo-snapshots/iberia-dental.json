@@ -1,0 +1,605 @@
+{
+  "schemaVersion" : 1,
+  "scenarioId" : "DEMO-CLINIC",
+  "slug" : "iberia-dental",
+  "name" : "Iberia Dental Demo",
+  "sector" : "Clinics",
+  "expectedTracks" : [ "WEB", "BOOKING", "CRM", "AUTOMATION", "DASHBOARD" ],
+  "plan" : {
+    "id" : "fixture-plan-iberia-dental",
+    "leadId" : "fixture-lead-iberia-dental",
+    "assessmentId" : "fixture-assessment-iberia-dental",
+    "route" : "COMPOSITE",
+    "automationLevel" : "A2",
+    "automationScope" : "partial",
+    "status" : "draft",
+    "dryRun" : true,
+    "executionAllowed" : false,
+    "normalizedRequirements" : {
+      "requires_auth" : true,
+      "requires_automation" : true,
+      "requires_backend" : true,
+      "requires_booking" : true,
+      "requires_calendar" : true,
+      "requires_cms" : true,
+      "requires_crm" : true,
+      "requires_dashboard" : true,
+      "requires_data_migration" : false,
+      "requires_database" : true,
+      "requires_external_integrations" : true,
+      "requires_file_storage" : false,
+      "requires_frontend" : true,
+      "requires_payments" : false,
+      "requires_realtime" : false,
+      "requires_static_site" : false,
+      "requires_training" : true
+    },
+    "decisionReason" : "WEB: Managed content editing is required without a custom application backend. BOOKING: Standard appointments, resources and policies fit a managed booking platform. CRM: The required lead workflow fits the existing tenant-scoped Altaira CRM. AUTOMATION: The requested trigger and action fit a managed workflow or existing Altaira capability. DASHBOARD: Periodic reporting and KPI analysis fit a managed BI platform.",
+    "costEstimate" : "Dry-run only. Provider plans, subscriptions and usage costs require admin approval.",
+    "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses.", "Provider dependency and availability limits must be accepted.", "Opening hours, service duration, resource availability and location rules require validation.", "Calendar conflict, staff availability, OAuth and external calendar consent need testing.", "Cancellation, customer communication, refund and payment rules require owner approval.", "Complex implementations risk double booking or overbooking and require access-control review.", "Privacy controls are required when appointment data can identify a person.", "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked.", "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability.", "Data quality and metric definition can invalidate reporting.", "Access control, tenant leakage and license limits require review.", "Source consistency and read-only access must be validated for sensitive data.", "OAuth quota and provider limits can interrupt refreshes.", "Realtime latency, availability and load require custom testing.", "Exported data, permissions and financial data require explicit controls." ],
+    "tools" : [ {
+      "id" : "fixture-tool-iberia-dental-0",
+      "key" : "CMS",
+      "displayName" : "Content management system",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Editors need managed structured content."
+    }, {
+      "id" : "fixture-tool-iberia-dental-1",
+      "key" : "RENDER",
+      "displayName" : "Render",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom backend is required."
+    }, {
+      "id" : "fixture-tool-iberia-dental-2",
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required."
+    }, {
+      "id" : "fixture-tool-iberia-dental-3",
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required."
+    }, {
+      "id" : "fixture-tool-iberia-dental-4",
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Protected BI access."
+    }, {
+      "id" : "fixture-tool-iberia-dental-5",
+      "key" : "BOOKING_SAAS",
+      "displayName" : "Booking SaaS",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Managed appointment and capacity workflow."
+    }, {
+      "id" : "fixture-tool-iberia-dental-6",
+      "key" : "CALENDAR",
+      "displayName" : "Calendar integration",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Calendar-backed availability for the recommended booking service."
+    }, {
+      "id" : "fixture-tool-iberia-dental-7",
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    }, {
+      "id" : "fixture-tool-iberia-dental-8",
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking does not require owned source."
+    }, {
+      "id" : "fixture-tool-iberia-dental-9",
+      "key" : "VERCEL",
+      "displayName" : "Vercel",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking supplies the booking surface."
+    }, {
+      "id" : "fixture-tool-iberia-dental-10",
+      "key" : "ALTAIRA",
+      "displayName" : "Altaira Workspace",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Existing private CRM workspace."
+    }, {
+      "id" : "fixture-tool-iberia-dental-11",
+      "key" : "BI",
+      "displayName" : "Business intelligence platform",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Managed reporting and visualization."
+    } ],
+    "items" : [ {
+      "id" : "fixture-item-iberia-dental-0",
+      "providerKey" : "CMS",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo web",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed content editing is required without a custom application backend."
+    }, {
+      "id" : "fixture-item-iberia-dental-1",
+      "providerKey" : "BOOKING_SAAS",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed appointment and capacity workflow."
+    }, {
+      "id" : "fixture-item-iberia-dental-2",
+      "providerKey" : "CALENDAR",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Calendar-backed availability for the recommended booking service."
+    }, {
+      "id" : "fixture-item-iberia-dental-3",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo booking",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    }, {
+      "id" : "fixture-item-iberia-dental-4",
+      "providerKey" : "ALTAIRA",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Existing private CRM workspace."
+    }, {
+      "id" : "fixture-item-iberia-dental-5",
+      "providerKey" : "AUTH",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Tenant-scoped CRM access."
+    }, {
+      "id" : "fixture-item-iberia-dental-6",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Booking confirmations and reminders."
+    }, {
+      "id" : "fixture-item-iberia-dental-7",
+      "providerKey" : "AUTH",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo dashboard",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Protected BI access."
+    }, {
+      "id" : "fixture-item-iberia-dental-8",
+      "providerKey" : "BI",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Iberia Dental Demo dashboard",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed reporting and visualization."
+    } ],
+    "manualSteps" : [ {
+      "id" : "fixture-manual-iberia-dental-0",
+      "providerKey" : "DISCOVERY_APPROVAL",
+      "title" : "Approve the composed solution",
+      "reason" : "The admin must confirm scope before provisioning.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-1",
+      "providerKey" : "CONTENT_APPROVAL",
+      "title" : "Approve web content",
+      "reason" : "The business must approve public content.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-2",
+      "providerKey" : "BOOKING_RULES",
+      "title" : "Approve booking rules",
+      "reason" : "Opening hours and capacity require approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-3",
+      "providerKey" : "OAUTH_CONSENT",
+      "title" : "Authorize calendar",
+      "reason" : "Calendar ownership requires consent.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-4",
+      "providerKey" : "PRIVACY",
+      "title" : "Review booking privacy",
+      "reason" : "Appointment data needs privacy review.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-5",
+      "providerKey" : "FIELDS",
+      "title" : "Approve fields and pipeline",
+      "reason" : "Operational terminology needs owner approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-6",
+      "providerKey" : "TRAINING",
+      "title" : "Schedule CRM training",
+      "reason" : "Adoption remains human-led.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-7",
+      "providerKey" : "AUTOMATION_APPROVAL",
+      "title" : "Approve CRM automation",
+      "reason" : "Automated messages require approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-iberia-dental-8",
+      "providerKey" : "KPI_APPROVAL",
+      "title" : "Approve KPI definitions",
+      "reason" : "Business metrics need an owner.",
+      "required" : true,
+      "status" : "pending"
+    } ],
+    "externalResources" : [ {
+      "id" : "fixture-resource-iberia-dental-3",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-iberia-dental:RESEND:TRACK_RESOURCE:3"
+    }, {
+      "id" : "fixture-resource-iberia-dental-6",
+      "providerKey" : "RESEND",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-iberia-dental:RESEND:TRACK_RESOURCE:6"
+    } ],
+    "tracks" : [ {
+      "track" : "WEB",
+      "route" : "PROVISION_WEB_CMS",
+      "ruleId" : "WEB-WEB_CMS",
+      "matchedSignals" : [ "form=general", "route=PROVISION_WEB_CMS", "cms=true" ],
+      "reason" : "Managed content editing is required without a custom application backend.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "CMS",
+        "displayName" : "Content management system",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Editors need managed structured content."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom backend is required."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom database is required."
+      }, {
+        "key" : "STRIPE",
+        "displayName" : "Stripe",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No custom payment flow is required."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "No protected application area is required."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "CONTENT_APPROVAL",
+        "title" : "Approve web content",
+        "reason" : "The business must approve public content.",
+        "required" : true
+      } ],
+      "risks" : [ "Provider dependency and maintenance ownership must be accepted.", "Content readiness, translation and content consistency can delay launch.", "Inventory consistency and image rights require review for catalogue-driven businesses." ]
+    }, {
+      "track" : "BOOKING",
+      "route" : "PROVISION_BOOKING_SAAS",
+      "ruleId" : "BOOKING-SAAS-STANDARD",
+      "matchedSignals" : [ "bookingType=bookings", "resources=", "deposit=false" ],
+      "reason" : "Standard appointments, resources and policies fit a managed booking platform.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "BOOKING_SAAS",
+        "displayName" : "Booking SaaS",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Managed appointment and capacity workflow."
+      }, {
+        "key" : "CALENDAR",
+        "displayName" : "Calendar integration",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Calendar-backed availability for the recommended booking service."
+      }, {
+        "key" : "RESEND",
+        "displayName" : "Resend",
+        "selectionState" : "selected",
+        "automationLevel" : "A1",
+        "required" : true,
+        "reason" : "Booking confirmations and reminders."
+      }, {
+        "key" : "GITHUB",
+        "displayName" : "GitHub",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require owned source."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require a new backend."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking does not require a new database."
+      }, {
+        "key" : "VERCEL",
+        "displayName" : "Vercel",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed booking supplies the booking surface."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "BOOKING_RULES",
+        "title" : "Approve booking rules",
+        "reason" : "Opening hours and capacity require approval.",
+        "required" : true
+      }, {
+        "providerKey" : "OAUTH_CONSENT",
+        "title" : "Authorize calendar",
+        "reason" : "Calendar ownership requires consent.",
+        "required" : true
+      }, {
+        "providerKey" : "PRIVACY",
+        "title" : "Review booking privacy",
+        "reason" : "Appointment data needs privacy review.",
+        "required" : true
+      } ],
+      "risks" : [ "Provider dependency and availability limits must be accepted.", "Opening hours, service duration, resource availability and location rules require validation.", "Calendar conflict, staff availability, OAuth and external calendar consent need testing.", "Cancellation, customer communication, refund and payment rules require owner approval.", "Complex implementations risk double booking or overbooking and require access-control review.", "Privacy controls are required when appointment data can identify a person." ]
+    }, {
+      "track" : "CRM",
+      "route" : "PROVISION_CRM_ALTAIRA",
+      "ruleId" : "CRM-ALTAIRA-STANDARD",
+      "matchedSignals" : [ "leadProcess=messages_email", "migration=false", "automation=true" ],
+      "reason" : "The required lead workflow fits the existing tenant-scoped Altaira CRM.",
+      "confidence" : 0.84,
+      "requiresManualDecision" : false,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "ALTAIRA",
+        "displayName" : "Altaira Workspace",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Existing private CRM workspace."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Tenant-scoped CRM access."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "PRIVACY",
+        "title" : "Review CRM privacy",
+        "reason" : "Lead data needs lawful access boundaries.",
+        "required" : true
+      }, {
+        "providerKey" : "FIELDS",
+        "title" : "Approve fields and pipeline",
+        "reason" : "Operational terminology needs owner approval.",
+        "required" : true
+      }, {
+        "providerKey" : "TRAINING",
+        "title" : "Schedule CRM training",
+        "reason" : "Adoption remains human-led.",
+        "required" : true
+      }, {
+        "providerKey" : "AUTOMATION_APPROVAL",
+        "title" : "Approve CRM automation",
+        "reason" : "Automated messages require approval.",
+        "required" : true
+      } ],
+      "risks" : [ "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked." ]
+    }, {
+      "track" : "AUTOMATION",
+      "route" : "PROVISION_AUTOMATION_MANAGED",
+      "ruleId" : "AUTOMATION-MANAGED-STANDARD",
+      "matchedSignals" : [ "trigger=bookings", "channels=", "volume=0" ],
+      "reason" : "The requested trigger and action fit a managed workflow or existing Altaira capability.",
+      "confidence" : 0.8,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "RESEND",
+        "displayName" : "Resend",
+        "selectionState" : "selected",
+        "automationLevel" : "A1",
+        "required" : true,
+        "reason" : "Booking confirmations and reminders."
+      } ],
+      "manualSteps" : [ ],
+      "risks" : [ "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ]
+    }, {
+      "track" : "DASHBOARD",
+      "route" : "PROVISION_DASHBOARD_BI",
+      "ruleId" : "DASHBOARD-BI-STANDARD",
+      "matchedSignals" : [ "frequency=manual", "sources=", "auth=true" ],
+      "reason" : "Periodic reporting and KPI analysis fit a managed BI platform.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Protected BI access."
+      }, {
+        "key" : "BI",
+        "displayName" : "Business intelligence platform",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Managed reporting and visualization."
+      }, {
+        "key" : "GITHUB",
+        "displayName" : "GitHub",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI does not require a custom repository."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI does not require a new backend."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI reads approved sources."
+      }, {
+        "key" : "VERCEL",
+        "displayName" : "Vercel",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI supplies the dashboard surface."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "KPI_APPROVAL",
+        "title" : "Approve KPI definitions",
+        "reason" : "Business metrics need an owner.",
+        "required" : true
+      } ],
+      "risks" : [ "Data quality and metric definition can invalidate reporting.", "Access control, tenant leakage and license limits require review.", "Source consistency and read-only access must be validated for sensitive data.", "OAuth quota and provider limits can interrupt refreshes.", "Realtime latency, availability and load require custom testing.", "Exported data, permissions and financial data require explicit controls." ]
+    } ],
+    "sharedResources" : [ {
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom database is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "STRIPE",
+      "displayName" : "Stripe",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "No custom payment flow is required.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [CRM, DASHBOARD]",
+      "usedByTracks" : [ "CRM", "DASHBOARD" ]
+    }, {
+      "key" : "CALENDAR",
+      "displayName" : "Calendar integration",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [BOOKING]",
+      "usedByTracks" : [ "BOOKING" ]
+    }, {
+      "key" : "RESEND",
+      "displayName" : "Resend",
+      "selectionState" : "selected",
+      "automationLevel" : "A1",
+      "required" : true,
+      "reason" : "Shared once across tracks: [BOOKING, AUTOMATION]",
+      "usedByTracks" : [ "BOOKING", "AUTOMATION" ]
+    }, {
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed booking does not require owned source.",
+      "usedByTracks" : [ ]
+    } ],
+    "createdAt" : "2026-07-21T10:00:00Z",
+    "updatedAt" : "2026-07-21T10:00:00Z"
+  }
+}

@@ -1,0 +1,417 @@
+{
+  "schemaVersion" : 1,
+  "scenarioId" : "DEMO-SPECIALTY",
+  "slug" : "asesoria-hispana",
+  "name" : "Asesoría Hispana Demo",
+  "sector" : "Specialty by Sector",
+  "expectedTracks" : [ "CRM", "AUTOMATION", "DASHBOARD" ],
+  "plan" : {
+    "id" : "fixture-plan-asesoria-hispana",
+    "leadId" : "fixture-lead-asesoria-hispana",
+    "assessmentId" : "fixture-assessment-asesoria-hispana",
+    "route" : "COMPOSITE",
+    "automationLevel" : "A2",
+    "automationScope" : "partial",
+    "status" : "draft",
+    "dryRun" : true,
+    "executionAllowed" : false,
+    "normalizedRequirements" : {
+      "requires_auth" : true,
+      "requires_automation" : true,
+      "requires_backend" : true,
+      "requires_booking" : false,
+      "requires_calendar" : false,
+      "requires_cms" : false,
+      "requires_crm" : true,
+      "requires_dashboard" : true,
+      "requires_data_migration" : false,
+      "requires_database" : true,
+      "requires_external_integrations" : true,
+      "requires_file_storage" : true,
+      "requires_frontend" : true,
+      "requires_payments" : false,
+      "requires_realtime" : false,
+      "requires_static_site" : false,
+      "requires_training" : true
+    },
+    "decisionReason" : "CRM: The required lead workflow fits the existing tenant-scoped Altaira CRM. AUTOMATION: The requested trigger and action fit a managed workflow or existing Altaira capability. DASHBOARD: Periodic reporting and KPI analysis fit a managed BI platform.",
+    "costEstimate" : "Dry-run only. Provider plans, subscriptions and usage costs require admin approval.",
+    "risks" : [ "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked.", "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability.", "Data quality and metric definition can invalidate reporting.", "Access control, tenant leakage and license limits require review.", "Source consistency and read-only access must be validated for sensitive data.", "OAuth quota and provider limits can interrupt refreshes.", "Realtime latency, availability and load require custom testing.", "Exported data, permissions and financial data require explicit controls." ],
+    "tools" : [ {
+      "id" : "fixture-tool-asesoria-hispana-0",
+      "key" : "ALTAIRA",
+      "displayName" : "Altaira Workspace",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Existing private CRM workspace."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-1",
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Protected BI access."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-2",
+      "key" : "DRIVE",
+      "displayName" : "Google Drive",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Confidential discovery documents."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-3",
+      "key" : "AUTOMATION_PLATFORM",
+      "displayName" : "Automation platform",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Managed cross-system workflow."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-4",
+      "key" : "BI",
+      "displayName" : "Business intelligence platform",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Managed reporting and visualization."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-5",
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI does not require a custom repository."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-6",
+      "key" : "RENDER",
+      "displayName" : "Render",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI does not require a new backend."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-7",
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI reads approved sources."
+    }, {
+      "id" : "fixture-tool-asesoria-hispana-8",
+      "key" : "VERCEL",
+      "displayName" : "Vercel",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI supplies the dashboard surface."
+    } ],
+    "items" : [ {
+      "id" : "fixture-item-asesoria-hispana-0",
+      "providerKey" : "ALTAIRA",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Existing private CRM workspace."
+    }, {
+      "id" : "fixture-item-asesoria-hispana-1",
+      "providerKey" : "AUTH",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Tenant-scoped CRM access."
+    }, {
+      "id" : "fixture-item-asesoria-hispana-2",
+      "providerKey" : "DRIVE",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo CRM",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Confidential discovery documents."
+    }, {
+      "id" : "fixture-item-asesoria-hispana-3",
+      "providerKey" : "AUTOMATION_PLATFORM",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo automation",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed cross-system workflow."
+    }, {
+      "id" : "fixture-item-asesoria-hispana-4",
+      "providerKey" : "AUTH",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo dashboard",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Protected BI access."
+    }, {
+      "id" : "fixture-item-asesoria-hispana-5",
+      "providerKey" : "BI",
+      "resourceType" : "TRACK_RESOURCE",
+      "resourceName" : "Asesoría Hispana Demo dashboard",
+      "action" : "PREPARE",
+      "status" : "planned",
+      "required" : true,
+      "reason" : "Managed reporting and visualization."
+    } ],
+    "manualSteps" : [ {
+      "id" : "fixture-manual-asesoria-hispana-0",
+      "providerKey" : "DISCOVERY_APPROVAL",
+      "title" : "Approve the composed solution",
+      "reason" : "The admin must confirm scope before provisioning.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-1",
+      "providerKey" : "PRIVACY",
+      "title" : "Review CRM privacy",
+      "reason" : "Lead data needs lawful access boundaries.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-2",
+      "providerKey" : "FIELDS",
+      "title" : "Approve fields and pipeline",
+      "reason" : "Operational terminology needs owner approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-3",
+      "providerKey" : "TRAINING",
+      "title" : "Schedule CRM training",
+      "reason" : "Adoption remains human-led.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-4",
+      "providerKey" : "AUTOMATION_APPROVAL",
+      "title" : "Approve CRM automation",
+      "reason" : "Automated messages require approval.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-5",
+      "providerKey" : "DOCUMENT_PERMISSIONS",
+      "title" : "Approve document permissions",
+      "reason" : "Confidential files need explicit access.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-6",
+      "providerKey" : "RETENTION_POLICY",
+      "title" : "Approve retention policy",
+      "reason" : "Document retention must be defined.",
+      "required" : true,
+      "status" : "pending"
+    }, {
+      "id" : "fixture-manual-asesoria-hispana-7",
+      "providerKey" : "KPI_APPROVAL",
+      "title" : "Approve KPI definitions",
+      "reason" : "Business metrics need an owner.",
+      "required" : true,
+      "status" : "pending"
+    } ],
+    "externalResources" : [ {
+      "id" : "fixture-resource-asesoria-hispana-2",
+      "providerKey" : "DRIVE",
+      "resourceType" : "TRACK_RESOURCE",
+      "externalResourceId" : null,
+      "externalUrl" : null,
+      "status" : "placeholder",
+      "idempotencyKey" : "fixture-plan-asesoria-hispana:DRIVE:TRACK_RESOURCE:2"
+    } ],
+    "tracks" : [ {
+      "track" : "CRM",
+      "route" : "PROVISION_CRM_ALTAIRA",
+      "ruleId" : "CRM-ALTAIRA-STANDARD",
+      "matchedSignals" : [ "leadProcess=spreadsheet", "migration=false", "automation=true" ],
+      "reason" : "The required lead workflow fits the existing tenant-scoped Altaira CRM.",
+      "confidence" : 0.84,
+      "requiresManualDecision" : false,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "ALTAIRA",
+        "displayName" : "Altaira Workspace",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Existing private CRM workspace."
+      }, {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Tenant-scoped CRM access."
+      }, {
+        "key" : "DRIVE",
+        "displayName" : "Google Drive",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Confidential discovery documents."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "PRIVACY",
+        "title" : "Review CRM privacy",
+        "reason" : "Lead data needs lawful access boundaries.",
+        "required" : true
+      }, {
+        "providerKey" : "FIELDS",
+        "title" : "Approve fields and pipeline",
+        "reason" : "Operational terminology needs owner approval.",
+        "required" : true
+      }, {
+        "providerKey" : "TRAINING",
+        "title" : "Schedule CRM training",
+        "reason" : "Adoption remains human-led.",
+        "required" : true
+      }, {
+        "providerKey" : "AUTOMATION_APPROVAL",
+        "title" : "Approve CRM automation",
+        "reason" : "Automated messages require approval.",
+        "required" : true
+      }, {
+        "providerKey" : "DOCUMENT_PERMISSIONS",
+        "title" : "Approve document permissions",
+        "reason" : "Confidential files need explicit access.",
+        "required" : true
+      }, {
+        "providerKey" : "RETENTION_POLICY",
+        "title" : "Approve retention policy",
+        "reason" : "Document retention must be defined.",
+        "required" : true
+      } ],
+      "risks" : [ "CRM permissions and training require owner validation.", "Privacy, sensitive data and tenant isolation controls must match the sector.", "Imports can create duplicates or invalid records.", "Form field mapping, spam and duplicate leads require validation.", "Task ownership and permissions must be explicit.", "Automated follow-up can create duplicate messages and hit rate limits.", "External CRM license, API limits and migration quality remain provider dependencies.", "Confidential documents and shared links require explicit access; unauthorized automation must be blocked." ]
+    }, {
+      "track" : "AUTOMATION",
+      "route" : "PROVISION_AUTOMATION_MANAGED",
+      "ruleId" : "AUTOMATION-MANAGED-STANDARD",
+      "matchedSignals" : [ "trigger=automation", "channels=", "volume=0" ],
+      "reason" : "The requested trigger and action fit a managed workflow or existing Altaira capability.",
+      "confidence" : 0.8,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "AUTOMATION_PLATFORM",
+        "displayName" : "Automation platform",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Managed cross-system workflow."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "AUTOMATION_APPROVAL",
+        "title" : "Approve automation scope",
+        "reason" : "The owner must approve automated actions.",
+        "required" : true
+      } ],
+      "risks" : [ "Delivery and rate limit failures require monitoring.", "Duplicates, field mapping and API limits require idempotent workflow design.", "Consent, timezone and duplicate reminder rules must be explicit.", "Payment events require signature verification and duplicate event protection.", "Task ownership and duplicate task prevention require stable keys.", "Data mapping and provider dependency can block cross-application flows.", "Approval and permissions must prevent unauthorized execution.", "Custom retry and compensation rules must avoid data loss and protect availability." ]
+    }, {
+      "track" : "DASHBOARD",
+      "route" : "PROVISION_DASHBOARD_BI",
+      "ruleId" : "DASHBOARD-BI-STANDARD",
+      "matchedSignals" : [ "frequency=manual", "sources=", "auth=true" ],
+      "reason" : "Periodic reporting and KPI analysis fit a managed BI platform.",
+      "confidence" : 0.82,
+      "requiresManualDecision" : true,
+      "automationLevel" : "A2",
+      "tools" : [ {
+        "key" : "AUTH",
+        "displayName" : "Authentication",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Protected BI access."
+      }, {
+        "key" : "BI",
+        "displayName" : "Business intelligence platform",
+        "selectionState" : "selected",
+        "automationLevel" : "A3",
+        "required" : true,
+        "reason" : "Managed reporting and visualization."
+      }, {
+        "key" : "GITHUB",
+        "displayName" : "GitHub",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI does not require a custom repository."
+      }, {
+        "key" : "RENDER",
+        "displayName" : "Render",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI does not require a new backend."
+      }, {
+        "key" : "NEON",
+        "displayName" : "Neon PostgreSQL",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI reads approved sources."
+      }, {
+        "key" : "VERCEL",
+        "displayName" : "Vercel",
+        "selectionState" : "excluded",
+        "automationLevel" : "M",
+        "required" : false,
+        "reason" : "Managed BI supplies the dashboard surface."
+      } ],
+      "manualSteps" : [ {
+        "providerKey" : "KPI_APPROVAL",
+        "title" : "Approve KPI definitions",
+        "reason" : "Business metrics need an owner.",
+        "required" : true
+      } ],
+      "risks" : [ "Data quality and metric definition can invalidate reporting.", "Access control, tenant leakage and license limits require review.", "Source consistency and read-only access must be validated for sensitive data.", "OAuth quota and provider limits can interrupt refreshes.", "Realtime latency, availability and load require custom testing.", "Exported data, permissions and financial data require explicit controls." ]
+    } ],
+    "sharedResources" : [ {
+      "key" : "AUTH",
+      "displayName" : "Authentication",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [CRM, DASHBOARD]",
+      "usedByTracks" : [ "CRM", "DASHBOARD" ]
+    }, {
+      "key" : "DRIVE",
+      "displayName" : "Google Drive",
+      "selectionState" : "selected",
+      "automationLevel" : "A3",
+      "required" : true,
+      "reason" : "Shared once across tracks: [CRM]",
+      "usedByTracks" : [ "CRM" ]
+    }, {
+      "key" : "GITHUB",
+      "displayName" : "GitHub",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI does not require a custom repository.",
+      "usedByTracks" : [ ]
+    }, {
+      "key" : "NEON",
+      "displayName" : "Neon PostgreSQL",
+      "selectionState" : "excluded",
+      "automationLevel" : "M",
+      "required" : false,
+      "reason" : "Managed BI reads approved sources.",
+      "usedByTracks" : [ ]
+    } ],
+    "createdAt" : "2026-07-21T10:00:00Z",
+    "updatedAt" : "2026-07-21T10:00:00Z"
+  }
+}

@@ -1,157 +1,180 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Menu, X, ChevronDown, Globe } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { ChevronDown, Globe2, Menu, X } from "lucide-react"
+import { businessSectors, publicServices } from "@/lib/public-site-data"
 import Logo from "./Logo"
 
-const languages = [
-  { code: "en", label: "English" },
-  { code: "nl", label: "Nederlands" },
-  { code: "es", label: "Espanol" },
-  { code: "fr", label: "Francais" },
-  { code: "de", label: "Deutsch" },
-]
+const languages = ["ES", "FR", "NL", "EN"]
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isLangOpen, setIsLangOpen] = useState(false)
-  const [currentLang, setCurrentLang] = useState("en")
+  const [language, setLanguage] = useState("EN")
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  const navItems = [
-    { href: "#businesses", label: "Businesses" },
-    { href: "#examples", label: "Examples" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#contact", label: "Contact" },
-  ]
-
-  const handleNavClick = (href: string) => {
-    document.getElementById(href.substring(1))?.scrollIntoView({ behavior: "smooth" })
-    setIsMenuOpen(false)
-  }
-
-  const handleContactClick = () => {
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-    setIsMenuOpen(false)
-  }
+  const closeMenu = () => setIsMenuOpen(false)
 
   return (
-    <header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-        isScrolled 
-          ? "bg-[#050810]/90 backdrop-blur-xl border-b border-white/5" 
-          : "bg-transparent"
-      }`}
-    >
-      <nav className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Logo />
+    <header className="fixed top-0 z-50 w-full border-b border-blue-400/20 bg-[#050814]/95 text-white shadow-[0_1px_0_rgba(96,165,250,0.18)] backdrop-blur-xl">
+      <div className="h-px w-full bg-blue-600" />
+      <nav className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex h-20 items-center gap-5">
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Altaira Labs home" onClick={closeMenu}>
+            <Logo />
+          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className="text-white/60 hover:text-white transition-colors duration-300 text-sm font-medium"
-              >
-                {item.label}
+          <div className="ml-auto hidden items-center gap-1 lg:flex">
+            <div className="group relative">
+              <button type="button" className="flex items-center gap-1 px-4 py-7 text-sm font-medium text-slate-200 transition hover:text-blue-100">
+                Services
+                <ChevronDown className="h-4 w-4" />
               </button>
-            ))}
-
-            {/* Language Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center space-x-1.5 text-white/60 hover:text-white transition-colors text-sm"
-              >
-                <Globe className="w-4 h-4" />
-                <span>{languages.find(l => l.code === currentLang)?.code.toUpperCase()}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isLangOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              {isLangOpen && (
-                <div className="absolute top-full right-0 mt-3 bg-[#0a1020]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden min-w-[140px] shadow-xl shadow-black/20">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        setCurrentLang(lang.code)
-                        setIsLangOpen(false)
-                      }}
-                      className={`w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 transition-colors ${
-                        currentLang === lang.code ? "text-blue-400" : "text-white/70"
-                      }`}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="invisible absolute right-0 top-full w-72 border-t-2 border-violet-500 bg-white text-slate-950 opacity-0 shadow-2xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                {publicServices.map((service) => (
+                  <Link
+                    key={service.slug}
+                    href={`/services/${service.slug}`}
+                    className="block border-b border-slate-100 px-6 py-4 text-sm transition hover:bg-blue-50"
+                  >
+                    <span className="block font-semibold">{service.navLabel}</span>
+                    <span className="mt-1 block text-xs text-slate-500">{service.category}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Primary CTA */}
-            <button
-              onClick={handleContactClick}
-              className="relative bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 animate-pulse-glow"
-            >
-              Get Free Proposal
-            </button>
+            <div className="group relative">
+              <button type="button" className="flex items-center gap-1 px-4 py-7 text-sm font-medium text-slate-200 transition hover:text-blue-100">
+                Business
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <div className="invisible absolute right-0 top-full w-72 border-t-2 border-violet-500 bg-white text-slate-950 opacity-0 shadow-2xl transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                {businessSectors.map((sector) => (
+                  <Link
+                    key={sector.slug}
+                    href={`/business/${sector.slug}`}
+                    className="block border-b border-slate-100 px-6 py-4 text-sm transition hover:bg-blue-50"
+                  >
+                    <span className="block font-semibold">{sector.title}</span>
+                    <span className="mt-1 block text-xs text-slate-500">{sector.summary}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <Link href="/#about" className="px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-blue-100">
+              About
+            </Link>
+            <Link href="/calculator" className="px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-blue-100">
+              Calculator
+            </Link>
+            <Link href="/blog" className="px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-blue-100">
+              Blog
+            </Link>
+
+            <div className="ml-2 flex items-center gap-2 border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-slate-200">
+              <Globe2 className="h-4 w-4" />
+              <select
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                className="bg-transparent text-sm font-medium text-slate-100 outline-none"
+                aria-label="Language"
+              >
+                {languages.map((item) => (
+                  <option key={item} value={item} className="bg-slate-950 text-white">
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Link href="/contact" className="ml-2 border border-blue-400 bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:from-blue-500 hover:to-violet-500">
+              Contact
+            </Link>
+            <Link href="/client/login" className="border border-violet-300/35 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500/15">
+              Client Area
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white/70 hover:text-white p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="ml-auto border border-white/15 p-2 text-slate-100 transition-colors hover:bg-white/10 lg:hidden"
+            onClick={() => setIsMenuOpen((current) => !current)}
+            aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-white/10">
-            <div className="flex flex-col space-y-4 pt-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => handleNavClick(item.href)}
-                  className="text-white/70 hover:text-white transition-colors text-left text-sm font-medium py-2"
-                >
-                  {item.label}
-                </button>
-              ))}
-
-              {/* Mobile Language */}
-              <div className="flex items-center space-x-2 text-white/50 text-sm py-2">
-                <Globe className="w-4 h-4" />
-                <select
-                  value={currentLang}
-                  onChange={(e) => setCurrentLang(e.target.value)}
-                  className="bg-transparent text-white/70 text-sm focus:outline-none"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang.code} value={lang.code} className="bg-[#0a1020]">
-                      {lang.label}
-                    </option>
+          <div className="border-t border-white/10 py-4 lg:hidden">
+            <div className="grid gap-5">
+              <div>
+                <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Services</p>
+                <div className="mt-2 grid gap-1">
+                  {publicServices.map((service) => (
+                    <Link
+                      key={service.slug}
+                      href={`/services/${service.slug}`}
+                      onClick={closeMenu}
+                      className="border border-white/10 px-3 py-3 text-sm text-slate-200"
+                    >
+                      {service.navLabel}
+                    </Link>
                   ))}
-                </select>
+                </div>
               </div>
 
-              <button
-                onClick={handleContactClick}
-                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-full text-sm font-semibold w-full text-white shadow-lg shadow-blue-500/30"
-              >
-                Get Free Proposal
-              </button>
+              <div>
+                <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Business</p>
+                <div className="mt-2 grid gap-1">
+                  {businessSectors.map((sector) => (
+                    <Link
+                      key={sector.slug}
+                      href={`/business/${sector.slug}`}
+                      onClick={closeMenu}
+                      className="border border-white/10 px-3 py-3 text-sm text-slate-200"
+                    >
+                      {sector.title}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-1">
+                <Link href="/#about" onClick={closeMenu} className="border border-white/10 px-3 py-3 text-sm text-slate-200">
+                  About
+                </Link>
+                <Link href="/calculator" onClick={closeMenu} className="border border-white/10 px-3 py-3 text-sm text-slate-200">
+                  Calculator
+                </Link>
+                <Link href="/blog" onClick={closeMenu} className="border border-white/10 px-3 py-3 text-sm text-slate-200">
+                  Blog
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                {languages.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setLanguage(item)}
+                    className={`border px-3 py-2 text-sm font-medium ${
+                      language === item ? "border-white bg-white text-black" : "border-white/10 text-slate-300"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Link href="/contact" onClick={closeMenu} className="border border-white bg-white px-5 py-3 text-center text-sm font-semibold text-black">
+                  Contact
+                </Link>
+                <Link href="/client/login" onClick={closeMenu} className="border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white">
+                  Client Area
+                </Link>
+              </div>
             </div>
           </div>
         )}
