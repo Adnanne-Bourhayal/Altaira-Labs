@@ -230,7 +230,10 @@ PATCH /api/v1/client-crm/admin/clients/{clientId}/leads/{leadId}/follow-up-actio
 
 ## File Storage
 
-Uploaded onboarding files are stored by the backend, not directly by the browser.
+Uploaded onboarding files support two storage paths:
+
+- durable production path: direct browser upload to private S3 with a short-lived presigned URL, followed by backend verification and metadata persistence;
+- compatibility path: authenticated multipart upload to the backend filesystem while S3 is disabled.
 
 Important variables:
 
@@ -245,37 +248,40 @@ Notes:
 - Do not store this directory inside `public/`.
 - Do not commit uploaded client materials.
 - The admin UI downloads files through an authenticated internal route.
-- The current implementation uses filesystem storage. A cloud bucket can replace the storage service later without changing the onboarding task model.
+- Existing filesystem records remain downloadable after S3 is enabled.
+- Private objects are downloaded only through authenticated backend routes; bucket URLs are never exposed as public resources.
 
-Planned AWS S3 upgrade:
+AWS S3 flow:
 - use presigned URLs so the frontend can upload directly to S3
 - keep private legal material under `legal/`
 - keep brand assets under `branding/`
 - keep business multimedia under `multimedia/`
 - store only metadata and object keys in the database
+- verify client, service track, task/project, size, type and signed S3 metadata before accepting completion
 
-Prepared endpoint:
+Client endpoints:
 
 ```text
-POST /api/v1/media/upload-url
+POST /api/v1/onboarding/client/tasks/{taskId}/upload-url
+POST /api/v1/onboarding/client/tasks/{taskId}/files/complete
+POST /api/v1/client-portal/client/projects/{projectId}/assets/upload-url
+POST /api/v1/client-portal/client/projects/{projectId}/assets/complete
 ```
 
-The endpoint is client-session protected and expects:
+The prepare endpoints are client-session protected and expect:
 
 ```json
 {
-  "folder": "branding",
-  "serviceKey": "web_seo",
   "filename": "logo.png",
-  "contentType": "image/png"
+  "contentType": "image/png",
+  "sizeBytes": 248120,
+  "assetType": "branding"
 }
 ```
 
-Allowed folders are `branding`, `legal` and `multimedia`.
-When S3 is disabled, the endpoint returns `501` with `S3 presigned uploads are not configured`.
-This is intentional so the existing authenticated filesystem storage remains the active path until AWS is configured.
+The backend chooses `branding`, `legal` or `multimedia` from the authenticated task/project context. When S3 is disabled, prepare returns `501` and the frontend uses the existing multipart route. A direct upload is not visible in the workspace until the completion endpoint verifies it in S3 and records it in the database.
 
-Required future backend variables for S3, not needed by the current filesystem storage:
+Required backend variables for durable S3 storage:
 
 ```text
 AWS_S3_ENABLED=true

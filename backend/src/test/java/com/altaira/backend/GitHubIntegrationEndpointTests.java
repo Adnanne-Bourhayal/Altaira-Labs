@@ -78,4 +78,46 @@ class GitHubIntegrationEndpointTests {
                 .andExpect(jsonPath("$.preparedSteps.createLabels.executed").value(false))
                 .andExpect(jsonPath("$.preparedSteps.createIssues.executed").value(false));
     }
+
+    @Test
+    void liveRepositoryExecutionRequiresAdminAndRemainsBlockedByDefault() throws Exception {
+        String request = """
+                {"confirmation":"CONFIRM_PRIVATE_REPOSITORY"}
+                """;
+
+        mockMvc.perform(post("/api/v1/provisioning-plans/00000000-0000-0000-0000-000000000001/providers/github/repository")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/v1/provisioning-plans/00000000-0000-0000-0000-000000000001/providers/github/repository")
+                        .header("X-Internal-API-Token", INTERNAL_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value(containsString("writes are disabled")))
+                .andExpect(content().string(not(containsString("privateKey"))))
+                .andExpect(content().string(not(containsString("token"))));
+    }
+
+    @Test
+    void liveJiraExecutionRequiresAdminAndRemainsBlockedByDefault() throws Exception {
+        String request = """
+                {"confirmation":"CONFIRM_JIRA_ISSUES"}
+                """;
+
+        mockMvc.perform(post("/api/v1/provisioning-plans/00000000-0000-0000-0000-000000000001/providers/jira/issues")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/v1/provisioning-plans/00000000-0000-0000-0000-000000000001/providers/jira/issues")
+                        .header("X-Internal-API-Token", INTERNAL_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value(containsString("writes are disabled")))
+                .andExpect(content().string(not(containsString("test-token"))))
+                .andExpect(content().string(not(containsString("apiToken"))));
+    }
 }

@@ -3,8 +3,12 @@ package com.altaira.backend.dto.clientportal;
 import com.altaira.backend.dto.client.ClientResponse;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ClientPortalResponse {
+    private UUID workspaceId;
+    private String workspaceName;
+    private String workspaceStatus;
     private ClientResponse client;
     private boolean onboardingCompleted;
     private boolean contractApproved;
@@ -16,6 +20,9 @@ public class ClientPortalResponse {
     public ClientPortalResponse() {}
 
     public ClientPortalResponse(
+            UUID workspaceId,
+            String workspaceName,
+            String workspaceStatus,
             ClientResponse client,
             boolean onboardingCompleted,
             boolean contractApproved,
@@ -24,6 +31,9 @@ public class ClientPortalResponse {
             String accessRole,
             boolean canEdit
     ) {
+        this.workspaceId = workspaceId;
+        this.workspaceName = workspaceName;
+        this.workspaceStatus = workspaceStatus;
         this.client = client;
         this.onboardingCompleted = onboardingCompleted;
         this.contractApproved = contractApproved;
@@ -32,6 +42,15 @@ public class ClientPortalResponse {
         this.accessRole = accessRole;
         this.canEdit = canEdit;
     }
+
+    public UUID getWorkspaceId() { return workspaceId; }
+    public void setWorkspaceId(UUID workspaceId) { this.workspaceId = workspaceId; }
+
+    public String getWorkspaceName() { return workspaceName; }
+    public void setWorkspaceName(String workspaceName) { this.workspaceName = workspaceName; }
+
+    public String getWorkspaceStatus() { return workspaceStatus; }
+    public void setWorkspaceStatus(String workspaceStatus) { this.workspaceStatus = workspaceStatus; }
 
     public ClientResponse getClient() { return client; }
     public void setClient(ClientResponse client) { this.client = client; }

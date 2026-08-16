@@ -987,22 +987,24 @@ La búsqueda global no encontró imports ni renderizado de:
 
 | Archivo | Contenido | Riesgo funcional | Recomendación |
 |---|---|---|---|
-| `components/Examples.tsx` | mockups antiguos de web, booking y dashboard | métricas y diseño ya superados | delete later |
-| `components/BusinessTypes.tsx` | Dealers, Hair Salons, Bike Shops, Restaurants, Clinics | contiene sectores retirados | delete later |
-| `components/Pricing.tsx` | precios fijos Starter/Growth/Pro | precios no aprobados y VAT afirmado | delete later |
-| `components/Results.tsx` | +40%, 50+ negocios y testimonios ficticios | contradice política de no inventar datos | delete later |
+| `components/Examples.tsx` | mockups antiguos de web, booking y dashboard | métricas y diseño ya superados | deleted 2026-08 after zero-import audit |
+| `components/BusinessTypes.tsx` | Dealers, Hair Salons, Bike Shops, Restaurants, Clinics | contiene sectores retirados | deleted 2026-08 after zero-import audit |
+| `components/Pricing.tsx` | precios fijos Starter/Growth/Pro | precios no aprobados y VAT afirmado | deleted 2026-08 after zero-import audit |
+| `components/Results.tsx` | +40%, 50+ negocios y testimonios ficticios | contradice política de no inventar datos | deleted 2026-08 after zero-import audit |
 
-No deben borrarse directamente. Procedimiento:
+Los cuatro componentes fueron eliminados tras completar este procedimiento:
 
 1. confirmar referencias con `rg`;
 2. generar import graph;
 3. desactivar en rama temporal;
 4. ejecutar lint/tsc/build;
 5. revisar home y rutas públicas;
-6. solo entonces borrar;
+6. borrar solo los cuatro candidatos confirmados;
 7. conservar la información reutilizable válida en datos actuales, no copiando claims ficticios.
 
-También hay numerosos `components/ui/*` sin consumidor aparente. Son candidatos, no código muerto confirmado.
+El build posterior confirma que la landing y las rutas públicas no dependían de ellos. También hay
+numerosos `components/ui/*` sin consumidor aparente. Siguen siendo candidatos, no código muerto
+confirmado, y no se han eliminado.
 
 ## 12. Imports y dependencias a revisar
 

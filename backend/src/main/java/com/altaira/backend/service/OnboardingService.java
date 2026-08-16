@@ -5,6 +5,9 @@ import com.altaira.backend.dto.onboarding.OnboardingDashboardResponse;
 import com.altaira.backend.dto.onboarding.OnboardingFileResponse;
 import com.altaira.backend.dto.onboarding.OnboardingTaskResponse;
 import com.altaira.backend.dto.onboarding.SubmitOnboardingTaskRequest;
+import com.altaira.backend.dto.media.CompletePrivateUploadRequest;
+import com.altaira.backend.dto.media.PreparePrivateUploadRequest;
+import com.altaira.backend.dto.media.UploadUrlResponse;
 import com.altaira.backend.entity.*;
 import com.altaira.backend.exception.ResourceNotFoundException;
 import com.altaira.backend.model.OnboardingTaskStatus;
@@ -24,8 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +47,7 @@ public class OnboardingService {
     private final OnboardingAuditLogRepository onboardingAuditLogRepository;
     private final OnboardingTemplateService onboardingTemplateService;
     private final OnboardingFileStorageService onboardingFileStorageService;
+    private final MediaUploadUrlService mediaUploadUrlService;
     private final SignedContractPdfService signedContractPdfService;
     private final OnboardingNotificationService onboardingNotificationService;
     private final ObjectMapper objectMapper;
@@ -57,6 +61,7 @@ public class OnboardingService {
             OnboardingAuditLogRepository onboardingAuditLogRepository,
             OnboardingTemplateService onboardingTemplateService,
             OnboardingFileStorageService onboardingFileStorageService,
+            MediaUploadUrlService mediaUploadUrlService,
             SignedContractPdfService signedContractPdfService,
             OnboardingNotificationService onboardingNotificationService,
             ObjectMapper objectMapper
@@ -69,6 +74,7 @@ public class OnboardingService {
         this.onboardingAuditLogRepository = onboardingAuditLogRepository;
         this.onboardingTemplateService = onboardingTemplateService;
         this.onboardingFileStorageService = onboardingFileStorageService;
+        this.mediaUploadUrlService = mediaUploadUrlService;
         this.signedContractPdfService = signedContractPdfService;
         this.onboardingNotificationService = onboardingNotificationService;
         this.objectMapper = objectMapper;
@@ -213,6 +219,80 @@ public class OnboardingService {
         return mapTask(saved);
     }
 
+    public UploadUrlResponse prepareClientTaskUpload(
+            ClientAccessContext context,
+            UUID taskId,
+            PreparePrivateUploadRequest request
+    ) {
+        OnboardingTaskEntity task = findTask(taskId);
+        ensureTaskBelongsToClient(task, context.client());
+        ensureFileUploadTask(task);
+
+        return mediaUploadUrlService.createContextUploadUrl(
+                context.client().getId(),
+                storageFolderForTask(task),
+                task.getServiceKey(),
+                "onboarding",
+                task.getId(),
+                request
+        );
+    }
+
+    public OnboardingTaskResponse completeClientTaskUpload(
+            ClientAccessContext context,
+            UUID taskId,
+            CompletePrivateUploadRequest request,
+            String ipAddress,
+            String userAgent
+    ) {
+        OnboardingTaskEntity task = findTask(taskId);
+        ensureTaskBelongsToClient(task, context.client());
+        ensureFileUploadTask(task);
+
+        var verified = mediaUploadUrlService.verifyCompletedUpload(
+                context.client().getId(),
+                storageFolderForTask(task),
+                task.getServiceKey(),
+                "onboarding",
+                task.getId(),
+                request.getBucket(),
+                request.getObjectKey(),
+                request.getFilename(),
+                request.getContentType(),
+                request.getSizeBytes()
+        );
+
+        var existing = onboardingFileRepository.findByStorageKey(verified.storageKey());
+        if (existing.isPresent()) {
+            OnboardingFileEntity existingFile = existing.get();
+            if (!existingFile.getClient().getId().equals(context.client().getId()) ||
+                    !existingFile.getTask().getId().equals(task.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Uploaded object is already assigned to another context");
+            }
+            return mapTask(task);
+        }
+
+        OnboardingFileEntity fileEntity = new OnboardingFileEntity();
+        fileEntity.setTask(task);
+        fileEntity.setWorkspace(task.getWorkspace());
+        fileEntity.setClient(task.getClient());
+        fileEntity.setOriginalFilename(verified.originalFilename());
+        fileEntity.setStoredFilename(verified.storedFilename());
+        fileEntity.setStorageKey(verified.storageKey());
+        fileEntity.setContentType(verified.contentType());
+        fileEntity.setSizeBytes(verified.sizeBytes());
+        fileEntity.setChecksumSha256(verified.checksumSha256());
+
+        try {
+            onboardingFileRepository.save(fileEntity);
+            markFileTaskSubmitted(task, request.getNotes(), ipAddress, userAgent, context);
+            return mapTask(task);
+        } catch (RuntimeException ex) {
+            mediaUploadUrlService.deleteStoredObjectQuietly(verified.storageKey());
+            throw ex;
+        }
+    }
+
     public OnboardingTaskResponse approveTask(UUID taskId, AppUserEntity adminUser, String ipAddress, String userAgent) {
         OnboardingTaskEntity task = findTask(taskId);
         Instant now = Instant.now();
@@ -246,13 +326,84 @@ public class OnboardingService {
     public OnboardingFileDownload getFileDownloadAsAdmin(UUID fileId) {
         OnboardingFileEntity file = onboardingFileRepository.findById(fileId)
                 .orElseThrow(() -> new ResourceNotFoundException("Onboarding file", fileId));
-        Path path = onboardingFileStorageService.resolve(file.getStorageKey());
-
-        if (!Files.exists(path)) {
+        try {
+            return new OnboardingFileDownload(file, onboardingFileStorageService.open(file.getStorageKey()));
+        } catch (IOException ex) {
             throw new ResourceNotFoundException("Stored onboarding file", fileId);
         }
+    }
 
-        return new OnboardingFileDownload(file, path);
+    @Transactional(readOnly = true)
+    public OnboardingFileDownload getFileDownload(ClientAccessContext context, UUID fileId) {
+        OnboardingFileEntity file = onboardingFileRepository.findById(fileId)
+                .orElseThrow(() -> new ResourceNotFoundException("Onboarding file", fileId));
+
+        if (!file.getClient().getId().equals(context.client().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No access to this onboarding file");
+        }
+
+        try {
+            return new OnboardingFileDownload(file, onboardingFileStorageService.open(file.getStorageKey()));
+        } catch (IOException ex) {
+            throw new ResourceNotFoundException("Stored onboarding file", fileId);
+        }
+    }
+
+    private void ensureFileUploadTask(OnboardingTaskEntity task) {
+        if (OnboardingTaskType.parse(task.getTaskType()) != OnboardingTaskType.FILE_UPLOAD) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This onboarding task does not accept files");
+        }
+    }
+
+    private String storageFolderForTask(OnboardingTaskEntity task) {
+        String context = String.join(" ",
+                task.getTaskKey() == null ? "" : task.getTaskKey(),
+                task.getTitle() == null ? "" : task.getTitle(),
+                task.getServiceKey() == null ? "" : task.getServiceKey()
+        ).toLowerCase();
+
+        if (context.matches(".*(contract|agreement|legal|privacy|nda|identity|migration).*")) {
+            return "legal";
+        }
+        if (context.matches(".*(brand|logo|website|content|seo).*")) {
+            return "branding";
+        }
+        return "multimedia";
+    }
+
+    private void markFileTaskSubmitted(
+            OnboardingTaskEntity task,
+            String notes,
+            String ipAddress,
+            String userAgent,
+            ClientAccessContext context
+    ) {
+        List<OnboardingFileResponse> allTaskFiles = onboardingFileRepository.findAllByTaskOrderByCreatedAtAsc(task)
+                .stream()
+                .map(this::mapFile)
+                .toList();
+        Instant now = Instant.now();
+        String safeNotes = trimToLimit(notes, 2000);
+
+        task.setFileMetadataJson(toJson(allTaskFiles));
+        task.setDataJson(toJson(Map.of("notes", safeNotes == null ? "" : safeNotes)));
+        task.setStatus(OnboardingTaskStatus.SUBMITTED.value());
+        task.setSubmittedAt(now);
+        task.setRejectedAt(null);
+        task.setAdminFeedback(null);
+        task.setCompletedAt(null);
+
+        OnboardingTaskEntity saved = onboardingTaskRepository.save(task);
+        recordAudit(
+                saved,
+                context.user(),
+                context.accessRole(),
+                "client_s3_file_confirmed",
+                ipAddress,
+                userAgent,
+                toJson(Map.of("fileCount", allTaskFiles.size()))
+        );
+        refreshWorkspaceStatus(saved.getWorkspace());
     }
 
     public OnboardingTaskResponse rejectTask(UUID taskId, String feedback, AppUserEntity adminUser, String ipAddress, String userAgent) {
@@ -558,7 +709,7 @@ public class OnboardingService {
         );
     }
 
-    public record OnboardingFileDownload(OnboardingFileEntity file, Path path) {}
+    public record OnboardingFileDownload(OnboardingFileEntity file, InputStream inputStream) {}
 
     private String metadata(String key, String value) {
         return toJson(Map.of(key, value == null ? "" : value));

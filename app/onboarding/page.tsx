@@ -1,4 +1,4 @@
-import ClientOnboardingWorkspace from "@/components/onboarding/ClientOnboardingWorkspace"
+import { WorkspaceResolver } from "@/components/workspace/WorkspaceResolver"
 
 export const metadata = {
   title: "Onboarding | Altaira Labs",
@@ -10,5 +10,5 @@ export const metadata = {
 }
 
 export default function OnboardingPage() {
-  return <ClientOnboardingWorkspace />
+  return <WorkspaceResolver tab="onboarding" />
 }

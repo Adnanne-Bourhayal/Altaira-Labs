@@ -13,6 +13,9 @@ import com.altaira.backend.dto.clientportal.ReviewProjectAssetRequest;
 import com.altaira.backend.dto.clientportal.SubmitProjectFeedbackRequest;
 import com.altaira.backend.dto.clientportal.UpdateClientProjectRequest;
 import com.altaira.backend.dto.onboarding.OnboardingDashboardResponse;
+import com.altaira.backend.dto.media.CompletePrivateUploadRequest;
+import com.altaira.backend.dto.media.PreparePrivateUploadRequest;
+import com.altaira.backend.dto.media.UploadUrlResponse;
 import com.altaira.backend.entity.ClientEntity;
 import com.altaira.backend.entity.ClientProjectAssetEntity;
 import com.altaira.backend.entity.ClientProjectConfigSnapshotEntity;
@@ -37,8 +40,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -73,6 +76,7 @@ public class ClientPortalService {
     private final ClientProjectConfigSnapshotRepository clientProjectConfigSnapshotRepository;
     private final OnboardingTaskRepository onboardingTaskRepository;
     private final OnboardingFileStorageService onboardingFileStorageService;
+    private final MediaUploadUrlService mediaUploadUrlService;
     private final ObjectMapper objectMapper;
 
     public ClientPortalService(
@@ -85,6 +89,7 @@ public class ClientPortalService {
             ClientProjectConfigSnapshotRepository clientProjectConfigSnapshotRepository,
             OnboardingTaskRepository onboardingTaskRepository,
             OnboardingFileStorageService onboardingFileStorageService,
+            MediaUploadUrlService mediaUploadUrlService,
             ObjectMapper objectMapper
     ) {
         this.onboardingService = onboardingService;
@@ -96,19 +101,12 @@ public class ClientPortalService {
         this.clientProjectConfigSnapshotRepository = clientProjectConfigSnapshotRepository;
         this.onboardingTaskRepository = onboardingTaskRepository;
         this.onboardingFileStorageService = onboardingFileStorageService;
+        this.mediaUploadUrlService = mediaUploadUrlService;
         this.objectMapper = objectMapper;
     }
 
     public ClientPortalResponse getPortal(ClientAccessContext context) {
         OnboardingDashboardResponse onboarding = onboardingService.getClientDashboard(context);
-
-        if (!onboarding.isContractApproved()) {
-            throw new ResponseStatusException(
-                    HttpStatus.LOCKED,
-                    "Client dashboard is locked until the service contract is approved"
-            );
-        }
-
         return buildPortal(context.client(), onboarding);
     }
 
@@ -262,6 +260,81 @@ public class ClientPortalService {
         return uploadedAssets;
     }
 
+    public UploadUrlResponse prepareProjectAssetUpload(
+            ClientAccessContext context,
+            UUID projectId,
+            PreparePrivateUploadRequest request
+    ) {
+        requireUnlockedPortal(context);
+        ClientProjectEntity project = findProject(projectId);
+        ensureProjectBelongsToClient(project, context.client());
+        String assetType = normalizeAssetType(request.getAssetType());
+
+        return mediaUploadUrlService.createContextUploadUrl(
+                context.client().getId(),
+                storageFolderForAssetType(assetType),
+                project.getProjectKey(),
+                "project",
+                project.getId(),
+                request
+        );
+    }
+
+    public ClientProjectAssetResponse completeProjectAssetUpload(
+            ClientAccessContext context,
+            UUID projectId,
+            CompletePrivateUploadRequest request
+    ) {
+        requireUnlockedPortal(context);
+        ClientProjectEntity project = findProject(projectId);
+        ensureProjectBelongsToClient(project, context.client());
+        String assetType = normalizeAssetType(request.getAssetType());
+
+        var verified = mediaUploadUrlService.verifyCompletedUpload(
+                context.client().getId(),
+                storageFolderForAssetType(assetType),
+                project.getProjectKey(),
+                "project",
+                project.getId(),
+                request.getBucket(),
+                request.getObjectKey(),
+                request.getFilename(),
+                request.getContentType(),
+                request.getSizeBytes()
+        );
+
+        var existing = clientProjectAssetRepository.findByStorageKey(verified.storageKey());
+        if (existing.isPresent()) {
+            ClientProjectAssetEntity existingAsset = existing.get();
+            if (!existingAsset.getClient().getId().equals(context.client().getId()) ||
+                    !existingAsset.getProject().getId().equals(project.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Uploaded object is already assigned to another context");
+            }
+            return mapAsset(existingAsset);
+        }
+
+        ClientProjectAssetEntity asset = new ClientProjectAssetEntity();
+        asset.setProject(project);
+        asset.setClient(context.client());
+        asset.setUploadedByUser(context.user());
+        asset.setAssetType(assetType);
+        asset.setNotes(trimToLimit(request.getNotes(), 2000));
+        asset.setOriginalFilename(verified.originalFilename());
+        asset.setStoredFilename(verified.storedFilename());
+        asset.setStorageKey(verified.storageKey());
+        asset.setContentType(verified.contentType());
+        asset.setSizeBytes(verified.sizeBytes());
+        asset.setChecksumSha256(verified.checksumSha256());
+        asset.setStatus("uploaded");
+
+        try {
+            return mapAsset(clientProjectAssetRepository.save(asset));
+        } catch (RuntimeException ex) {
+            mediaUploadUrlService.deleteStoredObjectQuietly(verified.storageKey());
+            throw ex;
+        }
+    }
+
     public ClientProjectAssetResponse createProjectLink(
             ClientAccessContext context,
             UUID projectId,
@@ -349,13 +422,54 @@ public class ClientPortalService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "External project links cannot be downloaded");
         }
 
-        Path path = onboardingFileStorageService.resolve(asset.getStorageKey());
-
-        if (!Files.exists(path)) {
+        try {
+            return new ClientProjectAssetDownload(asset, onboardingFileStorageService.open(asset.getStorageKey()));
+        } catch (IOException ex) {
             throw new ResourceNotFoundException("Stored project asset", assetId);
         }
+    }
 
-        return new ClientProjectAssetDownload(asset, path);
+    @Transactional(readOnly = true)
+    public ClientProjectAssetDownload getProjectAssetDownload(
+            ClientAccessContext context,
+            UUID assetId
+    ) {
+        ClientProjectAssetEntity asset = findAsset(assetId);
+
+        if (!asset.getClient().getId().equals(context.client().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No access to this client project asset");
+        }
+
+        if (isExternalLink(asset)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "External project links cannot be downloaded");
+        }
+
+        try {
+            return new ClientProjectAssetDownload(asset, onboardingFileStorageService.open(asset.getStorageKey()));
+        } catch (IOException ex) {
+            throw new ResourceNotFoundException("Stored project asset", assetId);
+        }
+    }
+
+    private void requireUnlockedPortal(ClientAccessContext context) {
+        OnboardingDashboardResponse onboarding = onboardingService.getClientDashboard(context);
+        if (!onboarding.isContractApproved()) {
+            throw new ResponseStatusException(
+                    HttpStatus.LOCKED,
+                    "Client dashboard is locked until the service contract is approved"
+            );
+        }
+    }
+
+    private String storageFolderForAssetType(String assetType) {
+        String normalized = normalizeAssetType(assetType);
+        if (normalized.matches(".*(brand|logo|website|content|seo).*")) {
+            return "branding";
+        }
+        if (normalized.matches(".*(contract|agreement|legal|privacy|nda|identity|document).*")) {
+            return "legal";
+        }
+        return "multimedia";
     }
 
     public ClientProjectAssetResponse approveProjectAssetAsAdmin(UUID assetId) {
@@ -427,6 +541,9 @@ public class ClientPortalService {
                 .toList();
 
         return new ClientPortalResponse(
+                onboarding.getWorkspaceId(),
+                onboarding.getWorkspaceName(),
+                onboarding.getStatus(),
                 clientManagementService.map(client),
                 onboarding.isOnboardingCompleted(),
                 onboarding.isContractApproved(),
@@ -742,7 +859,7 @@ public class ClientPortalService {
         return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
     }
 
-    public record ClientProjectAssetDownload(ClientProjectAssetEntity asset, Path path) {}
+    public record ClientProjectAssetDownload(ClientProjectAssetEntity asset, InputStream inputStream) {}
 
     private record ModuleDefinition(String moduleKey, String title, String description) {}
 }

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers the current TFG release scope: public lead capture, secure admin access, Client Portal, service onboarding, project tracks and the private client CRM. Payment processing, durable S3 uploads and advanced external integrations remain future work.
+This guide covers the current TFG release scope: public lead capture, secure admin access, Client Portal, service onboarding, project tracks, private client CRM and optional durable S3 uploads. Advanced external integrations remain controlled future work.
 
 ## Target Architecture
 
@@ -66,7 +66,7 @@ For Render/Neon deployment, keep `ddl-auto=none` after the schema has been creat
 
 The backend defaults to no shared internal token and a disabled demo admin. Render must therefore receive an explicit private `INTERNAL_API_TOKEN`. Enable the demo seeder only for a controlled TFG environment; when enabled, it reconciles the configured password, role and active state on startup so credential rotation takes effect.
 
-Keep `AWS_S3_ENABLED=false` for the current demo. The presigned-URL endpoint is prepared, but the existing onboarding/project multipart upload flow is not yet connected to durable S3 completion and metadata persistence.
+Keep `AWS_S3_ENABLED=false` until the private bucket, least-privilege IAM user and browser CORS rules have been verified. After those checks pass, set it to `true` and redeploy the backend. The frontend already uses direct presigned uploads for onboarding files and project assets, with the authenticated multipart path retained as a backward-compatible fallback.
 
 ## Database Migration Order
 

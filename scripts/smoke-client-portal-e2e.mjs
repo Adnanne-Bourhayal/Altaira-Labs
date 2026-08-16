@@ -40,7 +40,7 @@ const onboarding = await getClientOnboarding(clientCookie)
 await expectViewerOnboardingReadOnly(viewerCookie)
 const criticalSignatures = onboarding.tasks.filter((task) => task.critical && task.taskType === "signature")
 assert(criticalSignatures.length > 0, "critical signature tasks exist", "Expected at least one critical signature task")
-await expectPortalLocked(clientCookie)
+await expectPortalVisibleBeforeContract(clientCookie)
 
 for (const task of criticalSignatures) {
   await submitSignature(clientCookie, task)
@@ -255,11 +255,19 @@ async function expectViewerOnboardingReadOnly(viewerCookie) {
   assert(ok, "viewer onboarding read-only strict", JSON.stringify(data))
 }
 
-async function expectPortalLocked(clientCookie) {
+async function expectPortalVisibleBeforeContract(clientCookie) {
   const response = await get("/api/client/portal", clientCookie)
-  const ok = response.status === 423
-  record(ok, "portal locked before approval", `expected 423 before critical approvals, got ${response.status}`)
-  assert(ok, "portal locked strict", await response.text())
+  const data = await json(response)
+  const ok = response.status === 200
+    && data?.contractApproved === false
+    && typeof data?.workspaceId === "string"
+    && Array.isArray(data?.modules)
+  record(
+    ok,
+    "portal visible before contract approval",
+    `expected 200, contractApproved=false and workspace context; got ${response.status}`,
+  )
+  assert(ok, "pre-contract portal visibility strict", JSON.stringify(data))
 }
 
 async function submitSignature(clientCookie, task) {

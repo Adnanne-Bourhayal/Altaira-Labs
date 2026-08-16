@@ -11,6 +11,9 @@ import com.altaira.backend.dto.clientportal.CreateProjectLinkRequest;
 import com.altaira.backend.dto.clientportal.ReviewProjectAssetRequest;
 import com.altaira.backend.dto.clientportal.SubmitProjectFeedbackRequest;
 import com.altaira.backend.dto.clientportal.UpdateClientProjectRequest;
+import com.altaira.backend.dto.media.CompletePrivateUploadRequest;
+import com.altaira.backend.dto.media.PreparePrivateUploadRequest;
+import com.altaira.backend.dto.media.UploadUrlResponse;
 import com.altaira.backend.security.AdminAccessService;
 import com.altaira.backend.security.ClientAccessService;
 import com.altaira.backend.service.ClientPortalService;
@@ -25,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +94,28 @@ public class ClientPortalController {
         return clientPortalService.uploadProjectAssets(context, projectId, files, assetType, notes);
     }
 
+    @PostMapping("/client/projects/{projectId}/assets/upload-url")
+    public UploadUrlResponse prepareProjectAssetUpload(
+            @PathVariable UUID projectId,
+            @Valid @RequestBody PreparePrivateUploadRequest request,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken
+    ) {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        clientAccessService.requireClientWriteAccess(context);
+        return clientPortalService.prepareProjectAssetUpload(context, projectId, request);
+    }
+
+    @PostMapping("/client/projects/{projectId}/assets/complete")
+    public ClientProjectAssetResponse completeProjectAssetUpload(
+            @PathVariable UUID projectId,
+            @Valid @RequestBody CompletePrivateUploadRequest request,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken
+    ) {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        clientAccessService.requireClientWriteAccess(context);
+        return clientPortalService.completeProjectAssetUpload(context, projectId, request);
+    }
+
     @PostMapping("/client/projects/{projectId}/links")
     public ClientProjectAssetResponse createProjectLink(
             @PathVariable UUID projectId,
@@ -101,6 +125,37 @@ public class ClientPortalController {
         var context = clientAccessService.requireClientAccess(clientSessionToken);
         clientAccessService.requireClientWriteAccess(context);
         return clientPortalService.createProjectLink(context, projectId, request);
+    }
+
+    @GetMapping("/client/project-assets/{assetId}/download")
+    public ResponseEntity<InputStreamResource> downloadProjectAsset(
+            @PathVariable UUID assetId,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken
+    ) throws IOException {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        var download = clientPortalService.getProjectAssetDownload(context, assetId);
+        var asset = download.asset();
+        MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
+
+        if (asset.getContentType() != null && !asset.getContentType().isBlank()) {
+            try {
+                contentType = MediaType.parseMediaType(asset.getContentType());
+            } catch (IllegalArgumentException ignored) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM;
+            }
+        }
+
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .contentLength(asset.getSizeBytes())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(asset.getOriginalFilename(), StandardCharsets.UTF_8)
+                                .build()
+                                .toString()
+                )
+                .body(new InputStreamResource(download.inputStream()));
     }
 
     @GetMapping("/admin/clients/{clientId}")
@@ -224,6 +279,6 @@ public class ClientPortalController {
                                 .build()
                                 .toString()
                 )
-                .body(new InputStreamResource(Files.newInputStream(download.path())));
+                .body(new InputStreamResource(download.inputStream()));
     }
 }

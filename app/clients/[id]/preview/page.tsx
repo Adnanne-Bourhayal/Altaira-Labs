@@ -1,4 +1,4 @@
-import { AdminClientPreview } from "@/components/admin/AdminClientPreview"
+import { WorkspaceResolver } from "@/components/workspace/WorkspaceResolver"
 
 export const metadata = {
   title: "Client Preview | Altaira Labs",
@@ -8,6 +8,13 @@ export const metadata = {
   },
 }
 
-export default function AdminClientPreviewPage() {
-  return <AdminClientPreview />
+type AdminClientPreviewPageProps = {
+  params: Promise<{ id: string }>
+}
+
+export default async function AdminClientPreviewPage({
+  params,
+}: AdminClientPreviewPageProps) {
+  const { id } = await params
+  return <WorkspaceResolver clientId={id} preview />
 }

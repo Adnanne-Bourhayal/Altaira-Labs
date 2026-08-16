@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -13,18 +14,25 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.UUID;
 
+/**
+ * Stores onboarding files locally for development and transparently reads S3-backed
+ * objects after a direct upload has been verified by {@link MediaUploadUrlService}.
+ */
 @Service
 public class OnboardingFileStorageService {
 
     private final Path storageRoot;
     private final long maxFileSizeBytes;
+    private final MediaUploadUrlService mediaUploadUrlService;
 
     public OnboardingFileStorageService(
             @Value("${altaira.onboarding.storage-dir}") String storageDir,
-            @Value("${altaira.onboarding.max-file-size-bytes}") long maxFileSizeBytes
+            @Value("${altaira.onboarding.max-file-size-bytes}") long maxFileSizeBytes,
+            MediaUploadUrlService mediaUploadUrlService
     ) {
         this.storageRoot = Path.of(storageDir).toAbsolutePath().normalize();
         this.maxFileSizeBytes = maxFileSizeBytes;
+        this.mediaUploadUrlService = mediaUploadUrlService;
     }
 
     public StoredOnboardingFile store(UUID clientId, UUID taskId, MultipartFile file) {
@@ -70,6 +78,14 @@ public class OnboardingFileStorageService {
 
     public Path resolve(String storageKey) {
         return resolveStorageKey(storageKey);
+    }
+
+    public InputStream open(String storageKey) throws IOException {
+        if (mediaUploadUrlService.isS3StorageKey(storageKey)) {
+            return mediaUploadUrlService.openStoredObject(storageKey);
+        }
+
+        return Files.newInputStream(resolveStorageKey(storageKey));
     }
 
     private Path resolveStorageKey(String storageKey) {

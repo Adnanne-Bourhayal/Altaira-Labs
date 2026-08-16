@@ -13,6 +13,7 @@
     "smoke:auth": "node scripts/smoke-auth-crm.mjs",
     "smoke:client-portal": "node scripts/smoke-client-portal-e2e.mjs",
     "smoke:public": "node scripts/smoke-public.mjs",
+    "smoke:security": "node scripts/smoke-security.mjs",
     "start": "next start"
   },
   "dependencies": {

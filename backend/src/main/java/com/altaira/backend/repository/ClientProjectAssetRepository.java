@@ -15,6 +15,7 @@ public interface ClientProjectAssetRepository extends JpaRepository<ClientProjec
     List<ClientProjectAssetEntity> findAllByProjectOrderByUploadedAtAsc(ClientProjectEntity project);
 
     List<ClientProjectAssetEntity> findAllByClientOrderByUploadedAtDesc(ClientEntity client);
+    Optional<ClientProjectAssetEntity> findByStorageKey(String storageKey);
 
     @EntityGraph(attributePaths = {"project", "project.clientService", "project.clientService.service", "client"})
     List<ClientProjectAssetEntity> findAllByStatusOrderByUploadedAtAsc(String status);

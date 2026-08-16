@@ -1,4 +1,4 @@
-import ClientDashboardShell from "@/components/onboarding/ClientDashboardShell"
+import { WorkspaceResolver } from "@/components/workspace/WorkspaceResolver"
 
 export const metadata = {
   title: "Client Dashboard | Altaira Labs",
@@ -10,5 +10,5 @@ export const metadata = {
 }
 
 export default function ClientDashboardPage() {
-  return <ClientDashboardShell />
+  return <WorkspaceResolver tab="summary" />
 }

@@ -84,13 +84,13 @@ These belong in `/Volumes/T7/Altaira_Labs/.secrets/neon-render.env` for local ba
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP reads cannot hang the request. |
 | `SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT` | Local backend env, Render | Chosen timeout policy | No | Recommended: `5000` so SMTP writes cannot hang the request. |
 
-## Optional AWS S3 Preparation
+## AWS S3 Client File Storage
 
-These variables belong only in the local backend secrets file or Render. They are not needed for the current TFG demo and must not be added to Vercel.
+These variables belong only in the local backend secrets file or Render. They must not be added to Vercel.
 
 | Variable | Required now? | Secret? | Effect if absent |
 |---|---:|---:|---|
-| `AWS_S3_ENABLED` | No | No | Defaults to `false`; the presigned-upload endpoint returns `501`. |
+| `AWS_S3_ENABLED` | No | No | Defaults to `false`; the UI uses the authenticated multipart fallback. Set `true` only after IAM, bucket CORS and a smoke test are ready. |
 | `AWS_ACCESS_KEY_ID` | Only when S3 is enabled | Yes | AWS SDK cannot sign uploads. |
 | `AWS_SECRET_ACCESS_KEY` | Only when S3 is enabled | Yes | AWS SDK cannot sign uploads. |
 | `AWS_REGION` | Only when S3 is enabled | No | Presigned URLs cannot be generated. |
@@ -99,7 +99,7 @@ These variables belong only in the local backend secrets file or Render. They ar
 | `AWS_S3_PUBLIC_BASE_URL` | No | No | No public/CDN URL is returned for branding/multimedia. |
 | `AWS_S3_PRESIGN_TTL_SECONDS` | No | No | Defaults to `900`, constrained to 60-3600 seconds. |
 
-The current portal UI still stores multipart onboarding/project files through the private local storage service. S3 variables only enable the prepared presigned-URL endpoint; they do not yet make those existing uploads durable. Keep `AWS_S3_ENABLED=false` until the upload-completion and metadata flow is implemented and tested.
+When enabled, onboarding files and project assets are uploaded directly from the browser with a short-lived presigned `PUT`. The backend then verifies the bucket, client/project path, signed metadata, size and content type with `HeadObject` before persisting an `s3://...` storage key. Existing local files remain downloadable, so activation is backward compatible. Keep the optional public bucket blank to store all client material privately.
 
 ## Email Provider Recommendation
 

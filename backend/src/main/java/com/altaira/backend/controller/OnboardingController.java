@@ -5,6 +5,9 @@ import com.altaira.backend.dto.onboarding.OnboardingDashboardResponse;
 import com.altaira.backend.dto.onboarding.OnboardingTaskResponse;
 import com.altaira.backend.dto.onboarding.ReviewOnboardingTaskRequest;
 import com.altaira.backend.dto.onboarding.SubmitOnboardingTaskRequest;
+import com.altaira.backend.dto.media.CompletePrivateUploadRequest;
+import com.altaira.backend.dto.media.PreparePrivateUploadRequest;
+import com.altaira.backend.dto.media.UploadUrlResponse;
 import com.altaira.backend.entity.AppUserEntity;
 import com.altaira.backend.security.AdminAccessService;
 import com.altaira.backend.security.ClientAccessService;
@@ -23,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,6 +98,66 @@ public class OnboardingController {
                 clientIp(httpRequest),
                 userAgent(httpRequest)
         );
+    }
+
+    @PostMapping("/client/tasks/{taskId}/upload-url")
+    public UploadUrlResponse prepareClientTaskUpload(
+            @PathVariable UUID taskId,
+            @Valid @RequestBody PreparePrivateUploadRequest request,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken
+    ) {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        clientAccessService.requireClientWriteAccess(context);
+        return onboardingService.prepareClientTaskUpload(context, taskId, request);
+    }
+
+    @PostMapping("/client/tasks/{taskId}/files/complete")
+    public OnboardingTaskResponse completeClientTaskUpload(
+            @PathVariable UUID taskId,
+            @Valid @RequestBody CompletePrivateUploadRequest request,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken,
+            HttpServletRequest httpRequest
+    ) {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        clientAccessService.requireClientWriteAccess(context);
+        return onboardingService.completeClientTaskUpload(
+                context,
+                taskId,
+                request,
+                clientIp(httpRequest),
+                userAgent(httpRequest)
+        );
+    }
+
+    @GetMapping("/client/files/{fileId}/download")
+    public ResponseEntity<InputStreamResource> downloadClientTaskFile(
+            @PathVariable UUID fileId,
+            @RequestHeader(name = "X-Client-Session-Token", required = false) String clientSessionToken
+    ) throws IOException {
+        var context = clientAccessService.requireClientAccess(clientSessionToken);
+        var download = onboardingService.getFileDownload(context, fileId);
+        var file = download.file();
+        MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
+
+        if (file.getContentType() != null && !file.getContentType().isBlank()) {
+            try {
+                contentType = MediaType.parseMediaType(file.getContentType());
+            } catch (IllegalArgumentException ignored) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM;
+            }
+        }
+
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .contentLength(file.getSizeBytes())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(file.getOriginalFilename(), StandardCharsets.UTF_8)
+                                .build()
+                                .toString()
+                )
+                .body(new InputStreamResource(download.inputStream()));
     }
 
     @GetMapping("/admin/clients/{clientId}")
@@ -186,7 +248,7 @@ public class OnboardingController {
                                 .build()
                                 .toString()
                 )
-                .body(new InputStreamResource(Files.newInputStream(download.path())));
+                .body(new InputStreamResource(download.inputStream()));
     }
 
     private AppUserEntity optionalAdminUser(String adminSessionToken) {

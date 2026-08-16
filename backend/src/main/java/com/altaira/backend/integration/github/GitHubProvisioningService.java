@@ -5,7 +5,6 @@ import com.altaira.backend.dto.github.GitHubProvisioningPlanResponse;
 import com.altaira.backend.dto.github.GitHubProvisioningStepResult;
 import org.springframework.stereotype.Service;
 
-import java.text.Normalizer;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +22,7 @@ public class GitHubProvisioningService {
     public GitHubProvisioningPlanResponse dryRun(GitHubProvisioningDryRunRequest request) {
         String projectName = trimToDefault(request == null ? null : request.getProjectName(), "Altaira client workspace");
         String clientName = trimToDefault(request == null ? null : request.getClientName(), projectName);
-        String normalizedName = normalizeRepositoryName(clientName + " " + projectName);
+        String normalizedName = GitHubRepositoryNameNormalizer.normalize(clientName + " " + projectName);
         boolean privateRepository = request == null || request.getPrivateRepository() == null || request.getPrivateRepository();
         String description = trimToDefault(
                 request == null ? null : request.getDescription(),
@@ -124,23 +123,6 @@ public class GitHubProvisioningService {
             return new GitHubProvisioningStepResult(step, false, action, "GITHUB_DRY_RUN=true; no GitHub write operation is allowed.");
         }
         return new GitHubProvisioningStepResult(step, false, action, "Live GitHub write operation is intentionally not implemented in this safe backend block.");
-    }
-
-    private String normalizeRepositoryName(String value) {
-        String normalized = Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9._-]+", "-")
-                .replaceAll("^[._-]+|[._-]+$", "")
-                .replaceAll("-{2,}", "-");
-
-        if (normalized.isBlank()) {
-            return "altaira-client-workspace";
-        }
-        if (normalized.length() > 80) {
-            return normalized.substring(0, 80).replaceAll("[._-]+$", "");
-        }
-        return normalized;
     }
 
     private String trimToDefault(String value, String defaultValue) {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AlertCircle, ArrowRight, Check, FileText, LockKeyhole, Upload, X } from "lucide-react"
 import Logo from "@/components/Logo"
+import { uploadFileDirectly } from "@/lib/client-direct-upload"
 
 type OnboardingTask = {
   id: string
@@ -189,10 +190,15 @@ const taskPreferenceFields: Record<string, PreferenceField[]> = {
   ],
 }
 
-export default function ClientOnboardingWorkspace() {
+type ClientOnboardingWorkspaceProps = {
+  embedded?: boolean
+}
+
+export default function ClientOnboardingWorkspace({ embedded = false }: ClientOnboardingWorkspaceProps) {
   const router = useRouter()
   const [dashboard, setDashboard] = useState<OnboardingDashboard | null>(null)
   const [selectedTask, setSelectedTask] = useState<OnboardingTask | null>(null)
+  const [selectedServiceKey, setSelectedServiceKey] = useState("general")
   const [submission, setSubmission] = useState<SubmissionState>(emptySubmission)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -206,6 +212,13 @@ export default function ClientOnboardingWorkspace() {
     return Math.round((dashboard.completedRequiredTasks / dashboard.totalRequiredTasks) * 100)
   }, [dashboard])
   const serviceSummaries = useMemo(() => summarizeServiceTracks(dashboard?.tasks ?? []), [dashboard])
+  const visibleTasks = useMemo(() => {
+    if (!dashboard) {
+      return []
+    }
+
+    return dashboard.tasks.filter((task) => task.serviceKey === selectedServiceKey)
+  }, [dashboard, selectedServiceKey])
 
   useEffect(() => {
     loadDashboard()
@@ -282,6 +295,42 @@ export default function ClientOnboardingWorkspace() {
   }
 
   async function submitFileTask(taskId: string, nextSubmission: SubmissionState) {
+    let directUploadStarted = false
+    let lastConfirmation: Response | null = null
+
+    for (const file of nextSubmission.files) {
+      const receipt = await uploadFileDirectly(
+        file,
+        `/api/client/onboarding/tasks/${taskId}/upload-url`,
+      )
+
+      if (!receipt) {
+        if (directUploadStarted) {
+          throw new Error("Secure storage became unavailable during the upload. Please try again.")
+        }
+        return submitFileTaskMultipart(taskId, nextSubmission)
+      }
+
+      directUploadStarted = true
+      lastConfirmation = await fetch(`/api/client/onboarding/tasks/${taskId}/files/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...receipt, notes: nextSubmission.notes }),
+      })
+
+      if (!lastConfirmation.ok) {
+        return lastConfirmation
+      }
+    }
+
+    if (!lastConfirmation) {
+      throw new Error("Choose at least one file before submitting this task.")
+    }
+
+    return lastConfirmation
+  }
+
+  function submitFileTaskMultipart(taskId: string, nextSubmission: SubmissionState) {
     const formData = new FormData()
 
     nextSubmission.files.forEach((file) => {
@@ -296,6 +345,14 @@ export default function ClientOnboardingWorkspace() {
   }
 
   if (loading) {
+    if (embedded) {
+      return (
+        <div className="border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500">
+          Loading onboarding...
+        </div>
+      )
+    }
+
     return (
       <main className="min-h-screen bg-white text-slate-950">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6">
@@ -306,12 +363,183 @@ export default function ClientOnboardingWorkspace() {
   }
 
   if (!dashboard) {
+    if (embedded) {
+      return (
+        <div className="border border-red-200 bg-red-50 px-6 py-5 text-sm text-red-700">
+          {error || "Onboarding unavailable."}
+        </div>
+      )
+    }
+
     return (
       <main className="min-h-screen bg-white text-slate-950">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6">
           <div className="border border-red-200 bg-red-50 px-8 py-6 text-sm text-red-700">{error || "Onboarding unavailable."}</div>
         </div>
       </main>
+    )
+  }
+
+  if (embedded) {
+    const selectedSummary = serviceSummaries.find((summary) => summary.serviceKey === selectedServiceKey)
+    const selectedRequired = visibleTasks.filter((task) => task.required)
+    const selectedApproved = selectedRequired.filter((task) => task.status === "approved").length
+    const selectedProgress = selectedRequired.length === 0
+      ? 0
+      : Math.round((selectedApproved / selectedRequired.length) * 100)
+
+    return (
+      <section className="grid gap-6 text-slate-950">
+        <div className="grid gap-5 border border-slate-200 bg-white p-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">Onboarding</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Complete one service at a time</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Open only the checklist you need. Submitted items are reviewed by Altaira Labs before they unlock delivery work.
+            </p>
+          </div>
+          <div className="min-w-[190px] border-l-2 border-blue-600 pl-4">
+            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+              <span>Overall progress</span>
+              <span className="text-blue-700">{progress}%</span>
+            </div>
+            <div className="mt-3 h-1.5 bg-slate-200">
+              <div className="h-full bg-blue-600" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {!dashboard.canEdit && (
+          <div className="border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900">
+            Read-only access. Only a client editor can submit onboarding tasks.
+          </div>
+        )}
+
+        <div className="overflow-x-auto border border-slate-200 bg-white">
+          <div className="flex min-w-max">
+            <button
+              type="button"
+              onClick={() => setSelectedServiceKey("general")}
+              className={`border-r border-slate-200 px-5 py-4 text-sm font-semibold transition ${
+                selectedServiceKey === "general"
+                  ? "border-b-2 border-b-blue-600 bg-slate-950 text-white"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+              }`}
+            >
+              General
+            </button>
+            {serviceSummaries.map((summary) => (
+              <button
+                key={summary.serviceKey}
+                type="button"
+                onClick={() => setSelectedServiceKey(summary.serviceKey)}
+                className={`border-r border-slate-200 px-5 py-4 text-sm font-semibold transition ${
+                  selectedServiceKey === summary.serviceKey
+                    ? "border-b-2 border-b-blue-600 bg-slate-950 text-white"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                }`}
+              >
+                {summary.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="border border-slate-200 bg-slate-50 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+              {selectedServiceKey === "general" ? "Workspace access" : selectedSummary?.label}
+            </p>
+            <h3 className="mt-3 text-lg font-semibold">
+              {selectedServiceKey === "general"
+                ? "Business and agreement"
+                : selectedSummary?.guide.heading}
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {selectedServiceKey === "general"
+                ? "Confirm the shared business information and agreement needed across the workspace."
+                : selectedSummary?.guide.description}
+            </p>
+
+            <div className="mt-6 border-t border-slate-200 pt-5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-slate-700">Approved</span>
+                <span className="font-semibold text-blue-700">{selectedApproved}/{selectedRequired.length}</span>
+              </div>
+              <div className="mt-3 h-1.5 bg-slate-200">
+                <div className="h-full bg-blue-600" style={{ width: `${selectedProgress}%` }} />
+              </div>
+            </div>
+
+            {!dashboard.contractApproved && selectedServiceKey === "general" && (
+              <div className="mt-5 border-l-2 border-blue-600 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+                Contract approval is required before delivery actions open.
+              </div>
+            )}
+          </aside>
+
+          <div className="grid content-start gap-3">
+            {visibleTasks.length === 0 ? (
+              <div className="border border-slate-200 bg-white px-6 py-12 text-center">
+                <p className="font-semibold text-slate-900">No checklist items in this section</p>
+                <p className="mt-2 text-sm text-slate-500">Nothing is required here right now.</p>
+              </div>
+            ) : visibleTasks.map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                onClick={() => openTask(task)}
+                disabled={!dashboard.canEdit}
+                className="group grid gap-4 border border-slate-200 bg-white p-5 text-left transition enabled:hover:border-blue-500 enabled:hover:bg-slate-50 disabled:cursor-default sm:grid-cols-[auto_1fr_auto]"
+              >
+                <div className="grid h-11 w-11 place-items-center border border-slate-200 bg-slate-50 text-blue-700">
+                  {task.taskType === "signature" && <FileText className="h-5 w-5" />}
+                  {task.taskType === "file_upload" && <Upload className="h-5 w-5" />}
+                  {task.taskType === "preferences_form" && <AlertCircle className="h-5 w-5" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold text-slate-950">{task.title}</h3>
+                    {task.critical && (
+                      <span className="border border-blue-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+                        Critical
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{task.description}</p>
+                  {task.adminFeedback && (
+                    <p className="mt-3 border-l-2 border-red-500 pl-3 text-sm text-red-700">
+                      Admin feedback: {task.adminFeedback}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={task.status} />
+                  <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-blue-700" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {selectedTask && (
+          <TaskModal
+            task={selectedTask}
+            submission={submission}
+            setSubmission={setSubmission}
+            submitting={submitting}
+            error={error}
+            onClose={() => setSelectedTask(null)}
+            onSubmit={submitTask}
+          />
+        )}
+      </section>
     )
   }
 
@@ -357,11 +585,11 @@ export default function ClientOnboardingWorkspace() {
 
             {!dashboard.contractApproved && (
               <div className="mt-6 border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-                <div className="mb-1 inline-flex items-center gap-2 font-semibold">
+                <div className="mb-1 flex items-center gap-2 font-semibold">
                   <LockKeyhole className="h-4 w-4" />
                   Contract gate active
                 </div>
-                General dashboard access should remain blocked until the critical contract task is approved.
+                <p>General dashboard access remains blocked until the critical contract task is approved.</p>
               </div>
             )}
 
@@ -395,7 +623,9 @@ export default function ClientOnboardingWorkspace() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">Service onboarding tracks</p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-tight">What each service needs before execution</h2>
                   </div>
-                  <span className="text-sm text-slate-500">{serviceSummaries.length} active tracks</span>
+                  <span className="text-sm text-slate-500">
+                    {serviceSummaries.length} active {serviceSummaries.length === 1 ? "track" : "tracks"}
+                  </span>
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
                   {serviceSummaries.map((summary) => (

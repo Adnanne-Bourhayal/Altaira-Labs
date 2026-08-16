@@ -934,6 +934,27 @@ class BackendApplicationTests {
 	}
 
 	@Test
+	void rejectsTamperedSessionToken() throws Exception {
+		String sessionToken = loginAndReturnSessionToken();
+
+		mockMvc.perform(get("/api/v1/auth/me")
+					.header("X-Admin-Session-Token", sessionToken + "tampered"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void rejectsExpiredSessionToken() throws Exception {
+		String sessionToken = loginAndReturnSessionToken();
+		var session = appUserSessionRepository.findAll().get(0);
+		session.setExpiresAt(Instant.now().minusSeconds(1));
+		appUserSessionRepository.saveAndFlush(session);
+
+		mockMvc.perform(get("/api/v1/auth/me")
+					.header("X-Admin-Session-Token", sessionToken))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void revokesPreviousAdminSessionWhenLoggingInAgain() throws Exception {
 		String firstSessionToken = loginAndReturnSessionToken();
 		String secondSessionToken = loginAndReturnSessionToken();
@@ -2180,13 +2201,16 @@ class BackendApplicationTests {
 
 		mockMvc.perform(get("/api/v1/client-portal/me")
 						.header("X-Client-Session-Token", clientSessionToken))
-				.andExpect(status().isLocked())
-				.andExpect(jsonPath("$.error").value("Client dashboard is locked until the service contract is approved"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.client.id").value(clientId))
+				.andExpect(jsonPath("$.workspaceId").isNotEmpty())
+				.andExpect(jsonPath("$.contractApproved").value(false));
 
 		mockMvc.perform(get("/api/v1/onboarding/client/me")
 						.header("X-Client-Session-Token", clientSessionToken))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.client.id").value(clientId))
+				.andExpect(jsonPath("$.workspaceId").isNotEmpty())
 				.andExpect(jsonPath("$.onboardingCompleted").value(false));
 
 		byte[] logoBytes = "fake transparent logo".getBytes(StandardCharsets.UTF_8);
@@ -2206,6 +2230,27 @@ class BackendApplicationTests {
 		JsonNode uploadedTask = objectMapper.readTree(fileUploadBody);
 		JsonNode fileMetadata = objectMapper.readTree(uploadedTask.get("fileMetadataJson").asText());
 		String onboardingFileId = fileMetadata.get(0).get("id").asText();
+		String otherClientId = createClientWithSector(
+				"Other Client",
+				"Other Workspace Co",
+				"other-workspace@example.com",
+				"custom"
+		);
+		createClientUserAccess(otherClientId, "other-workspace-client", "other-client-pass-123");
+		String otherClientSessionToken = loginAndReturnSessionToken(
+				"other-workspace-client",
+				"other-client-pass-123"
+		);
+
+		mockMvc.perform(get("/api/v1/onboarding/client/files/" + onboardingFileId + "/download")
+						.header("X-Client-Session-Token", clientSessionToken))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Content-Type", "image/png"))
+				.andExpect(content().bytes(logoBytes));
+
+		mockMvc.perform(get("/api/v1/onboarding/client/files/" + onboardingFileId + "/download")
+						.header("X-Client-Session-Token", otherClientSessionToken))
+				.andExpect(status().isForbidden());
 
 		mockMvc.perform(get("/api/v1/onboarding/admin/tasks/" + fileUploadTaskId + "/files")
 						.header("X-Internal-API-Token", INTERNAL_TOKEN))
@@ -2317,6 +2362,16 @@ class BackendApplicationTests {
 				.getContentAsString();
 
 		String projectAssetId = objectMapper.readTree(projectAssetBody).get(0).get("id").asText();
+
+		mockMvc.perform(get("/api/v1/client-portal/client/project-assets/" + projectAssetId + "/download")
+						.header("X-Client-Session-Token", clientSessionToken))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Content-Type", MediaType.TEXT_PLAIN_VALUE))
+				.andExpect(content().bytes(homepageCopyBytes));
+
+		mockMvc.perform(get("/api/v1/client-portal/client/project-assets/" + projectAssetId + "/download")
+						.header("X-Client-Session-Token", otherClientSessionToken))
+				.andExpect(status().isForbidden());
 
 		mockMvc.perform(get("/api/v1/client-portal/client/projects/" + projectId + "/assets")
 						.header("X-Client-Session-Token", clientSessionToken))

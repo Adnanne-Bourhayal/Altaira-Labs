@@ -13,6 +13,7 @@ import java.util.UUID;
 public interface OnboardingFileRepository extends JpaRepository<OnboardingFileEntity, UUID> {
     List<OnboardingFileEntity> findAllByTaskOrderByCreatedAtAsc(OnboardingTaskEntity task);
     List<OnboardingFileEntity> findAllByClientOrderByCreatedAtDesc(ClientEntity client);
+    Optional<OnboardingFileEntity> findByStorageKey(String storageKey);
 
     @Override
     @EntityGraph(attributePaths = {"task", "workspace", "client"})

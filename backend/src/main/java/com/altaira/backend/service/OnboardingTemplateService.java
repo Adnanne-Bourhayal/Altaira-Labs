@@ -72,7 +72,7 @@ public class OnboardingTemplateService {
                 templates.add(new TaskTemplate(
                         "web-brand-assets",
                         "Upload logo and brand material",
-                        "Upload the vector logo or transparent PNG, brand manual, color references and approved visual material for the website. Final storage can later move these assets into S3 branding/.",
+                        "Upload the vector logo or transparent PNG, brand manual, color references and approved visual material for the website. Altaira Labs will store accepted files securely with the project.",
                         OnboardingTaskType.FILE_UPLOAD,
                         serviceKey,
                         sectorType,
@@ -270,7 +270,7 @@ public class OnboardingTemplateService {
         templates.add(new TaskTemplate(
                 "crm-contact-import",
                 "Upload existing contacts CSV or Excel",
-                "Upload your current contact list, lead spreadsheet or legacy customer export so Altaira Labs can prepare the migration safely. Final storage can later move these files into private S3.",
+                "Upload your current contact list, lead spreadsheet or legacy customer export so Altaira Labs can prepare the migration safely. Accepted files will remain private to your project.",
                 OnboardingTaskType.FILE_UPLOAD,
                 serviceKey,
                 sectorType,
@@ -364,7 +364,7 @@ public class OnboardingTemplateService {
         templates.add(new TaskTemplate(
                 "dashboard-data-migration",
                 "Upload historical operations data",
-                "Upload CSV or Excel files with old customer, service, staff or operational history if you want it migrated into the dashboard. Final storage can later move these files into private S3.",
+                "Upload CSV or Excel files with old customer, service, staff or operational history if you want it migrated into the dashboard. Accepted files will remain private to your project.",
                 OnboardingTaskType.FILE_UPLOAD,
                 serviceKey,
                 sectorType,
